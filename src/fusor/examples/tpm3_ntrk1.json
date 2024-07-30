@@ -19,8 +19,7 @@
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "type": "SequenceReference"
         },
-        "start": 154170399,
-        "end": 154170400
+        "start": 154170399
       }
     },
     {
@@ -41,8 +40,7 @@
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "type": "SequenceReference"
         },
-        "start": 156874626,
-        "end": 156874627
+        "start": 156874570
       }
     }
   ],

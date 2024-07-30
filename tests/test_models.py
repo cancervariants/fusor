@@ -178,7 +178,7 @@ def transcript_segments(sequence_locations, gene_examples):
         },
         {
             "type": "TranscriptSegmentElement",
-            "transcript": "refseq:NM_034348.3",
+            "transcript": "refseq:NM_034348.3",  # DNE
             "exonStart": 1,
             "exonEnd": 8,
             "gene": gene_examples[3],
@@ -187,7 +187,7 @@ def transcript_segments(sequence_locations, gene_examples):
         },
         {
             "type": "TranscriptSegmentElement",
-            "transcript": "refseq:NM_938439.4",
+            "transcript": "refseq:NM_938439.4",  # DNE
             "exonStart": 7,
             "exonEnd": 14,
             "exonEndOffset": -5,
@@ -197,7 +197,7 @@ def transcript_segments(sequence_locations, gene_examples):
         },
         {
             "type": "TranscriptSegmentElement",
-            "transcript": "refseq:NM_938439.4",
+            "transcript": "refseq:NM_938439.4",  # DNE
             "exonStart": 7,
             "gene": gene_examples[4],
             "elementGenomicStart": sequence_locations[0],

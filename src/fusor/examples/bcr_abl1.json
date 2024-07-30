@@ -21,8 +21,7 @@
           "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
           "type": "SequenceReference"
         },
-        "start": 23253980,
-        "end": 23253981
+        "end": 23253980
       },
       "exonEnd": 2,
       "exonEndOffset": 182
@@ -57,8 +56,7 @@
           "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
           "type": "SequenceReference"
         },
-        "start": 130854064,
-        "end": 130854065
+        "start": 130854063
       }
     }
   ],

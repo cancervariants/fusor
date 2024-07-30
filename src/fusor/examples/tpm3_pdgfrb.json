@@ -21,8 +21,7 @@
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "type": "SequenceReference"
         },
-        "start": 154192135,
-        "end": 154192136
+        "end": 154192135
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
@@ -32,8 +31,7 @@
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "type": "SequenceReference"
         },
-        "start": 154170399,
-        "end": 154170400
+        "start": 154170399
       }
     },
     {
@@ -56,8 +54,7 @@
           "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
           "type": "SequenceReference"
         },
-        "start": 150125577,
-        "end": 150125578
+        "start": 150126519
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.QFVGHvvSFg-9q_Tv04DjMbvTRnGs1kEr",
@@ -67,8 +64,7 @@
           "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
           "type": "SequenceReference"
         },
-        "start": 150113838,
-        "end": 150113839
+        "end": 150117850
       }
     }
   ],

@@ -754,8 +754,7 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                         "type": "SequenceReference",
                     },
-                    "start": 154192135,
-                    "end": 154192136,
+                    "end": 154192135,
                 },
                 "elementGenomicEnd": {
                     "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
@@ -770,7 +769,6 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                         "type": "SequenceReference",
                     },
                     "start": 154170399,
-                    "end": 154170400,
                 },
             },
             {
@@ -879,8 +877,7 @@ def fusion_example():
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                         "type": "SequenceReference",
                     },
-                    "start": 154192135,
-                    "end": 154192136,
+                    "end": 154192135,
                 },
                 "elementGenomicEnd": {
                     "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
@@ -895,7 +892,6 @@ def fusion_example():
                         "type": "SequenceReference",
                     },
                     "start": 154170399,
-                    "end": 154170400,
                 },
             },
             {
