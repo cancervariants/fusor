@@ -160,3 +160,9 @@ dynamodb_local_latest/*
 
 # Build files
 Pipfile.lock
+
+# Test data
+fusor/*.txt
+fusor/*.csv
+fusor/*.tsv
+test_data/

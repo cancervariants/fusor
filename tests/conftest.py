@@ -1,11 +1,13 @@
 """Module containing methods and fixtures used throughout tests."""
 
+import asyncio
 import logging
 
 import pytest
 from cool_seq_tool.app import CoolSeqTool
 
 from fusor.fusor import FUSOR
+from fusor.translator import Translator
 
 
 def pytest_addoption(parser):
@@ -30,6 +32,14 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="session")
 def fusor_instance():
     """Create test fixture for fusor object
 
@@ -43,6 +53,12 @@ def fusor_instance():
     """
     cst = CoolSeqTool(force_local_files=True)
     return FUSOR(cool_seq_tool=cst)
+
+
+@pytest.fixture(scope="session")
+def translator_instance():
+    """Create test fixture for translator object"""
+    return Translator(fusor=FUSOR())
 
 
 @pytest.fixture(scope="session")
