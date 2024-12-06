@@ -217,8 +217,8 @@ async def test_fusion_catcher(
     # Test exonic breakpoint
     five_prime_partner = "TPM3"
     three_prime_partner = "PDGFRB"
-    five_prime_fusion_point = "1:154170466:-"
-    three_prime_fusion_point = "5:150126613:-"
+    five_prime_fusion_point = "1:154170465:-"
+    three_prime_fusion_point = "5:150126612:-"
     predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
 
     fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
@@ -234,8 +234,8 @@ async def test_fusion_catcher(
     # Test non-exonic breakpoint
     five_prime_partner = "TPM3"
     three_prime_partner = "PDGFRB"
-    five_prime_fusion_point = "1:154173079:-"
-    three_prime_fusion_point = "5:150127174:-"
+    five_prime_fusion_point = "1:154173078:-"
+    three_prime_fusion_point = "5:150127173:-"
     predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
 
     fusion_catcher_fusor_nonexonic = await translator_instance.from_fusion_catcher(

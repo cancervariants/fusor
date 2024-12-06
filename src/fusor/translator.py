@@ -303,7 +303,7 @@ class Translator:
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
-            seg_end_genomic=int(five_prime[1]) - 1,
+            seg_end_genomic=int(five_prime[1]),
             gene=gene_5prime_element.gene.label,
             get_nearest_transcript_junction=True,
         )
@@ -311,7 +311,7 @@ class Translator:
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
-            seg_start_genomic=int(three_prime[1]) - 1,
+            seg_start_genomic=int(three_prime[1]),
             gene=gene_3prime_element.gene.label,
             get_nearest_transcript_junction=True,
         )
