@@ -195,13 +195,14 @@ class Translator:
 
     def _assess_gene_symbol(
         self, gene: str, caller: Caller
-    ) -> list[GeneElement | UnknownGeneElement, str]:
+    ) -> tuple[GeneElement | UnknownGeneElement, str]:
         """Determine if a gene symbol exists and return the corresponding
         GeneElement
 
         :param gene: The gene symbol
         :param caller: The gene fusion caller
-        :return A list containing a GeneElement or UnknownGeneElement and a string
+        :return A list containing a GeneElement or UnknownGeneElement and a string,
+            representing the unknown fusion partner
         """
         if gene == "NA":
             return UnknownGeneElement(), "NA"
@@ -211,13 +212,13 @@ class Translator:
 
     def _process_gene_symbols(
         self, gene_5prime: str, gene_3prime: str, caller: Caller
-    ) -> dict[GeneElement | UnknownGeneElement]:
+    ) -> GeneFusionPartners:
         """Process gene symbols to create GeneElements or UnknownGeneElements
 
         :param gene_5prime: The 5' gene symbol
         :param gene_3prime: The 3' gene symbol
         :param caller: The gene fusion caller
-        :return A dictionary of GeneElements or UnknownGeneElements
+        :return A GeneFusionPartners object
         """
         gene_5prime_element, gene_5prime = self._assess_gene_symbol(gene_5prime, caller)
         gene_3prime_element, gene_3prime = self._assess_gene_symbol(gene_3prime, caller)
