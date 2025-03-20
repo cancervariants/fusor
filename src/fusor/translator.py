@@ -201,14 +201,13 @@ class Translator:
 
         :param gene: The gene symbol
         :param caller: The gene fusion caller
-        :return A list containing a GeneElement or UnknownGeneElement and a string,
+        :return A tuple containing a GeneElement or UnknownGeneElement and a string,
             representing the unknown fusion partner
         """
         if gene == "NA":
             return UnknownGeneElement(), "NA"
-        return self._get_gene_element(gene, caller), self._get_gene_element(
-            gene, caller
-        ).gene.label
+        gene_element = self._get_gene_element(gene, caller)
+        return gene_element, gene_element.gene.label
 
     def _process_gene_symbols(
         self, gene_5prime: str, gene_3prime: str, caller: Caller
