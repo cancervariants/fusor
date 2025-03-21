@@ -229,6 +229,8 @@ class Translator:
         }
         return GeneFusionPartners(**params)
 
+    ##### Fusion Caller -> FUSOR AssayedFusion object ###################
+
     async def from_jaffa(
         self,
         jaffa: JAFFA,
@@ -841,3 +843,5 @@ class Translator:
             ce,
             rf,
         )
+
+    ######### Knowledgebase -> FUSOR CategoricalFusion object #############

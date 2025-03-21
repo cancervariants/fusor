@@ -5,7 +5,11 @@ from abc import ABC
 from pathlib import Path
 from typing import ClassVar
 
+from civicpy.civic import FusionVariant
+from pydantic import BaseModel, ConfigDict
+
 from fusor.fusion_caller_models import (
+    CIVIC,
     JAFFA,
     Arriba,
     Cicero,
@@ -162,3 +166,24 @@ class GenieHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Genie
+
+
+class CIVICHarvester(BaseModel):
+    """Class for harvesting CIViC Fusion objects"""
+
+    fusions_list: list[FusionVariant]
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    def load_records(self) -> list[CIVIC]:
+        """Extract data from CIVIC fusion objects
+
+        :return A list of CIVIC objects
+        """
+        params = {}
+        processed_fusions = []
+        for fusion in self.fusions_list:
+            params["vicc_compliant_name"] = fusion.vicc_compliant_name
+            params["five_prime_coordinates"] = fusion.five_prime_coordinates
+            params["three_prime_coordinates"] = fusion.three_prime_coordinates
+            processed_fusions.append(CIVIC(**params))
+        return processed_fusions

@@ -4,6 +4,7 @@ from abc import ABC
 from enum import Enum
 from typing import Literal
 
+from civicpy.civic import CivicAttribute
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -21,10 +22,23 @@ class Caller(str, Enum):
     GENIE = "GENIE"
 
 
+class KnowledgebaseList(str, Enum):
+    """Define supported knowledgebases"""
+
+    CIVIC = "CIVIC"
+
+
 class FusionCaller(ABC, BaseModel):
     """ABC for fusion callers"""
 
     type: Caller
+    model_config = ConfigDict(extra="allow")
+
+
+class FusionKnowledgebase(ABC, BaseModel):
+    """ABC for Fusion Knowledgebases"""
+
+    type: KnowledgebaseList
     model_config = ConfigDict(extra="allow")
 
 
@@ -246,4 +260,20 @@ class Genie(FusionCaller):
     annot: str = Field(..., description="The annotation for the fusion event")
     reading_frame: str = Field(
         ..., description="The reading frame status of the fusion"
+    )
+
+
+class CIVIC(FusionKnowledgebase):
+    """Define parameters for CIVIC model"""
+
+    type: Literal[KnowledgebaseList.CIVIC] = KnowledgebaseList.CIVIC
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    vicc_compliant_name: str = Field(
+        ..., description="The VICC compliant name for the fusion"
+    )
+    five_prime_coordinates: CivicAttribute | dict = Field(
+        ..., description="Data for the 5' fusion partner"
+    )
+    three_prime_coordinates: CivicAttribute | dict = Field(
+        ..., description="Data for the 3' fusion partner"
     )
