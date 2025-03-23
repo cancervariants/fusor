@@ -2,6 +2,7 @@
 
 import polars as pl
 import pytest
+from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusion_caller_models import (
@@ -18,6 +19,7 @@ from fusor.models import (
     AnchoredReads,
     AssayedFusion,
     BreakpointCoverage,
+    CategoricalFusion,
     ContigSequence,
     ReadData,
     SpanningReads,
@@ -132,6 +134,95 @@ def fusion_data_example_nonexonic():
         }
         assayed_fusion = AssayedFusion(**params)
         return assayed_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
+
+
+@pytest.fixture(scope="module")
+def fusion_data_example_categorical():
+    """Create test fixture for CategoricalFusion object"""
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "CategoricalFusion",
+            "structure": [
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_004327.4",
+                    "exonEnd": 14,
+                    "exonEndOffset": 0,
+                    "gene": {"id": "hgnc:1014", "type": "Gene", "label": "BCR"},
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.wgMvqEhsH2IB1bQFlCxl-eD3A588MO8d",
+                        "type": "SequenceLocation",
+                        "digest": "wgMvqEhsH2IB1bQFlCxl-eD3A588MO8d",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000022.11",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+                        },
+                        "end": 23290413,
+                    },
+                },
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_005157.6",
+                    "exonStart": 2,
+                    "exonStartOffset": 0,
+                    "gene": {"id": "hgnc:76", "type": "Gene", "label": "ABL1"},
+                    "elementGenomicStart": {
+                        "id": "ga4gh:SL.GvvCD7Y-_598-ZP4yNGiPa1aPL-kofY6",
+                        "type": "SequenceLocation",
+                        "digest": "GvvCD7Y-_598-ZP4yNGiPa1aPL-kofY6",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000009.12",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
+                        },
+                        "start": 130854063,
+                    },
+                },
+            ],
+        }
+        categorical_fusion = CategoricalFusion(**params)
+        return categorical_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
+
+
+@pytest.fixture(scope="module")
+def fusion_data_example_categorical_mpge():
+    """Create test fixture for CategoricalFusion where one partner is a MultiplePossibleGenesElement object"""
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "CategoricalFusion",
+            "structure": [
+                {
+                    "type": "MultiplePossibleGenesElement",
+                },
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_002529.4",
+                    "exonStart": 9,
+                    "exonStartOffset": 0,
+                    "gene": {"id": "hgnc:8031", "type": "Gene", "label": "NTRK1"},
+                    "elementGenomicStart": {
+                        "id": "ga4gh:SL.ndqfSqOGncba6_XTbtJM9aFeV-0fwr13",
+                        "type": "SequenceLocation",
+                        "digest": "ndqfSqOGncba6_XTbtJM9aFeV-0fwr13",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000001.11",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 156874382,
+                    },
+                },
+            ],
+        }
+        categorical_fusion = CategoricalFusion(**params)
+        return categorical_fusion.model_copy(update=kwargs)
 
     return _create_base_fixture
 
@@ -682,3 +773,21 @@ async def test_genie(
         genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert genie_fusor_unknown.structure[1] == UnknownGeneElement()
+
+
+@pytest.mark.asyncio()
+async def test_civic(
+    fusion_data_example_categorical,
+    fusion_data_example_categorical_mpge,
+    translator_instance,
+):
+    """Test CIVIC translator"""
+    fusions_list = civic.get_all_fusion_variants()
+
+    # Test case where both gene partners known
+    civic_fusor = await translator_instance.from_civic(fusions_list[0])
+    assert civic_fusor == fusion_data_example_categorical()
+
+    # Test case where one parter is a MultiplePossibleGenesElement object
+    civic_fusor = await translator_instance.from_civic(fusions_list[15])
+    assert civic_fusor == fusion_data_example_categorical_mpge()

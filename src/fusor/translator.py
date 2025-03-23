@@ -5,10 +5,12 @@ objects
 import logging
 
 import polars as pl
+from civicpy.civic import CivicAttribute
 from cool_seq_tool.schemas import Assembly, CoordinateType
 from pydantic import BaseModel
 
 from fusor.fusion_caller_models import (
+    CIVIC,
     JAFFA,
     Arriba,
     Caller,
@@ -16,6 +18,7 @@ from fusor.fusion_caller_models import (
     EnFusion,
     FusionCatcher,
     Genie,
+    KnowledgebaseList,
     STARFusion,
 )
 from fusor.fusor import FUSOR
@@ -24,10 +27,12 @@ from fusor.models import (
     Assay,
     AssayedFusion,
     BreakpointCoverage,
+    CategoricalFusion,
     CausativeEvent,
     ContigSequence,
     EventType,
     GeneElement,
+    MultiplePossibleGenesElement,
     ReadData,
     SpanningReads,
     SplitReads,
@@ -41,9 +46,9 @@ _logger = logging.getLogger(__name__)
 class GeneFusionPartners(BaseModel):
     """Class for defining gene fusion partners"""
 
-    gene_5prime_element: GeneElement | UnknownGeneElement
+    gene_5prime_element: GeneElement | UnknownGeneElement | MultiplePossibleGenesElement
     gene_5prime: str | None = None
-    gene_3prime_element: GeneElement | UnknownGeneElement
+    gene_3prime_element: GeneElement | UnknownGeneElement | MultiplePossibleGenesElement
     gene_3prime: str | None = None
 
 
@@ -61,8 +66,9 @@ class Translator:
 
     def _format_fusion(
         self,
-        gene_5prime: GeneElement | UnknownGeneElement,
-        gene_3prime: GeneElement | UnknownGeneElement,
+        fusion_type: AssayedFusion | CategoricalFusion,
+        gene_5prime: GeneElement | UnknownGeneElement | MultiplePossibleGenesElement,
+        gene_3prime: GeneElement | UnknownGeneElement | MultiplePossibleGenesElement,
         tr_5prime: TranscriptSegmentElement | None = None,
         tr_3prime: TranscriptSegmentElement | None = None,
         ce: CausativeEvent | None = None,
@@ -70,11 +76,12 @@ class Translator:
         assay: Assay | None = None,
         contig: ContigSequence | None = None,
         reads: ReadData | None = None,
-    ) -> AssayedFusion:
+    ) -> AssayedFusion | CategoricalFusion:
         """Format classes to create AssayedFusion objects
 
-        :param gene_5prime: 5'prime GeneElement or UnknownGeneElement
-        :param gene_3prime: 3'prime GeneElement or UnknownGeneElement
+        :param fusion_type: If the fusion is an AssayedFusion or CategoricalFusion
+        :param gene_5prime: 5'prime GeneElement or UnknownGeneElement or MultiplePossibleGenesElement
+        :param gene_3prime: 3'prime GeneElement or UnknownGeneElement or MultiplePossibleGenesElement
         :param tr_5prime: 5'prime TranscriptSegmentElement
         :param tr_3prime: 3'prime TranscriptSegmentElement
         :param ce: CausativeEvent
@@ -82,7 +89,7 @@ class Translator:
         :param assay: Assay
         :param contig: The contig sequence
         :param reads: The read data
-        :return AssayedFusion object
+        :return AssayedFusion or CategoricalFusion object
         """
         params = {
             "causativeEvent": ce,
@@ -99,7 +106,11 @@ class Translator:
             params["structure"] = [gene_5prime, tr_3prime]
         else:
             params["structure"] = [tr_5prime, tr_3prime]
-        return AssayedFusion(**params)
+        return (
+            AssayedFusion(**params)
+            if fusion_type == AssayedFusion
+            else CategoricalFusion(**params)
+        )
 
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
@@ -133,12 +144,14 @@ class Translator:
             },
         )
 
-    def _get_gene_element(self, genes: str, caller: Caller) -> GeneElement:
+    def _get_gene_element(
+        self, genes: str, caller: Caller | KnowledgebaseList
+    ) -> GeneElement:
         """Return a GeneElement given an individual/list of gene symbols and a
         fusion detection algorithm
 
         :param genes: A gene symbol or list of gene symbols, separated by columns
-        :param caller: The examined fusion detection algorithm
+        :param caller: The examined fusion detection algorithm of fusion knowledgebase
         :return A GeneElement object
         """
         if "," not in genes or caller != caller.ARRIBA:
@@ -158,14 +171,14 @@ class Translator:
 
     def _are_fusion_partners_different(
         self,
-        gene_5prime: str | UnknownGeneElement,
-        gene_3prime: str | UnknownGeneElement,
+        gene_5prime: str | UnknownGeneElement | MultiplePossibleGenesElement,
+        gene_3prime: str | UnknownGeneElement | MultiplePossibleGenesElement,
     ) -> bool:
         """Check if the normalized gene symbols for the two fusion partners
         are different. If not, this event is not a fusion
 
-        :param gene_5prime: The 5' gene partner or UnknownGeneElement
-        :param gene_3prime: The 3' gene partner or UnknownGeneElement
+        :param gene_5prime: The 5' gene partner or UnknownGeneElement or MultiplePossibleGenesElement
+        :param gene_3prime: The 3' gene partner or UnknownGeneElement or MultiplePossibleGenesElement
         :return ``True`` if the gene symbols are different, ``False`` if not
         """
         if gene_5prime != gene_3prime:
@@ -194,29 +207,32 @@ class Translator:
         return alias_list[0].split(":")[1]
 
     def _assess_gene_symbol(
-        self, gene: str, caller: Caller
-    ) -> tuple[GeneElement | UnknownGeneElement, str]:
+        self, gene: str, caller: Caller | KnowledgebaseList
+    ) -> tuple[GeneElement | UnknownGeneElement | MultiplePossibleGenesElement, str]:
         """Determine if a gene symbol exists and return the corresponding
         GeneElement
 
         :param gene: The gene symbol
-        :param caller: The gene fusion caller
+        :param caller: The gene fusion caller or fusion knowledgebase
         :return A tuple containing a GeneElement or UnknownGeneElement and a string,
-            representing the unknown fusion partner
+            representing the unknown fusion partner, or MultiplePossibleGenesElement
+            and a string, representing any possible fusion partner
         """
         if gene == "NA":
             return UnknownGeneElement(), "NA"
+        if gene == "v":
+            return MultiplePossibleGenesElement(), "v"
         gene_element = self._get_gene_element(gene, caller)
         return gene_element, gene_element.gene.label
 
     def _process_gene_symbols(
-        self, gene_5prime: str, gene_3prime: str, caller: Caller
+        self, gene_5prime: str, gene_3prime: str, caller: Caller | KnowledgebaseList
     ) -> GeneFusionPartners:
-        """Process gene symbols to create GeneElements or UnknownGeneElements
+        """Process gene symbols to create GeneElements or UnknownGeneElements or MultiplePossibleGenesElement
 
         :param gene_5prime: The 5' gene symbol
         :param gene_3prime: The 3' gene symbol
-        :param caller: The gene fusion caller
+        :param caller: The gene fusion caller or fusion knowledgebase
         :return A GeneFusionPartners object
         """
         gene_5prime_element, gene_5prime = self._assess_gene_symbol(gene_5prime, caller)
@@ -288,6 +304,7 @@ class Translator:
         )
 
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -355,6 +372,7 @@ class Translator:
         )
 
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -423,6 +441,7 @@ class Translator:
         contig = ContigSequence(contig=fusion_catcher.fusion_sequence)
 
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -493,7 +512,7 @@ class Translator:
         )
         rf = bool(fmap_row.get_column("FrameShiftClass").item() == "InFrame")
         return self._format_fusion(
-            gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
+            AssayedFusion, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
 
     async def from_arriba(
@@ -579,6 +598,7 @@ class Translator:
         contig = ContigSequence(contig=arriba.fusion_transcript)
 
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -668,6 +688,7 @@ class Translator:
         contig = ContigSequence(contig=cicero.contig)
 
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -723,7 +744,9 @@ class Translator:
         ce = self._get_causative_event(
             mapsplice_row[0].split("~")[0], mapsplice_row[0].split("~")[1]
         )
-        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+        return self._format_fusion(
+            AssayedFusion, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce
+        )
 
     async def from_enfusion(
         self,
@@ -772,6 +795,7 @@ class Translator:
             enfusion.chr_3prime,
         )
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -832,6 +856,7 @@ class Translator:
         )
         rf = bool(genie.reading_frame == "in frame")
         return self._format_fusion(
+            AssayedFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -845,3 +870,128 @@ class Translator:
         )
 
     ######### Knowledgebase -> FUSOR CategoricalFusion object #############
+    def __process_vicc_nomenclature(self, gene_symbol: str) -> str:
+        """Extract fusion partner from VICC nomenclature
+
+        :param gene_symbol: The unprocessed gene symbol
+        :return The processed gene symbol
+        """
+        if "entrez" in gene_symbol:
+            return gene_symbol.split("(")[0]
+        start = gene_symbol.find("(")
+        stop = gene_symbol.find(")")
+        return gene_symbol[start + 1 : stop]
+
+    async def from_civic(self, civic: CIVIC) -> CategoricalFusion:
+        """Convert CIViC record to Categorical Fusion
+
+        :param civic A CIVIC object
+        :return A CategoricalFusion object, if construction is successful
+        """
+        if not isinstance(
+            civic.five_prime_coordinates, CivicAttribute
+        ) and not isinstance(civic.three_prime_coordinates, CivicAttribute):
+            msg = "Coordinate location is not available for either fusion partner"
+            _logger.warning(msg)
+            return msg
+
+        fusion_partners = civic.vicc_compliant_name
+        if fusion_partners.startswith("v::"):
+            gene_5prime = "v"
+            gene_3prime = self.__process_vicc_nomenclature(
+                fusion_partners.split("::")[1]
+            )
+        elif fusion_partners.endswith("::v"):
+            gene_5prime = self.__process_vicc_nomenclature(
+                fusion_partners.split("::")[0]
+            )
+            gene_3prime = "v"
+        else:
+            gene_5prime = self.__process_vicc_nomenclature(
+                fusion_partners.split("::")[0]
+            )
+            gene_3prime = self.__process_vicc_nomenclature(
+                fusion_partners.split("::")[1]
+            )
+
+        fusion_partners = self._process_gene_symbols(
+            gene_5prime, gene_3prime, KnowledgebaseList.CIVIC
+        )
+        if not self._are_fusion_partners_different(
+            fusion_partners.gene_5prime, fusion_partners.gene_3prime
+        ):
+            return None
+
+        tr_5prime = None
+        if (
+            isinstance(civic.five_prime_coordinates, CivicAttribute)
+            and civic.five_prime_coordinates.chromosome
+        ):
+            rb = (
+                Assembly.GRCH37.value
+                if civic.five_prime_coordinates.reference_build == "GRCH37"
+                else Assembly.GRCH38.value
+            )
+            strand = next(
+                (
+                    ext.value
+                    for ext in self.fusor.gene_normalizer.normalize(
+                        fusion_partners.gene_5prime
+                    ).gene.extensions
+                    if ext.name == "strand"
+                ),
+            )
+            tr_5prime = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                genomic_ac=self._get_genomic_ac(
+                    civic.five_prime_coordinates.chromosome, rb
+                ),
+                seg_end_genomic=civic.five_prime_coordinates.stop
+                if strand == "+"
+                else civic.five_prime_coordinates.start,
+                gene=fusion_partners.gene_5prime,
+                coordinate_type=CoordinateType.RESIDUE,
+                starting_assembly=rb,
+            )
+            tr_5prime = tr_5prime[0]
+
+        tr_3prime = None
+        if (
+            isinstance(civic.three_prime_coordinates, CivicAttribute)
+            and civic.three_prime_coordinates.chromosome
+        ):
+            rb = (
+                Assembly.GRCH37.value
+                if civic.three_prime_coordinates.reference_build == "GRCH37"
+                else Assembly.GRCH38.value
+            )
+            strand = next(
+                (
+                    ext.value
+                    for ext in self.fusor.gene_normalizer.normalize(
+                        fusion_partners.gene_3prime
+                    ).gene.extensions
+                    if ext.name == "strand"
+                ),
+            )
+            tr_3prime = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                genomic_ac=self._get_genomic_ac(
+                    civic.three_prime_coordinates.chromosome, rb
+                ),
+                seg_start_genomic=civic.three_prime_coordinates.start
+                if strand == "+"
+                else civic.three_prime_coordinates.stop,
+                gene=fusion_partners.gene_3prime,
+                coordinate_type=CoordinateType.RESIDUE,
+                starting_assembly=rb,
+            )
+            tr_3prime = tr_3prime[0]
+
+        return self._format_fusion(
+            CategoricalFusion,
+            fusion_partners.gene_5prime_element,
+            fusion_partners.gene_3prime_element,
+            tr_5prime if isinstance(tr_5prime, TranscriptSegmentElement) else None,
+            tr_3prime if isinstance(tr_3prime, TranscriptSegmentElement) else None,
+        )
