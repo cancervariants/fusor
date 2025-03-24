@@ -932,22 +932,23 @@ class Translator:
                 if civic.five_prime_coordinates.reference_build == "GRCH37"
                 else Assembly.GRCH38.value
             )
-            strand = next(
-                (
-                    ext.value
-                    for ext in self.fusor.gene_normalizer.normalize(
-                        fusion_partners.gene_5prime
-                    ).gene.extensions
-                    if ext.name == "strand"
-                ),
-            )
+            # strand = next(
+            #   (
+            #      ext.value
+            #     for ext in self.fusor.gene_normalizer.normalize(
+            #        fusion_partners.gene_5prime
+            #   ).gene.extensions
+            #  if ext.name == "strand"
+            # ),
+            # )
+            strand = civic.five_prime_strand.strand
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
                     civic.five_prime_coordinates.chromosome, rb
                 ),
                 seg_end_genomic=civic.five_prime_coordinates.stop
-                if strand == "+"
+                if strand == "POSITIVE"
                 else civic.five_prime_coordinates.start,
                 gene=fusion_partners.gene_5prime,
                 coordinate_type=CoordinateType.RESIDUE,
@@ -965,22 +966,23 @@ class Translator:
                 if civic.three_prime_coordinates.reference_build == "GRCH37"
                 else Assembly.GRCH38.value
             )
-            strand = next(
-                (
-                    ext.value
-                    for ext in self.fusor.gene_normalizer.normalize(
-                        fusion_partners.gene_3prime
-                    ).gene.extensions
-                    if ext.name == "strand"
-                ),
-            )
+            # strand = next(
+            #   (
+            #      ext.value
+            #     for ext in self.fusor.gene_normalizer.normalize(
+            #        fusion_partners.gene_3prime
+            #   ).gene.extensions
+            #  if ext.name == "strand"
+            # ),
+            # )
+            strand = civic.three_prime_strand.strand
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
                     civic.three_prime_coordinates.chromosome, rb
                 ),
                 seg_start_genomic=civic.three_prime_coordinates.start
-                if strand == "+"
+                if strand == "POSITIVE"
                 else civic.three_prime_coordinates.stop,
                 gene=fusion_partners.gene_3prime,
                 coordinate_type=CoordinateType.RESIDUE,
