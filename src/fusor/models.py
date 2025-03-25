@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Annotated, Any, Literal
 
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.domain_models import Gene
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
@@ -68,7 +68,7 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associatedGene: Gene
+    associatedGene: MappableConcept
     id: CURIE | None
     label: StrictStr | None = None
     sequenceLocation: SequenceLocation | None = None
@@ -235,7 +235,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
     exonStartOffset: StrictInt | None = 0
     exonEnd: StrictInt | None = None
     exonEndOffset: StrictInt | None = 0
-    gene: Gene
+    gene: MappableConcept
     elementGenomicStart: SequenceLocation | None = None
     elementGenomicEnd: SequenceLocation | None = None
     coverage: BreakpointCoverage | None = None
@@ -377,7 +377,7 @@ class GeneElement(BaseStructuralElement):
     """Define Gene Element class."""
 
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene: Gene
+    gene: MappableConcept
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -473,7 +473,7 @@ class RegulatoryElement(BaseModel):
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatoryClass: RegulatoryClass
     featureId: str | None = None
-    associatedGene: Gene | None = None
+    associatedGene: MappableConcept | None = None
     featureLocation: SequenceLocation | None = None
 
     @model_validator(mode="before")

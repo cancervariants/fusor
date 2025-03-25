@@ -7,7 +7,7 @@ from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
-from ga4gh.core.domain_models import Gene
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs import models
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
@@ -551,7 +551,7 @@ class FUSOR:
 
     def _normalized_gene(
         self, query: str, use_minimal_gene: bool | None = None
-    ) -> tuple[Gene | None, str | None]:
+    ) -> tuple[MappableConcept | None, str | None]:
         """Return gene from normalized response.
 
         :param query: Gene query
@@ -564,7 +564,7 @@ class FUSOR:
             gene = gene_norm_resp.gene
             gene_id = gene_norm_resp.normalized_id
             if use_minimal_gene:
-                return Gene(id=gene_id, label=gene.label), None
+                return MappableConcept(id=gene_id, label=gene.label), None
             gene.id = gene_id
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"

@@ -27,7 +27,7 @@ license = {file = "LICENSE"}
 dependencies = [
     "pydantic ==2.*",
     "polars ~= 1.0",
-    "ga4gh.vrs ==2.0.0a10",
+    "ga4gh.vrs ==2.0.0",
     "biocommons.seqrepo",
     "gene-normalizer ==0.4.0",
     "cool-seq-tool ~=0.11.0",
