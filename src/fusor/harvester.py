@@ -183,7 +183,11 @@ class CIVICHarvester(BaseModel):
         processed_fusions = []
         for fusion in self.fusions_list:
             params["vicc_compliant_name"] = fusion.vicc_compliant_name
-            params["five_prime_coordinates"] = fusion.five_prime_coordinates
-            params["three_prime_coordinates"] = fusion.three_prime_coordinates
+            params["five_prime_end_exon_coordinates"] = (
+                fusion.five_prime_exon_end_coordinates
+            )
+            params["three_prime_start_exon_coordinates"] = (
+                fusion.three_prime_exon_start_coordinates
+            )
             processed_fusions.append(CIVIC(**params))
         return processed_fusions
