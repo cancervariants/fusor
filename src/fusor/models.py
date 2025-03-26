@@ -5,12 +5,13 @@ from enum import Enum
 from typing import Annotated, Any, Literal
 
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.models import MappableConcept
+
+# from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
 )
-from gene.schemas import CURIE
+from gene.schemas import BaseGene
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -21,6 +22,8 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+
+CURIE_REGEX = r"^\w[^:]*:.+$"
 
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
@@ -68,8 +71,8 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associatedGene: MappableConcept
-    id: CURIE | None
+    associatedGene: BaseGene
+    id: Annotated[str, StringConstraints(pattern=CURIE_REGEX)] | None
     label: StrictStr | None = None
     sequenceLocation: SequenceLocation | None = None
 
@@ -82,9 +85,9 @@ class FunctionalDomain(BaseModel):
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
                 "associatedGene": {
-                    "id": "hgnc:8031",
+                    "concept_id": "hgnc:8031",
                     "label": "NTRK1",
-                    "type": "Gene",
+                    "symbol": "Gene",
                 },
                 "sequenceLocation": {
                     "id": "ga4gh:SL.ywhUSfEUrwG0E29Q3c47bbuc6gkqTGlO",
@@ -230,12 +233,12 @@ class TranscriptSegmentElement(BaseStructuralElement):
     type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = (
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
-    transcript: CURIE
+    transcript: Annotated[str, StringConstraints(pattern=CURIE_REGEX)]
     exonStart: StrictInt | None = None
     exonStartOffset: StrictInt | None = 0
     exonEnd: StrictInt | None = None
     exonEndOffset: StrictInt | None = 0
-    gene: MappableConcept
+    gene: BaseGene
     elementGenomicStart: SequenceLocation | None = None
     elementGenomicEnd: SequenceLocation | None = None
     coverage: BreakpointCoverage | None = None
@@ -279,9 +282,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "exonEnd": 8,
                 "exonEndOffset": 0,
                 "gene": {
-                    "id": "hgnc:12012",
+                    "concept_id": "hgnc:12012",
                     "type": "Gene",
-                    "label": "TPM3",
+                    "symbol": "TPM3",
                 },
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -377,15 +380,15 @@ class GeneElement(BaseStructuralElement):
     """Define Gene Element class."""
 
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene: MappableConcept
+    gene: BaseGene
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "GeneElement",
                 "gene": {
-                    "id": "hgnc:1097",
-                    "label": "BRAF",
+                    "concept_id": "hgnc:1097",
+                    "symbol": "BRAF",
                     "type": "Gene",
                 },
             }
@@ -473,7 +476,7 @@ class RegulatoryElement(BaseModel):
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatoryClass: RegulatoryClass
     featureId: str | None = None
-    associatedGene: MappableConcept | None = None
+    associatedGene: BaseGene | None = None
     featureLocation: SequenceLocation | None = None
 
     @model_validator(mode="before")
@@ -575,7 +578,7 @@ class AbstractFusion(BaseModel, ABC):
         """
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
-            gene_id = cls._access_object_attr(gene_info, "id")
+            gene_id = cls._access_object_attr(gene_info, "concept_id")
             if gene_id:
                 return gene_id
         return None
@@ -672,8 +675,8 @@ class Assay(BaseModelForbidExtra):
 
     type: Literal["Assay"] = "Assay"
     assayName: StrictStr | None = None
-    assayId: CURIE | None = None
-    methodUri: CURIE | None = None
+    assayId: Annotated[str, StringConstraints(pattern=CURIE_REGEX)] | None = None
+    methodUri: Annotated[str, StringConstraints(pattern=CURIE_REGEX)] | None = None
     fusionDetection: Evidence | None = None
 
     model_config = ConfigDict(
@@ -783,8 +786,8 @@ class AssayedFusion(AbstractFusion):
                         "type": "GeneElement",
                         "gene": {
                             "type": "Gene",
-                            "id": "hgnc:3058",
-                            "label": "EWSR1",
+                            "concept_id": "hgnc:3058",
+                            "symbol": "EWSR1",
                         },
                     },
                     {"type": "UnknownGeneElement"},
@@ -827,9 +830,9 @@ class CategoricalFusion(AbstractFusion):
                         "label": "cystatin domain",
                         "id": "interpro:IPR000010",
                         "associatedGene": {
-                            "id": "hgnc:2743",
+                            "concept_id": "hgnc:2743",
                             "label": "CST1",
-                            "type": "Gene",
+                            "symbol": "Gene",
                         },
                     }
                 ],
@@ -842,9 +845,9 @@ class CategoricalFusion(AbstractFusion):
                         "exonEnd": 8,
                         "exonEndOffset": 0,
                         "gene": {
-                            "id": "hgnc:12012",
+                            "concept_id": "hgnc:12012",
                             "type": "Gene",
-                            "label": "TPM3",
+                            "symbol": "TPM3",
                         },
                         "elementGenomicStart": {
                             "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -871,7 +874,11 @@ class CategoricalFusion(AbstractFusion):
                     },
                     {
                         "type": "GeneElement",
-                        "gene": {"id": "hgnc:427", "label": "ALK", "type": "Gene"},
+                        "gene": {
+                            "concept_id": "hgnc:427",
+                            "symbol": "ALK",
+                            "type": "Gene",
+                        },
                     },
                 ],
                 "regulatoryElement": {
@@ -879,8 +886,8 @@ class CategoricalFusion(AbstractFusion):
                     "regulatoryClass": "promoter",
                     "associatedGene": {
                         "type": "Gene",
-                        "id": "hgnc:1097",
-                        "label": "BRAF",
+                        "concept_id": "hgnc:1097",
+                        "symbol": "BRAF",
                     },
                 },
             }

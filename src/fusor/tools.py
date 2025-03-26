@@ -2,23 +2,26 @@
 
 import logging
 from collections import namedtuple
+from typing import Annotated
 
 from biocommons.seqrepo.seqrepo import SeqRepo
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.resources.status import check_status as check_cst_status
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
-from gene.schemas import CURIE
-from pydantic import ValidationError
+from pydantic import StringConstraints, ValidationError
 
 from fusor.exceptions import IDTranslationException
 
 _logger = logging.getLogger(__name__)
 
 
+CURIE_REGEX = r"^\w[^:]*:.+$"
+
+
 def translate_identifier(
     seqrepo: SeqRepo, ac: str, target_namespace: str = "ga4gh"
-) -> CURIE:
+) -> Annotated[str, StringConstraints(pattern=CURIE_REGEX)]:
     """Return ``target_namespace`` identifier for accession provided.
 
     :param ac: Identifier accession

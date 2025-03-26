@@ -2,6 +2,7 @@
 
 import logging
 import re
+from typing import Annotated
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
@@ -13,13 +14,12 @@ from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
     SequenceReference,
-    SequenceString,
+    sequenceString,
 )
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
-from gene.schemas import CURIE
-from pydantic import ValidationError
+from pydantic import StringConstraints, ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
@@ -50,6 +50,9 @@ from fusor.nomenclature import generate_nomenclature
 from fusor.tools import get_error_message, translate_identifier
 
 _logger = logging.getLogger(__name__)
+
+
+CURIE_REGEX = r"^\w[^:]*:.+$"
 
 
 class FUSOR:
@@ -380,7 +383,7 @@ class FUSOR:
         """
         try:
             upper_seq = sequence.upper()
-            seq = SequenceString(upper_seq)
+            seq = sequenceString(upper_seq)
             linker_sequence = LiteralSequenceExpression(
                 sequence=seq, id=f"fusor.sequence:{sequence}"
             )
@@ -410,7 +413,7 @@ class FUSOR:
         self,
         status: DomainStatus,
         name: str,
-        functional_domain_id: CURIE,
+        functional_domain_id: Annotated[str, StringConstraints(pattern=CURIE_REGEX)],
         gene: str,
         sequence_id: str,
         start: int,
@@ -541,7 +544,9 @@ class FUSOR:
         return sequence_location
 
     @staticmethod
-    def _location_id(location: dict) -> CURIE:
+    def _location_id(
+        location: dict,
+    ) -> Annotated[str, StringConstraints(pattern=CURIE_REGEX)]:
         """Return GA4GH digest for location
 
         :param location: VRS Location represented as a dict
@@ -599,7 +604,7 @@ class FUSOR:
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
-            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
+            if not re.match(CURIE_REGEX, sequence_id):
                 sequence_id = f"sequence.id:{sequence_id}"
 
         if seq_id_target_namespace:

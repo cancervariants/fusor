@@ -7,9 +7,9 @@
       "exonEnd": 2,
       "exonEndOffset": 182,
       "gene": {
-        "id": "hgnc:1014",
+        "concept_id": "hgnc:1014",
         "type": "Gene",
-        "label": "BCR",
+        "symbol": "BCR",
         "alternativeLabels": [
           "ALL",
           "LOC729775",
@@ -212,9 +212,9 @@
       "exonStart": 2,
       "exonStartOffset": -173,
       "gene": {
-        "id": "hgnc:76",
+        "concept_id": "hgnc:76",
         "type": "Gene",
-        "label": "ABL1",
+        "symbol": "ABL1",
         "alternativeLabels": [
           "BCR-ABL",
           "LOC116063",
@@ -421,9 +421,9 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
-        "id": "hgnc:76",
+        "concept_id": "hgnc:76",
         "type": "Gene",
-        "label": "ABL1",
+        "symbol": "ABL1",
         "alternativeLabels": [
           "BCR-ABL",
           "LOC116063",

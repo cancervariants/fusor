@@ -5,18 +5,18 @@
     "regulatoryClass": "enhancer",
     "featureId": "EH38E3121735",
     "associatedGene": {
-      "id": "hgnc:5477",
+      "concept_id": "hgnc:5477",
       "type": "Gene",
-      "label": "IGH"
+      "symbol": "IGH"
     }
   },
   "structure": [
     {
       "type": "GeneElement",
       "gene": {
-        "id": "hgnc:7553",
+        "concept_id": "hgnc:7553",
         "type": "Gene",
-        "label": "MYC"
+        "symbol": "MYC"
       }
     }
   ]
