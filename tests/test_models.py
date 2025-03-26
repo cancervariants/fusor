@@ -32,20 +32,20 @@ from fusor.models import (
 def gene_examples():
     """Provide possible gene input."""
     return [
-        {"concept_id": "hgnc:9339", "symbol": "G1"},
-        {"concept_id": "hgnc:76", "symbol": "ABL"},
-        {"concept_id": "hgnc:1014", "symbol": "BCR1"},
-        {"concept_id": "hgnc:8031", "symbol": "NTRK1"},
+        {"primaryCode": "hgnc:9339", "name": "G1"},
+        {"primaryCode": "hgnc:76", "name": "ABL"},
+        {"primaryCode": "hgnc:1014", "name": "BCR1"},
+        {"primaryCode": "hgnc:8031", "name": "NTRK1"},
         {
-            "concept_id": "hgnc:1837",
-            "symbol": "ALK",
+            "primaryCode": "hgnc:1837",
+            "name": "ALK",
         },
-        {"concept_id": "hgnc:16262", "symbol": "YAP1"},
+        {"primaryCode": "hgnc:16262", "name": "YAP1"},
         # alternate structure
         {
-            "concept_id": "hgnc:1097",
+            "primaryCode": "hgnc:1097",
             "type": "Gene",
-            "symbol": "BRAF",
+            "name": "BRAF",
         },
     ]
 
@@ -314,8 +314,8 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.status == "preserved"
     assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.associatedGene.concept_id == "hgnc:16262"
-    assert test_domain.associatedGene.symbol == "YAP1"
+    assert test_domain.associatedGene.primaryCode.root == "hgnc:16262"
+    assert test_domain.associatedGene.name == "YAP1"
     test_loc = test_domain.sequenceLocation
     assert "ga4gh:SL" in test_loc.id
     assert test_loc.type == "SequenceLocation"
@@ -331,8 +331,8 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.status == "lost"
     assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.associatedGene.concept_id == "hgnc:8031"
-    assert test_domain.associatedGene.symbol == "NTRK1"
+    assert test_domain.associatedGene.primaryCode.root == "hgnc:8031"
+    assert test_domain.associatedGene.name == "NTRK1"
     test_loc = test_domain.sequenceLocation
     assert "ga4gh:SL" in test_loc.id
     assert test_loc.type == "SequenceLocation"
@@ -374,8 +374,8 @@ def test_transcript_segment_element(transcript_segments):
     assert test_element.exonStartOffset == -9
     assert test_element.exonEnd == 8
     assert test_element.exonEndOffset == 7
-    assert test_element.gene.concept_id == "hgnc:9339"
-    assert test_element.gene.symbol == "G1"
+    assert test_element.gene.primaryCode.root == "hgnc:9339"
+    assert test_element.gene.name == "G1"
     test_region_start = test_element.elementGenomicStart
     assert test_region_start.type == "SequenceLocation"
     test_region_end = test_element.elementGenomicEnd
@@ -401,8 +401,8 @@ def test_transcript_segment_element(transcript_segments):
             exonEnd="8",
             exonEndOffset="7",
             gene={
-                "concept_id": "hgnc:1",
-                "symbol": "G1",
+                "primaryCode": "hgnc:1",
+                "name": "G1",
             },
             elementGenomicStart={
                 "location": {
@@ -432,8 +432,8 @@ def test_transcript_segment_element(transcript_segments):
             exonEnd="8",
             exonEndOffset="7",
             gene={
-                "id": "test:1",
-                "label": "G1",
+                "primaryCode": "test:1",
+                "name": "G1",
             },
             elementGenomicStart={
                 "location": {
@@ -461,8 +461,8 @@ def test_transcript_segment_element(transcript_segments):
             exonStart="1",
             exonStartOffset="-9",
             gene={
-                "id": "test:1",
-                "label": "G1",
+                "primaryCode": "test:1",
+                "name": "G1",
             },
         )
     msg = "Value error, Must give `elementGenomicStart` if `exonStart` is given"
@@ -476,8 +476,8 @@ def test_transcript_segment_element(transcript_segments):
             exonStartOffset="-9",
             exonEndOffset="7",
             gene={
-                "id": "test:1",
-                "label": "G1",
+                "primaryCode": "test:1",
+                "name": "G1",
             },
             elementGenomicStart={
                 "location": {
@@ -593,8 +593,8 @@ def test_gene_element(gene_examples):
     """Test that Gene Element initializes correctly."""
     test_element = GeneElement(gene=gene_examples[0])
     assert test_element.type == "GeneElement"
-    assert test_element.gene.concept_id == "hgnc:9339"
-    assert test_element.gene.symbol == "G1"
+    assert test_element.gene.primaryCode.root == "hgnc:9339"
+    assert test_element.gene.name == "G1"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
@@ -725,8 +725,8 @@ def test_regulatory_element(regulatory_elements, gene_examples):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.regulatoryClass.value == "promoter"
-    assert test_reg_elmt.associatedGene.concept_id == "hgnc:9339"
-    assert test_reg_elmt.associatedGene.symbol == "G1"
+    assert test_reg_elmt.associatedGene.primaryCode.root == "hgnc:9339"
+    assert test_reg_elmt.associatedGene.name == "G1"
 
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
@@ -770,25 +770,25 @@ def test_fusion(
             {
                 "type": "GeneElement",
                 "gene": {
-                    "type": "Gene",
-                    "concept_id": "hgnc:8031",
-                    "symbol": "NTRK1",
+                    "conceptType": "Gene",
+                    "primaryCode": "hgnc:8031",
+                    "name": "NTRK1",
                 },
             },
             {
                 "type": "GeneElement",
                 "gene": {
-                    "type": "Gene",
-                    "concept_id": "hgnc:76",
-                    "symbol": "ABL1",
+                    "conceptType": "Gene",
+                    "primaryCode": "hgnc:76",
+                    "name": "ABL1",
                 },
             },
         ],
         regulatory_element=None,
     )
     assert fusion.structure[0].type == "GeneElement"
-    assert fusion.structure[0].gene.symbol == "NTRK1"
-    assert fusion.structure[0].gene.concept_id == "hgnc:8031"
+    assert fusion.structure[0].gene.name == "NTRK1"
+    assert fusion.structure[0].gene.primaryCode.root == "hgnc:8031"
     assert fusion.structure[1].type == "GeneElement"
 
     # test that non-element properties are optional

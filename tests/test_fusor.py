@@ -4,8 +4,9 @@ import copy
 
 import pytest
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.domain_models import Gene
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import SequenceLocation
+from gene.schemas import BaseGene
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
@@ -26,13 +27,13 @@ from fusor.models import (
 @pytest.fixture(scope="module")
 def braf_gene_obj_min():
     """Create minimal gene object for BRAF"""
-    return Gene(label="BRAF", id="hgnc:1097")
+    return BaseGene(symbol="BRAF", concept_id="hgnc:1097")
 
 
 @pytest.fixture(scope="module")
 def braf_gene_obj(braf_gene):
     """Create gene object for braf"""
-    return Gene(**braf_gene)
+    return BaseGene(**braf_gene)
 
 
 @pytest.fixture(scope="module")
@@ -189,8 +190,8 @@ def transcript_segment_element():
         "exonStart": 1,
         "exonStartOffset": 0,
         "gene": {
-            "id": "hgnc:12012",
-            "label": "TPM3",
+            "concept_id": "hgnc:12012",
+            "symbol": "TPM3",
             "type": "Gene",
         },
         "transcript": "refseq:NM_152263.3",
@@ -230,8 +231,8 @@ def mane_transcript_segment_element():
         "exonStart": 2,
         "exonStartOffset": 0,
         "gene": {
-            "id": "hgnc:12761",
-            "label": "WEE1",
+            "concept_id": "hgnc:12761",
+            "symbol": "WEE1",
             "type": "Gene",
         },
         "transcript": "refseq:NM_003390.4",
@@ -268,21 +269,18 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
 
 def compare_gene_obj(actual: dict, expected: dict):
     """Test that actual and expected gene objects match."""
-    assert actual["id"] == expected["id"]
-    assert actual["type"] == expected["type"]
+    assert actual["concept_id"] == expected["concept_id"]
     assert actual["label"] == expected["label"]
+    assert actual["symbol"] == expected["symbol"]
     if expected.get("xrefs"):
         assert set(actual.get("xrefs")) == set(expected["xrefs"]), "xrefs"
     else:
         assert actual.get("xrefs") == expected.get("xrefs")
-    if expected["alternativeLabels"]:
+    if "alternativeLabels" in expected:
         assert set(actual["alternativeLabels"]) == set(
             expected["alternativeLabels"]
         ), "alt labels"
-    else:
-        assert actual["alternativeLabels"] == expected["alternativeLabels"]
-    assert "extensions" in actual
-    if expected["extensions"]:
+    if "extensions" in expected:
         assert len(actual["extensions"]) == len(
             expected["extensions"]
         ), "len of extensions"
@@ -312,7 +310,7 @@ def test__normalized_gene(fusor_instance):
     resp = fusor_instance._normalized_gene("BRAF")
     assert resp[0]
     assert resp[1] is None
-    assert isinstance(resp[0], Gene)
+    assert isinstance(resp[0], MappableConcept)
 
     resp = fusor_instance._normalized_gene("B R A F")
     assert resp[0] is None

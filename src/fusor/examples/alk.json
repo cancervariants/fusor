@@ -7,9 +7,9 @@
     {
       "type": "GeneElement",
       "gene": {
-        "concept_id": "hgnc:427",
-        "type": "Gene",
-        "symbol": "ALK"
+        "primaryCode": "hgnc:427",
+        "conceptType": "Gene",
+        "name": "ALK"
       }
     }
   ],
@@ -18,9 +18,9 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
-        "concept_id": "hgnc:427",
-        "type": "Gene",
-        "symbol": "ALK"
+        "primaryCode": "hgnc:427",
+        "conceptType": "Gene",
+        "name": "ALK"
       },
       "id": "interpro:IPR017441",
       "label": "Protein kinase, ATP binding site",

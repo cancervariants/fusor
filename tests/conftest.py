@@ -74,9 +74,9 @@ def translator_instance():
 def braf_gene():
     """Create gene params for BRAF."""
     return {
-        "id": "hgnc:1097",
+        "concept_id": "hgnc:1097",
         "type": "Gene",
-        "label": "BRAF",
+        "symbol": "BRAF",
         "description": None,
         "alternativeLabels": ["NS7", "BRAF1", "RAFB1", "B-RAF1", "BRAF-1", "B-raf"],
         "extensions": [
@@ -273,9 +273,9 @@ def braf_gene():
 def alk_gene():
     """Create test fixture for ALK gene params"""
     return {
-        "id": "hgnc:427",
+        "concept_id": "hgnc:427",
         "type": "Gene",
-        "label": "ALK",
+        "symbol": "ALK",
         "description": None,
         "alternativeLabels": ["NBLST3", "CD246", "ALK1"],
         "extensions": [
@@ -472,9 +472,9 @@ def alk_gene():
 def tpm3_gene():
     """Create test fixture for TPM3 gene"""
     return {
-        "id": "hgnc:12012",
+        "concept_id": "hgnc:12012",
         "type": "Gene",
-        "label": "TPM3",
+        "symbol": "TPM3",
         "description": None,
         "alternativeLabels": [
             "TM3",
@@ -859,8 +859,8 @@ def fusion_example():
                 "status": "lost",
                 "associatedGene": {
                     "type": "Gene",
-                    "label": "ALK",
-                    "id": "hgnc:427",
+                    "symbol": "ALK",
+                    "concept_id": "hgnc:427",
                 },
                 "sequenceLocation": {
                     "id": "ga4gh:SL.aYx-iUOFEw7GVZb4fwrQLkQQahpiIAVp",
@@ -889,8 +889,8 @@ def fusion_example():
                 "exonEndOffset": 0,
                 "gene": {
                     "type": "Gene",
-                    "label": "TPM3",
-                    "id": "hgnc:12012",
+                    "symbol": "TPM3",
+                    "concept_id": "hgnc:12012",
                 },
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -927,8 +927,8 @@ def fusion_example():
                 "type": "GeneElement",
                 "gene": {
                     "type": "Gene",
-                    "label": "ALK",
-                    "id": "hgnc:427",
+                    "symbol": "ALK",
+                    "concept_id": "hgnc:427",
                 },
             },
             {
@@ -965,8 +965,8 @@ def fusion_example():
             "regulatoryClass": "promoter",
             "associatedGene": {
                 "type": "Gene",
-                "label": "BRAF",
-                "id": "hgnc:1097",
+                "symbol": "BRAF",
+                "concept_id": "hgnc:1097",
             },
         },
     }

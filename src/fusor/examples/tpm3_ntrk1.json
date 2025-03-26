@@ -7,9 +7,9 @@
       "exonEnd": 8,
       "exonEndOffset": 0,
       "gene": {
-        "concept_id": "hgnc:12012",
-        "type": "Gene",
-        "symbol": "TPM3"
+        "primaryCode": "hgnc:12012",
+        "conceptType": "Gene",
+        "name": "TPM3"
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -29,9 +29,9 @@
       "exonStart": 10,
       "exonStartOffset": 0,
       "gene": {
-        "concept_id": "hgnc:8031",
-        "type": "Gene",
-        "symbol": "NTRK1"
+        "primaryCode": "hgnc:8031",
+        "conceptType": "Gene",
+        "name": "NTRK1"
       },
       "elementGenomicStart": {
         "id": "ga4gh:SL.Hw9hRbWb7AEt3h-naNmsGvV41h9G8vQt",

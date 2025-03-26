@@ -4,9 +4,9 @@
     {
       "type": "GeneElement",
       "gene": {
-        "concept_id": "hgnc:3508",
-        "type": "Gene",
-        "symbol": "EWSR1"
+        "primaryCode": "hgnc:3508",
+        "conceptType": "Gene",
+        "name": "EWSR1"
       }
     },
     {

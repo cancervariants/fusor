@@ -127,9 +127,9 @@ class Translator:
         """
         return GeneElement(
             gene={
-                "id": f"gene:{symbol}",
+                "concept_id": f"gene:{symbol}",
                 "label": symbol,
-                "type": "Gene",
+                "symbol": "Gene",
             },
         )
 
@@ -207,7 +207,7 @@ class Translator:
         if gene == "NA":
             return UnknownGeneElement(), "NA"
         gene_element = self._get_gene_element(gene, caller)
-        return gene_element, gene_element.gene.label
+        return gene_element, gene_element.gene.symbol
 
     def _process_gene_symbols(
         self, gene_5prime: str, gene_3prime: str, caller: Caller
@@ -446,8 +446,8 @@ class Translator:
         """
         gene1 = fmap_row.get_column("KnownGene1").item()
         gene2 = fmap_row.get_column("KnownGene2").item()
-        gene_5prime = self._get_gene_element(gene1, "fusion_map").gene.label
-        gene_3prime = self._get_gene_element(gene2, "fusion_map").gene.label
+        gene_5prime = self._get_gene_element(gene1, "fusion_map").gene.symbol
+        gene_3prime = self._get_gene_element(gene2, "fusion_map").gene.symbol
 
         if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
@@ -692,8 +692,8 @@ class Translator:
         gene2 = mapsplice_row[61].strip(",")
         gene_5prime_element = self._get_gene_element(gene1, "mapsplice")
         gene_3prime_element = self._get_gene_element(gene2, "mapsplice")
-        gene_5prime = gene_5prime_element.gene.label
-        gene_3prime = gene_3prime_element.gene.label
+        gene_5prime = gene_5prime_element.gene.symbol
+        gene_3prime = gene_3prime_element.gene.symbol
 
         if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
