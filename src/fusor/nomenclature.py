@@ -51,11 +51,11 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
             raise ValueError from e
         feature_string += f"_{refseq_id}(chr {chrom}):g.{feature_location.start}_{feature_location.end}"
     if element.associatedGene:
-        if element.associatedGene.id:
-            gene_id = element.associatedGene.id
+        if element.associatedGene.primaryCode:
+            gene_id = element.associatedGene.primaryCode.root
         else:
             raise ValueError
-        feature_string += f"@{element.associatedGene.label}({gene_id})"
+        feature_string += f"@{element.associatedGene.name}({gene_id})"
     if not feature_string:
         raise ValueError
     return f"reg_{type_string}{feature_string}"
@@ -72,7 +72,7 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     if ":" in transcript:
         transcript = transcript.split(":")[1]
 
-    prefix = f"{transcript}({element.gene.label})"
+    prefix = f"{transcript}({element.gene.name})"
     start = element.exonStart if element.exonStart else ""
     if element.exonStartOffset:
         if element.exonStartOffset > 0:
@@ -128,11 +128,11 @@ def gene_nomenclature(element: GeneElement) -> str:
     :return: element nomenclature representation
     :raises ValueError: if unable to retrieve gene ID
     """
-    if element.gene.id:
-        gene_id = element.gene.id
+    if element.gene.primaryCode:
+        gene_id = element.gene.primaryCode.root
     else:
         raise ValueError
-    return f"{element.gene.label}({gene_id})"
+    return f"{element.gene.name}({gene_id})"
 
 
 def generate_nomenclature(fusion: Fusion, sr: SeqRepo) -> str:

@@ -40,9 +40,9 @@ def fusion_data_example():
                     "exonEnd": 8,
                     "exonEndOffset": -66,
                     "gene": {
-                        "concept_id": "hgnc:12012",
-                        "type": "Gene",
-                        "symbol": "TPM3",
+                        "primaryCode": "hgnc:12012",
+                        "conceptType": "Gene",
+                        "name": "TPM3",
                     },
                     "elementGenomicEnd": {
                         "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
@@ -62,9 +62,9 @@ def fusion_data_example():
                     "exonStart": 11,
                     "exonStartOffset": 2,
                     "gene": {
-                        "concept_id": "hgnc:8804",
-                        "type": "Gene",
-                        "symbol": "PDGFRB",
+                        "primaryCode": "hgnc:8804",
+                        "conceptType": "Gene",
+                        "name": "PDGFRB",
                     },
                     "elementGenomicStart": {
                         "id": "ga4gh:SL.Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
@@ -103,9 +103,9 @@ def fusion_data_example_nonexonic():
                     "exonEnd": 4,
                     "exonEndOffset": 5,
                     "gene": {
-                        "concept_id": "hgnc:12012",
-                        "type": "Gene",
-                        "symbol": "TPM3",
+                        "primaryCode": "hgnc:12012",
+                        "conceptType": "Gene",
+                        "name": "TPM3",
                     },
                     "elementGenomicEnd": {
                         "id": "ga4gh:SL.O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
@@ -125,9 +125,9 @@ def fusion_data_example_nonexonic():
                     "exonStart": 11,
                     "exonStartOffset": -559,
                     "gene": {
-                        "concept_id": "hgnc:8804",
-                        "type": "Gene",
-                        "symbol": "PDGFRB",
+                        "primaryCode": "hgnc:8804",
+                        "conceptType": "Gene",
+                        "name": "PDGFRB",
                     },
                     "elementGenomicStart": {
                         "id": "ga4gh:SL.GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
@@ -156,7 +156,7 @@ def test_gene_element_arriba(translator_instance):
     """Test gene selection for Arriba"""
     genes = "RP1-222H5.1(151985),MIR3672(13973)"
     gene = translator_instance._get_gene_element(genes=genes, caller=Caller.ARRIBA)
-    assert gene.gene.symbol == "MIR3672"
+    assert gene.gene.name == "MIR3672"
 
 
 def test_valid_fusion_partners(translator_instance):

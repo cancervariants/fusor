@@ -6,7 +6,6 @@ import pytest
 from cool_seq_tool.schemas import Strand
 from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import SequenceLocation
-from gene.schemas import BaseGene
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
@@ -27,13 +26,13 @@ from fusor.models import (
 @pytest.fixture(scope="module")
 def braf_gene_obj_min():
     """Create minimal gene object for BRAF"""
-    return BaseGene(symbol="BRAF", concept_id="hgnc:1097")
+    return MappableConcept(name="BRAF", primaryCode="hgnc:1097", conceptType="Gene")
 
 
 @pytest.fixture(scope="module")
 def braf_gene_obj(braf_gene):
     """Create gene object for braf"""
-    return BaseGene(**braf_gene)
+    return MappableConcept(**braf_gene)
 
 
 @pytest.fixture(scope="module")
@@ -190,9 +189,9 @@ def transcript_segment_element():
         "exonStart": 1,
         "exonStartOffset": 0,
         "gene": {
-            "concept_id": "hgnc:12012",
-            "symbol": "TPM3",
-            "type": "Gene",
+            "primaryCode": "hgnc:12012",
+            "name": "TPM3",
+            "conceptType": "Gene",
         },
         "transcript": "refseq:NM_152263.3",
         "elementGenomicStart": {
@@ -231,9 +230,9 @@ def mane_transcript_segment_element():
         "exonStart": 2,
         "exonStartOffset": 0,
         "gene": {
-            "concept_id": "hgnc:12761",
-            "symbol": "WEE1",
-            "type": "Gene",
+            "primaryCode": "hgnc:12761",
+            "name": "WEE1",
+            "conceptType": "Gene",
         },
         "transcript": "refseq:NM_003390.4",
         "elementGenomicEnd": None,
@@ -269,18 +268,15 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
 
 def compare_gene_obj(actual: dict, expected: dict):
     """Test that actual and expected gene objects match."""
-    assert actual["concept_id"] == expected["concept_id"]
-    assert actual["label"] == expected["label"]
-    assert actual["symbol"] == expected["symbol"]
+    assert actual["primaryCode"] == expected["primaryCode"]
+    assert actual["name"] == expected["name"]
+    assert actual["conceptType"] == expected["conceptType"]
     if expected.get("xrefs"):
         assert set(actual.get("xrefs")) == set(expected["xrefs"]), "xrefs"
     else:
         assert actual.get("xrefs") == expected.get("xrefs")
-    if "alternativeLabels" in expected:
-        assert set(actual["alternativeLabels"]) == set(
-            expected["alternativeLabels"]
-        ), "alt labels"
-    if "extensions" in expected:
+    assert "extensions" in actual
+    if expected["extensions"]:
         assert len(actual["extensions"]) == len(
             expected["extensions"]
         ), "len of extensions"

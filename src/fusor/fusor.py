@@ -8,6 +8,7 @@ from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs import models
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
@@ -18,7 +19,6 @@ from ga4gh.vrs.models import (
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
-from gene.schemas import BaseGene
 from pydantic import StringConstraints, ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -556,7 +556,7 @@ class FUSOR:
 
     def _normalized_gene(
         self, query: str, use_minimal_gene: bool | None = None
-    ) -> tuple[BaseGene | None, str | None]:
+    ) -> tuple[MappableConcept | None, str | None]:
         """Return gene from normalized response.
 
         :param query: Gene query
@@ -568,8 +568,10 @@ class FUSOR:
         if gene_norm_resp.match_type:
             gene = gene_norm_resp.gene
             if use_minimal_gene:
-                return BaseGene(
-                    concept_id=gene.primaryCode.root, symbol=gene.name
+                return MappableConcept(
+                    primaryCode=gene.primaryCode.root,
+                    name=gene.name,
+                    conceptType="Gene",
                 ), None
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
