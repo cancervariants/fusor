@@ -51,8 +51,8 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
             raise ValueError from e
         feature_string += f"_{refseq_id}(chr {chrom}):g.{feature_location.start}_{feature_location.end}"
     if element.associatedGene:
-        if element.associatedGene.primaryCode:
-            gene_id = element.associatedGene.primaryCode.root
+        if element.associatedGene.primaryCoding:
+            gene_id = element.associatedGene.primaryCoding.id
         else:
             raise ValueError
         feature_string += f"@{element.associatedGene.name}({gene_id})"
@@ -128,8 +128,8 @@ def gene_nomenclature(element: GeneElement) -> str:
     :return: element nomenclature representation
     :raises ValueError: if unable to retrieve gene ID
     """
-    if element.gene.primaryCode:
-        gene_id = element.gene.primaryCode.root
+    if element.gene.primaryCoding:
+        gene_id = element.gene.primaryCoding.id
     else:
         raise ValueError
     return f"{element.gene.name}({gene_id})"

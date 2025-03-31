@@ -74,7 +74,11 @@ def translator_instance():
 def braf_gene():
     """Create gene params for BRAF."""
     return {
-        "primaryCode": "hgnc:1097",
+        "primaryCoding": {
+            "id": "hgnc:1097",
+            "code": "HGNC:1097",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        },
         "name": "BRAF",
         "conceptType": "Gene",
         "extensions": [
@@ -245,7 +249,11 @@ def braf_gene():
 def alk_gene():
     """Create test fixture for ALK gene params"""
     return {
-        "primaryCode": "hgnc:427",
+        "primaryCoding": {
+            "id": "hgnc:427",
+            "code": "HGNC:427",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        },
         "conceptType": "Gene",
         "name": "ALK",
         "extensions": [
@@ -425,7 +433,11 @@ def alk_gene():
 def tpm3_gene():
     """Create test fixture for TPM3 gene"""
     return {
-        "primaryCode": "hgnc:12012",
+        "primaryCoding": {
+            "id": "hgnc:12012",
+            "code": "HGNC:12012",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        },
         "conceptType": "Gene",
         "name": "TPM3",
         "extensions": [
@@ -769,7 +781,11 @@ def fusion_example():
                 "associatedGene": {
                     "conceptType": "Gene",
                     "name": "ALK",
-                    "primaryCode": "hgnc:427",
+                    "primaryCoding": {
+                        "id": "hgnc:427",
+                        "code": "HGNC:427",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
                 "sequenceLocation": {
                     "id": "ga4gh:SL.aYx-iUOFEw7GVZb4fwrQLkQQahpiIAVp",
@@ -797,7 +813,11 @@ def fusion_example():
                 "gene": {
                     "conceptType": "Gene",
                     "name": "TPM3",
-                    "primaryCode": "hgnc:12012",
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -831,7 +851,11 @@ def fusion_example():
                 "gene": {
                     "conceptType": "Gene",
                     "name": "ALK",
-                    "primaryCode": "hgnc:427",
+                    "primaryCoding": {
+                        "id": "hgnc:427",
+                        "code": "HGNC:427",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
             },
             {
@@ -867,7 +891,11 @@ def fusion_example():
             "associatedGene": {
                 "conceptType": "Gene",
                 "name": "BRAF",
-                "primaryCode": "hgnc:1097",
+                "primaryCoding": {
+                    "id": "hgnc:1097",
+                    "code": "HGNC:1097",
+                    "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                },
             },
         },
     }

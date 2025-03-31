@@ -8,7 +8,7 @@ from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
-from ga4gh.core.models import MappableConcept
+from ga4gh.core.models import Coding, MappableConcept
 from ga4gh.vrs import models
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
@@ -569,7 +569,11 @@ class FUSOR:
             gene = gene_norm_resp.gene
             if use_minimal_gene:
                 return MappableConcept(
-                    primaryCode=gene.primaryCode.root,
+                    primaryCoding=Coding(
+                        id=gene.primaryCoding.id,
+                        code=gene.primaryCoding.code,
+                        system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    ),
                     name=gene.name,
                     conceptType="Gene",
                 ), None

@@ -83,7 +83,11 @@ class FunctionalDomain(BaseModel):
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
                 "associatedGene": {
-                    "primaryCode": "hgnc:8031",
+                    "primaryCoding": {
+                        "id": "hgnc:8031",
+                        "code": "HGNC:8031",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                     "name": "NTRK1",
                     "conceptType": "Gene",
                 },
@@ -280,7 +284,11 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "exonEnd": 8,
                 "exonEndOffset": 0,
                 "gene": {
-                    "primaryCode": "hgnc:12012",
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                     "conceptType": "Gene",
                     "name": "TPM3",
                 },
@@ -385,7 +393,11 @@ class GeneElement(BaseStructuralElement):
             "example": {
                 "type": "GeneElement",
                 "gene": {
-                    "primaryCode": "hgnc:1097",
+                    "primaryCoding": {
+                        "id": "hgnc:1097",
+                        "code": "HGNC:1097",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                     "name": "BRAF",
                     "conceptType": "Gene",
                 },
@@ -576,10 +588,10 @@ class AbstractFusion(BaseModel, ABC):
         """
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
-            gene_id = cls._access_object_attr(gene_info, "primaryCode")
+            gene_id = cls._access_object_attr(gene_info, "primaryCoding")
             if isinstance(gene_id, str):
                 return gene_id
-            gene_id = cls._access_object_attr(gene_id, "root")
+            gene_id = cls._access_object_attr(gene_id, "id")
             if gene_id:
                 return gene_id
         return None
@@ -787,7 +799,11 @@ class AssayedFusion(AbstractFusion):
                         "type": "GeneElement",
                         "gene": {
                             "conceptType": "Gene",
-                            "primaryCode": "hgnc:3058",
+                            "primaryCoding": {
+                                "id": "hgnc:3058",
+                                "code": "HGNC:3058",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
                             "name": "EWSR1",
                         },
                     },
@@ -831,7 +847,11 @@ class CategoricalFusion(AbstractFusion):
                         "label": "cystatin domain",
                         "id": "interpro:IPR000010",
                         "associatedGene": {
-                            "primaryCode": "hgnc:2743",
+                            "primaryCoding": {
+                                "id": "hgnc:2743",
+                                "code": "HGNC:2743",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
                             "name": "CST1",
                             "conceptType": "Gene",
                         },
@@ -846,7 +866,11 @@ class CategoricalFusion(AbstractFusion):
                         "exonEnd": 8,
                         "exonEndOffset": 0,
                         "gene": {
-                            "primaryCode": "hgnc:12012",
+                            "primaryCoding": {
+                                "id": "hgnc:12012",
+                                "code": "HGNC:12012",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
                             "conceptType": "Gene",
                             "name": "TPM3",
                         },
@@ -876,7 +900,11 @@ class CategoricalFusion(AbstractFusion):
                     {
                         "type": "GeneElement",
                         "gene": {
-                            "primaryCode": "hgnc:427",
+                            "primaryCoding": {
+                                "id": "hgnc:427",
+                                "code": "HGNC:427",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
                             "name": "ALK",
                             "conceptType": "Gene",
                         },
@@ -887,7 +915,11 @@ class CategoricalFusion(AbstractFusion):
                     "regulatoryClass": "promoter",
                     "associatedGene": {
                         "conceptType": "Gene",
-                        "primaryCode": "hgnc:1097",
+                        "primaryCoding": {
+                            "id": "hgnc:1097",
+                            "code": "HGNC:1097",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
                         "name": "BRAF",
                     },
                 },

@@ -32,18 +32,61 @@ from fusor.models import (
 def gene_examples():
     """Provide possible gene input."""
     return [
-        {"primaryCode": "hgnc:9339", "name": "G1"},
-        {"primaryCode": "hgnc:76", "name": "ABL"},
-        {"primaryCode": "hgnc:1014", "name": "BCR1"},
-        {"primaryCode": "hgnc:8031", "name": "NTRK1"},
         {
-            "primaryCode": "hgnc:1837",
+            "primaryCoding": {
+                "id": "hgnc:9339",
+                "code": "HGNC:9339",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "G1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:76",
+                "code": "HGNC:76",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "ABL1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:1014",
+                "code": "HGNC:1014",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "BCR1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:8031",
+                "code": "HGNC:8031",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "NTRK1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:1837",
+                "code": "HGNC:1837",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
             "name": "ALK",
         },
-        {"primaryCode": "hgnc:16262", "name": "YAP1"},
+        {
+            "primaryCoding": {
+                "id": "hgnc:16262",
+                "code": "HGNC:16262",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "YAP1",
+        },
         # alternate structure
         {
-            "primaryCode": "hgnc:1097",
+            "primaryCoding": {
+                "id": "hgnc:1097",
+                "code": "HGNC:1097",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
             "type": "Gene",
             "name": "BRAF",
         },
@@ -314,7 +357,7 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.status == "preserved"
     assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.associatedGene.primaryCode.root == "hgnc:16262"
+    assert test_domain.associatedGene.primaryCoding.id == "hgnc:16262"
     assert test_domain.associatedGene.name == "YAP1"
     test_loc = test_domain.sequenceLocation
     assert "ga4gh:SL" in test_loc.id
@@ -331,7 +374,7 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.status == "lost"
     assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.associatedGene.primaryCode.root == "hgnc:8031"
+    assert test_domain.associatedGene.primaryCoding.id == "hgnc:8031"
     assert test_domain.associatedGene.name == "NTRK1"
     test_loc = test_domain.sequenceLocation
     assert "ga4gh:SL" in test_loc.id
@@ -374,7 +417,7 @@ def test_transcript_segment_element(transcript_segments):
     assert test_element.exonStartOffset == -9
     assert test_element.exonEnd == 8
     assert test_element.exonEndOffset == 7
-    assert test_element.gene.primaryCode.root == "hgnc:9339"
+    assert test_element.gene.primaryCoding.id == "hgnc:9339"
     assert test_element.gene.name == "G1"
     test_region_start = test_element.elementGenomicStart
     assert test_region_start.type == "SequenceLocation"
@@ -401,7 +444,7 @@ def test_transcript_segment_element(transcript_segments):
             exonEnd="8",
             exonEndOffset="7",
             gene={
-                "primaryCode": "hgnc:1",
+                "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
                 "name": "G1",
             },
             elementGenomicStart={
@@ -461,7 +504,7 @@ def test_transcript_segment_element(transcript_segments):
             exonStart="1",
             exonStartOffset="-9",
             gene={
-                "primaryCode": "test:1",
+                "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
                 "name": "G1",
             },
         )
@@ -476,7 +519,7 @@ def test_transcript_segment_element(transcript_segments):
             exonStartOffset="-9",
             exonEndOffset="7",
             gene={
-                "primaryCode": "test:1",
+                "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
                 "name": "G1",
             },
             elementGenomicStart={
@@ -593,7 +636,7 @@ def test_gene_element(gene_examples):
     """Test that Gene Element initializes correctly."""
     test_element = GeneElement(gene=gene_examples[0])
     assert test_element.type == "GeneElement"
-    assert test_element.gene.primaryCode.root == "hgnc:9339"
+    assert test_element.gene.primaryCoding.id == "hgnc:9339"
     assert test_element.gene.name == "G1"
 
     # test enum validation
@@ -725,7 +768,7 @@ def test_regulatory_element(regulatory_elements, gene_examples):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.regulatoryClass.value == "promoter"
-    assert test_reg_elmt.associatedGene.primaryCode.root == "hgnc:9339"
+    assert test_reg_elmt.associatedGene.primaryCoding.id == "hgnc:9339"
     assert test_reg_elmt.associatedGene.name == "G1"
 
     # check type constraint
@@ -771,7 +814,11 @@ def test_fusion(
                 "type": "GeneElement",
                 "gene": {
                     "conceptType": "Gene",
-                    "primaryCode": "hgnc:8031",
+                    "primaryCoding": {
+                        "id": "hgnc:8031",
+                        "code": "HGNC:8031",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                     "name": "NTRK1",
                 },
             },
@@ -779,7 +826,11 @@ def test_fusion(
                 "type": "GeneElement",
                 "gene": {
                     "conceptType": "Gene",
-                    "primaryCode": "hgnc:76",
+                    "primaryCoding": {
+                        "id": "hgnc:76",
+                        "code": "HGNC:76",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                     "name": "ABL1",
                 },
             },
@@ -788,7 +839,7 @@ def test_fusion(
     )
     assert fusion.structure[0].type == "GeneElement"
     assert fusion.structure[0].gene.name == "NTRK1"
-    assert fusion.structure[0].gene.primaryCode.root == "hgnc:8031"
+    assert fusion.structure[0].gene.primaryCoding.id == "hgnc:8031"
     assert fusion.structure[1].type == "GeneElement"
 
     # test that non-element properties are optional

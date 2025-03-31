@@ -4,7 +4,7 @@ import copy
 
 import pytest
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.models import MappableConcept
+from ga4gh.core.models import Coding, MappableConcept
 from ga4gh.vrs.models import SequenceLocation
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -26,7 +26,15 @@ from fusor.models import (
 @pytest.fixture(scope="module")
 def braf_gene_obj_min():
     """Create minimal gene object for BRAF"""
-    return MappableConcept(name="BRAF", primaryCode="hgnc:1097", conceptType="Gene")
+    return MappableConcept(
+        primaryCoding=Coding(
+            id="hgnc:1097",
+            code="HGNC:1097",
+            system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        ),
+        name="BRAF",
+        conceptType="Gene",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -189,7 +197,11 @@ def transcript_segment_element():
         "exonStart": 1,
         "exonStartOffset": 0,
         "gene": {
-            "primaryCode": "hgnc:12012",
+            "primaryCoding": {
+                "id": "hgnc:12012",
+                "code": "HGNC:12012",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
             "name": "TPM3",
             "conceptType": "Gene",
         },
@@ -230,7 +242,11 @@ def mane_transcript_segment_element():
         "exonStart": 2,
         "exonStartOffset": 0,
         "gene": {
-            "primaryCode": "hgnc:12761",
+            "primaryCoding": {
+                "id": "hgnc:12761",
+                "code": "HGNC:12761",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
             "name": "WEE1",
             "conceptType": "Gene",
         },
@@ -268,7 +284,7 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
 
 def compare_gene_obj(actual: dict, expected: dict):
     """Test that actual and expected gene objects match."""
-    assert actual["primaryCode"] == expected["primaryCode"]
+    assert actual["primaryCoding"] == expected["primaryCoding"]
     assert actual["name"] == expected["name"]
     assert actual["conceptType"] == expected["conceptType"]
     if expected.get("xrefs"):

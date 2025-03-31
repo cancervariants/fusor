@@ -7,7 +7,11 @@
     {
       "type": "GeneElement",
       "gene": {
-        "primaryCode": "hgnc:427",
+        "primaryCoding": {
+            "id": "hgnc:427",
+            "code": "HGNC:427",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
         "conceptType": "Gene",
         "name": "ALK"
       }
@@ -18,7 +22,11 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
-        "primaryCode": "hgnc:427",
+        "primaryCoding": {
+            "id": "hgnc:427",
+            "code": "HGNC:427",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
         "conceptType": "Gene",
         "name": "ALK"
       },

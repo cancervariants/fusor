@@ -40,7 +40,11 @@ def fusion_data_example():
                     "exonEnd": 8,
                     "exonEndOffset": -66,
                     "gene": {
-                        "primaryCode": "hgnc:12012",
+                        "primaryCoding": {
+                            "id": "hgnc:12012",
+                            "code": "HGNC:12012",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
                         "conceptType": "Gene",
                         "name": "TPM3",
                     },
@@ -62,7 +66,11 @@ def fusion_data_example():
                     "exonStart": 11,
                     "exonStartOffset": 2,
                     "gene": {
-                        "primaryCode": "hgnc:8804",
+                        "primaryCoding": {
+                            "id": "hgnc:8804",
+                            "code": "HGNC:8804",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
                         "conceptType": "Gene",
                         "name": "PDGFRB",
                     },
@@ -103,7 +111,11 @@ def fusion_data_example_nonexonic():
                     "exonEnd": 4,
                     "exonEndOffset": 5,
                     "gene": {
-                        "primaryCode": "hgnc:12012",
+                        "primaryCoding": {
+                            "id": "hgnc:12012",
+                            "code": "HGNC:12012",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
                         "conceptType": "Gene",
                         "name": "TPM3",
                     },
@@ -125,7 +137,11 @@ def fusion_data_example_nonexonic():
                     "exonStart": 11,
                     "exonStartOffset": -559,
                     "gene": {
-                        "primaryCode": "hgnc:8804",
+                        "primaryCoding": {
+                            "id": "hgnc:8804",
+                            "code": "HGNC:8804",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
                         "conceptType": "Gene",
                         "name": "PDGFRB",
                     },
@@ -589,7 +605,7 @@ async def test_cicero(
     # Test unknown partners
     cicero.sv_ort = ">"
     cicero.gene_5prime = "NA"
-    cicero.gene_3prime = "PDGRB"
+    cicero.gene_3prime = "PDGFRB"
     cicero_fusor_unknown = await translator_instance.from_cicero(
         cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )

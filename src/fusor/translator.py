@@ -127,7 +127,10 @@ class Translator:
         """
         return GeneElement(
             gene={
-                "primaryCode": f"gene:{symbol}",
+                "primaryCoding": {
+                    "id": f"gene:{symbol}",
+                    "code": f"gene:{symbol}",
+                },
                 "name": symbol,
                 "conceptType": "Gene",
             },

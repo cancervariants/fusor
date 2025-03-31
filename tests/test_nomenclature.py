@@ -1,7 +1,7 @@
 """Test nomenclature generation."""
 
 import pytest
-from ga4gh.core.models import MappableConcept
+from ga4gh.core.models import Coding, MappableConcept
 
 from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 from fusor.nomenclature import generate_nomenclature, tx_segment_nomenclature
@@ -18,7 +18,11 @@ def reg_example():
             "associatedGene": {
                 "conceptType": "Gene",
                 "name": "ABL1",
-                "primaryCode": "hgnc:76",
+                "primaryCoding": {
+                    "id": "hgnc:76",
+                    "code": "HGNC:76",
+                    "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                },
             },
         },
         structure=[
@@ -27,7 +31,11 @@ def reg_example():
                 "gene": {
                     "conceptType": "Gene",
                     "name": "BCR",
-                    "primaryCode": "hgnc:1014",
+                    "primaryCoding": {
+                        "id": "hgnc:1014",
+                        "code": "HGNC:1014",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
             },
             {"type": "UnknownGeneElement"},
@@ -57,7 +65,11 @@ def reg_location_example():
             "associatedGene": {
                 "conceptType": "Gene",
                 "name": "P2RY8",
-                "primaryCode": "hgnc:15524",
+                "primaryCoding": {
+                    "id": "hgnc:15524",
+                    "code": "HGNC:15524",
+                    "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                },
             },
             "featureLocation": {
                 "type": "SequenceLocation",
@@ -77,7 +89,11 @@ def reg_location_example():
                 "gene": {
                     "conceptType": "Gene",
                     "name": "SOX5",
-                    "primaryCode": "hgnc:11201",
+                    "primaryCoding": {
+                        "id": "hgnc:11201",
+                        "code": "HGNC:11201",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
             },
         ],
@@ -106,7 +122,11 @@ def exon_offset_example():
                 "gene": {
                     "conceptType": "Gene",
                     "name": "BRAF",
-                    "primaryCode": "hgnc:1097",
+                    "primaryCoding": {
+                        "id": "hgnc:1097",
+                        "code": "HGNC:1097",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
             },
             {
@@ -117,7 +137,11 @@ def exon_offset_example():
                 "gene": {
                     "conceptType": "Gene",
                     "name": "NTRK1",
-                    "primaryCode": "hgnc:8031",
+                    "primaryCoding": {
+                        "id": "hgnc:8031",
+                        "code": "HGNC:8031",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.XEvDpRaKgoeQuQrhRwGzGK2uanHY4en8",
@@ -144,7 +168,15 @@ def tx_seg_example():
         exonStartOffset=0,
         exonEnd=8,
         exonEndOffset=0,
-        gene=MappableConcept(primaryCode="hgnc:12012", name="TPM3", conceptType="Gene"),
+        gene=MappableConcept(
+            primaryCoding=Coding(
+                id="hgnc:12012",
+                code="HGNC:12012",
+                system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            ),
+            name="TPM3",
+            conceptType="Gene",
+        ),
         elementGenomicStart={
             "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "type": "SequenceLocation",
@@ -179,7 +211,11 @@ def junction_example():
         gene={
             "conceptType": "Gene",
             "name": "TPM3",
-            "primaryCode": "hgnc:12012",
+            "primaryCoding": {
+                "id": "hgnc:12012",
+                "code": "HGNC:12012",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
         },
         elementGenomicEnd={
             "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
