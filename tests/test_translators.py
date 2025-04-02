@@ -183,7 +183,15 @@ def fusion_data_example_categorical():
                     "transcript": "refseq:NM_004327.4",
                     "exonEnd": 14,
                     "exonEndOffset": 0,
-                    "gene": {"id": "hgnc:1014", "type": "Gene", "label": "BCR"},
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:1014",
+                            "code": "HGNC:1014",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "BCR",
+                    },
                     "elementGenomicEnd": {
                         "id": "ga4gh:SL.wgMvqEhsH2IB1bQFlCxl-eD3A588MO8d",
                         "type": "SequenceLocation",
@@ -201,7 +209,15 @@ def fusion_data_example_categorical():
                     "transcript": "refseq:NM_005157.6",
                     "exonStart": 2,
                     "exonStartOffset": 0,
-                    "gene": {"id": "hgnc:76", "type": "Gene", "label": "ABL1"},
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:76",
+                            "code": "HGNC:76",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "ABL1",
+                    },
                     "elementGenomicStart": {
                         "id": "ga4gh:SL.GvvCD7Y-_598-ZP4yNGiPa1aPL-kofY6",
                         "type": "SequenceLocation",
@@ -238,7 +254,15 @@ def fusion_data_example_categorical_mpge():
                     "transcript": "refseq:NM_002529.4",
                     "exonStart": 9,
                     "exonStartOffset": 0,
-                    "gene": {"id": "hgnc:8031", "type": "Gene", "label": "NTRK1"},
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:8031",
+                            "code": "HGNC:8031",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "NTRK1",
+                    },
                     "elementGenomicStart": {
                         "id": "ga4gh:SL.ndqfSqOGncba6_XTbtJM9aFeV-0fwr13",
                         "type": "SequenceLocation",

@@ -4,7 +4,7 @@ from abc import ABC
 from enum import Enum
 from typing import Literal
 
-from civicpy.civic import CivicAttribute
+from civicpy.civic import ExonCoordinate
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -271,9 +271,9 @@ class CIVIC(FusionKnowledgebase):
     vicc_compliant_name: str = Field(
         ..., description="The VICC compliant name for the fusion"
     )
-    five_prime_end_exon_coordinates: CivicAttribute | dict = Field(
+    five_prime_end_exon_coordinates: ExonCoordinate | None = Field(
         ..., description="Data for the end exon of 5' fusion partner"
     )
-    three_prime_start_exon_coordinates: CivicAttribute | dict = Field(
+    three_prime_start_exon_coordinates: ExonCoordinate | None = Field(
         ..., description="Data for the start exon 3' fusion partner"
     )

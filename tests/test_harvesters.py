@@ -106,4 +106,4 @@ def test_get_civic_records():
     variants = civic.get_all_fusion_variants()
     harvester = CIVICHarvester(fusions_list=variants)
     fusions_list = harvester.load_records()
-    assert len(fusions_list) == 297
+    assert len(fusions_list) == 299
