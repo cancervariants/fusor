@@ -7,9 +7,13 @@
     {
       "type": "GeneElement",
       "gene": {
-        "id": "hgnc:427",
-        "type": "Gene",
-        "label": "ALK"
+        "primaryCoding": {
+            "id": "hgnc:427",
+            "code": "HGNC:427",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "ALK"
       }
     }
   ],
@@ -18,9 +22,13 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
-        "id": "hgnc:427",
-        "type": "Gene",
-        "label": "ALK"
+        "primaryCoding": {
+            "id": "hgnc:427",
+            "code": "HGNC:427",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "ALK"
       },
       "id": "interpro:IPR017441",
       "label": "Protein kinase, ATP binding site",
