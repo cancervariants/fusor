@@ -4,7 +4,7 @@ from abc import ABC
 from enum import Enum
 from typing import Literal
 
-from civicpy.civic import ExonCoordinate
+from civicpy.civic import ExonCoordinate, MolecularProfile
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -276,4 +276,7 @@ class CIVIC(FusionKnowledgebase):
     )
     three_prime_start_exon_coordinates: ExonCoordinate | None = Field(
         ..., description="Data for the start exon 3' fusion partner"
+    )
+    molecular_profiles: list[MolecularProfile] | None = Field(
+        ..., description="The molecular profiles associated with the fusion"
     )

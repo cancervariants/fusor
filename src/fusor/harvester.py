@@ -189,5 +189,6 @@ class CIVICHarvester(BaseModel):
             params["three_prime_start_exon_coordinates"] = (
                 fusion.three_prime_start_exon_coordinates
             )
+            params["molecular_profiles"] = fusion.molecular_profiles
             processed_fusions.append(CIVIC(**params))
         return processed_fusions

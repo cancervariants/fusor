@@ -5,7 +5,7 @@ objects
 import logging
 
 import polars as pl
-from civicpy.civic import ExonCoordinate
+from civicpy.civic import ExonCoordinate, MolecularProfile
 from cool_seq_tool.schemas import Assembly, CoordinateType
 from pydantic import BaseModel
 
@@ -76,6 +76,7 @@ class Translator:
         assay: Assay | None = None,
         contig: ContigSequence | None = None,
         reads: ReadData | None = None,
+        molecular_profiles: list[MolecularProfile] | None = None,
     ) -> AssayedFusion | CategoricalFusion:
         """Format classes to create AssayedFusion objects
 
@@ -97,6 +98,7 @@ class Translator:
             "assay": assay,
             "contig": contig,
             "readData": reads,
+            "civicMolecularProfiles": molecular_profiles,
         }
         if not tr_5prime and not tr_3prime:
             params["structure"] = [gene_5prime, gene_3prime]
@@ -985,4 +987,5 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime if isinstance(tr_5prime, TranscriptSegmentElement) else None,
             tr_3prime if isinstance(tr_3prime, TranscriptSegmentElement) else None,
+            molecular_profiles=civic.molecular_profiles,
         )

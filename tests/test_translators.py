@@ -842,8 +842,10 @@ async def test_civic(
 
     # Test case where both gene partners known
     civic_fusor = await translator_instance.from_civic(fusions_list[0])
-    assert civic_fusor == fusion_data_example_categorical()
+    assert civic_fusor.structure == fusion_data_example_categorical().structure
+    assert len(civic_fusor.civicMolecularProfiles) == 84
 
     # Test case where one parter is a MultiplePossibleGenesElement object
     civic_fusor = await translator_instance.from_civic(fusions_list[15])
-    assert civic_fusor == fusion_data_example_categorical_mpge()
+    assert civic_fusor.structure == fusion_data_example_categorical_mpge().structure
+    assert len(civic_fusor.civicMolecularProfiles) == 5
