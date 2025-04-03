@@ -11,6 +11,7 @@ from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
 )
+from gene.schemas import CURIE_REGEX
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -21,8 +22,6 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
-
-CURIE_REGEX = r"^\w[^:]*:.+$"
 
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):

@@ -9,7 +9,7 @@ from civicpy.civic import MolecularProfile
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
-from ga4gh.core.models import Coding, MappableConcept
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs import models
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
@@ -20,6 +20,7 @@ from ga4gh.vrs.models import (
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
+from gene.schemas import CURIE_REGEX
 from pydantic import StringConstraints, ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -51,9 +52,6 @@ from fusor.nomenclature import generate_nomenclature
 from fusor.tools import get_error_message, translate_identifier
 
 _logger = logging.getLogger(__name__)
-
-
-CURIE_REGEX = r"^\w[^:]*:.+$"
 
 
 class FUSOR:
@@ -573,13 +571,9 @@ class FUSOR:
             gene = gene_norm_resp.gene
             if use_minimal_gene:
                 return MappableConcept(
-                    primaryCoding=Coding(
-                        id=gene.primaryCoding.id,
-                        code=gene.primaryCoding.code,
-                        system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                    ),
+                    primaryCoding=gene.primaryCoding,
                     name=gene.name,
-                    conceptType="Gene",
+                    conceptType=gene.conceptType,
                 ), None
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
