@@ -5,12 +5,12 @@ from enum import Enum
 from typing import Annotated, Any, Literal
 
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.domain_models import Gene
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
 )
-from gene.schemas import CURIE
+from gene.schemas import CURIE_REGEX
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -68,8 +68,8 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associatedGene: Gene
-    id: CURIE | None
+    associatedGene: MappableConcept
+    id: Annotated[str, StringConstraints(pattern=CURIE_REGEX)] | None
     label: StrictStr | None = None
     sequenceLocation: SequenceLocation | None = None
 
@@ -82,9 +82,13 @@ class FunctionalDomain(BaseModel):
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
                 "associatedGene": {
-                    "id": "hgnc:8031",
-                    "label": "NTRK1",
-                    "type": "Gene",
+                    "primaryCoding": {
+                        "id": "hgnc:8031",
+                        "code": "HGNC:8031",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "name": "NTRK1",
+                    "conceptType": "Gene",
                 },
                 "sequenceLocation": {
                     "id": "ga4gh:SL.ywhUSfEUrwG0E29Q3c47bbuc6gkqTGlO",
@@ -230,12 +234,12 @@ class TranscriptSegmentElement(BaseStructuralElement):
     type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = (
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
-    transcript: CURIE
+    transcript: Annotated[str, StringConstraints(pattern=CURIE_REGEX)]
     exonStart: StrictInt | None = None
     exonStartOffset: StrictInt | None = 0
     exonEnd: StrictInt | None = None
     exonEndOffset: StrictInt | None = 0
-    gene: Gene
+    gene: MappableConcept
     elementGenomicStart: SequenceLocation | None = None
     elementGenomicEnd: SequenceLocation | None = None
     coverage: BreakpointCoverage | None = None
@@ -279,9 +283,13 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "exonEnd": 8,
                 "exonEndOffset": 0,
                 "gene": {
-                    "id": "hgnc:12012",
-                    "type": "Gene",
-                    "label": "TPM3",
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "TPM3",
                 },
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -377,16 +385,20 @@ class GeneElement(BaseStructuralElement):
     """Define Gene Element class."""
 
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene: Gene
+    gene: MappableConcept
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "GeneElement",
                 "gene": {
-                    "id": "hgnc:1097",
-                    "label": "BRAF",
-                    "type": "Gene",
+                    "primaryCoding": {
+                        "id": "hgnc:1097",
+                        "code": "HGNC:1097",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "name": "BRAF",
+                    "conceptType": "Gene",
                 },
             }
         },
@@ -473,7 +485,7 @@ class RegulatoryElement(BaseModel):
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatoryClass: RegulatoryClass
     featureId: str | None = None
-    associatedGene: Gene | None = None
+    associatedGene: MappableConcept | None = None
     featureLocation: SequenceLocation | None = None
 
     @model_validator(mode="before")
@@ -575,7 +587,10 @@ class AbstractFusion(BaseModel, ABC):
         """
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
-            gene_id = cls._access_object_attr(gene_info, "id")
+            gene_id = cls._access_object_attr(gene_info, "primaryCoding")
+            if isinstance(gene_id, str):
+                return gene_id
+            gene_id = cls._access_object_attr(gene_id, "id")
             if gene_id:
                 return gene_id
         return None
@@ -672,8 +687,8 @@ class Assay(BaseModelForbidExtra):
 
     type: Literal["Assay"] = "Assay"
     assayName: StrictStr | None = None
-    assayId: CURIE | None = None
-    methodUri: CURIE | None = None
+    assayId: Annotated[str, StringConstraints(pattern=CURIE_REGEX)] | None = None
+    methodUri: Annotated[str, StringConstraints(pattern=CURIE_REGEX)] | None = None
     fusionDetection: Evidence | None = None
 
     model_config = ConfigDict(
@@ -782,9 +797,13 @@ class AssayedFusion(AbstractFusion):
                     {
                         "type": "GeneElement",
                         "gene": {
-                            "type": "Gene",
-                            "id": "hgnc:3058",
-                            "label": "EWSR1",
+                            "conceptType": "Gene",
+                            "primaryCoding": {
+                                "id": "hgnc:3058",
+                                "code": "HGNC:3058",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
+                            "name": "EWSR1",
                         },
                     },
                     {"type": "UnknownGeneElement"},
@@ -827,9 +846,13 @@ class CategoricalFusion(AbstractFusion):
                         "label": "cystatin domain",
                         "id": "interpro:IPR000010",
                         "associatedGene": {
-                            "id": "hgnc:2743",
-                            "label": "CST1",
-                            "type": "Gene",
+                            "primaryCoding": {
+                                "id": "hgnc:2743",
+                                "code": "HGNC:2743",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
+                            "name": "CST1",
+                            "conceptType": "Gene",
                         },
                     }
                 ],
@@ -842,9 +865,13 @@ class CategoricalFusion(AbstractFusion):
                         "exonEnd": 8,
                         "exonEndOffset": 0,
                         "gene": {
-                            "id": "hgnc:12012",
-                            "type": "Gene",
-                            "label": "TPM3",
+                            "primaryCoding": {
+                                "id": "hgnc:12012",
+                                "code": "HGNC:12012",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
+                            "conceptType": "Gene",
+                            "name": "TPM3",
                         },
                         "elementGenomicStart": {
                             "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -871,16 +898,28 @@ class CategoricalFusion(AbstractFusion):
                     },
                     {
                         "type": "GeneElement",
-                        "gene": {"id": "hgnc:427", "label": "ALK", "type": "Gene"},
+                        "gene": {
+                            "primaryCoding": {
+                                "id": "hgnc:427",
+                                "code": "HGNC:427",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
+                            "name": "ALK",
+                            "conceptType": "Gene",
+                        },
                     },
                 ],
                 "regulatoryElement": {
                     "type": "RegulatoryElement",
                     "regulatoryClass": "promoter",
                     "associatedGene": {
-                        "type": "Gene",
-                        "id": "hgnc:1097",
-                        "label": "BRAF",
+                        "conceptType": "Gene",
+                        "primaryCoding": {
+                            "id": "hgnc:1097",
+                            "code": "HGNC:1097",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "name": "BRAF",
                     },
                 },
             }

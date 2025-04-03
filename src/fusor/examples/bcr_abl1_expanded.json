@@ -7,19 +7,26 @@
       "exonEnd": 2,
       "exonEndOffset": 182,
       "gene": {
-        "id": "hgnc:1014",
-        "type": "Gene",
-        "label": "BCR",
-        "alternativeLabels": [
-          "ALL",
-          "LOC729775",
-          "PHL",
-          "D22S662",
-          "D22S11",
-          "BCR1",
-          "CML"
-        ],
+        "primaryCoding": {
+            "id": "hgnc:1014",
+            "code": "HGNC:1014",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "BCR",
         "extensions": [
+          {
+            "name": "aliases",
+            "value": [
+              "PHL",
+              "LOC729775",
+              "ALL",
+              "BCR1",
+              "D22S11",
+              "D22S662",
+              "CML"
+            ]
+          },
           {
             "name": "symbol_status",
             "value": "approved"
@@ -212,23 +219,30 @@
       "exonStart": 2,
       "exonStartOffset": -173,
       "gene": {
-        "id": "hgnc:76",
-        "type": "Gene",
-        "label": "ABL1",
-        "alternativeLabels": [
-          "BCR-ABL",
-          "LOC116063",
-          "LOC112779",
-          "bcr/abl",
-          "c-ABL",
-          "ABL",
-          "v-abl",
-          "p150",
-          "JTK7",
-          "CHDSKM",
-          "c-ABL1"
-        ],
+        "primaryCoding": {
+            "id": "hgnc:76",
+            "code": "HGNC:76",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "ABL1",
         "extensions": [
+          {
+            "name": "aliases",
+            "value": [
+              "BCR-ABL",
+              "c-ABL1",
+              "bcr/abl",
+              "LOC116063",
+              "LOC112779",
+              "p150",
+              "JTK7",
+              "ABL",
+              "c-ABL",
+              "v-abl",
+              "CHDSKM"
+            ]
+          },
           {
             "name": "symbol_status",
             "value": "approved"
@@ -421,23 +435,30 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
-        "id": "hgnc:76",
-        "type": "Gene",
-        "label": "ABL1",
-        "alternativeLabels": [
-          "BCR-ABL",
-          "LOC116063",
-          "LOC112779",
-          "bcr/abl",
-          "c-ABL",
-          "ABL",
-          "v-abl",
-          "p150",
-          "JTK7",
-          "CHDSKM",
-          "c-ABL1"
-        ],
+        "primaryCoding": {
+            "id": "hgnc:76",
+            "code": "HGNC:76",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "ABL1",
         "extensions": [
+          {
+            "name": "aliases",
+            "value": [
+              "BCR-ABL",
+              "c-ABL1",
+              "bcr/abl",
+              "LOC116063",
+              "LOC112779",
+              "p150",
+              "JTK7",
+              "ABL",
+              "c-ABL",
+              "v-abl",
+              "CHDSKM"
+            ]
+          },
           {
             "name": "symbol_status",
             "value": "approved"

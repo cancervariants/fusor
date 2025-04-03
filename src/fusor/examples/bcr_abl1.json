@@ -7,9 +7,13 @@
       "exonEnd": 2,
       "exonEndOffset": 182,
       "gene": {
-        "id": "hgnc:1014",
-        "type": "Gene",
-        "label": "BCR"
+        "primaryCoding": {
+            "id": "hgnc:1014",
+            "code": "HGNC:1014",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "BCR"
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.pnPf51mTZVzI1teagtWwA4RY7ptcmbbt",
@@ -37,9 +41,13 @@
       "exonStart": 2,
       "exonStartOffset": -173,
       "gene": {
-        "id": "hgnc:76",
-        "type": "Gene",
-        "label": "ABL1"
+        "primaryCoding": {
+            "id": "hgnc:76",
+            "code": "HGNC:76",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "ABL1"
       },
       "elementGenomicStart": {
         "id": "ga4gh:SL.eL43aHf8T0t_0WIsQE5PeWQH1V3_ZKEC",
@@ -60,9 +68,13 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
-        "id": "hgnc:76",
-        "type": "Gene",
-        "label": "ABL1"
+        "primaryCoding": {
+            "id": "hgnc:76",
+            "code": "HGNC:76",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "ABL1"
       },
       "id": "interpro:IPR000980",
       "label": "SH2 domain",

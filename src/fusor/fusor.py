@@ -2,24 +2,25 @@
 
 import logging
 import re
+from typing import Annotated
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
-from ga4gh.core.domain_models import Gene
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs import models
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
     SequenceReference,
-    SequenceString,
+    sequenceString,
 )
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
-from gene.schemas import CURIE
-from pydantic import ValidationError
+from gene.schemas import CURIE_REGEX
+from pydantic import StringConstraints, ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
@@ -380,7 +381,7 @@ class FUSOR:
         """
         try:
             upper_seq = sequence.upper()
-            seq = SequenceString(upper_seq)
+            seq = sequenceString(upper_seq)
             linker_sequence = LiteralSequenceExpression(
                 sequence=seq, id=f"fusor.sequence:{sequence}"
             )
@@ -410,7 +411,7 @@ class FUSOR:
         self,
         status: DomainStatus,
         name: str,
-        functional_domain_id: CURIE,
+        functional_domain_id: Annotated[str, StringConstraints(pattern=CURIE_REGEX)],
         gene: str,
         sequence_id: str,
         start: int,
@@ -541,7 +542,9 @@ class FUSOR:
         return sequence_location
 
     @staticmethod
-    def _location_id(location: dict) -> CURIE:
+    def _location_id(
+        location: dict,
+    ) -> Annotated[str, StringConstraints(pattern=CURIE_REGEX)]:
         """Return GA4GH digest for location
 
         :param location: VRS Location represented as a dict
@@ -551,7 +554,7 @@ class FUSOR:
 
     def _normalized_gene(
         self, query: str, use_minimal_gene: bool | None = None
-    ) -> tuple[Gene | None, str | None]:
+    ) -> tuple[MappableConcept | None, str | None]:
         """Return gene from normalized response.
 
         :param query: Gene query
@@ -562,10 +565,12 @@ class FUSOR:
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
             gene = gene_norm_resp.gene
-            gene_id = gene_norm_resp.normalized_id
             if use_minimal_gene:
-                return Gene(id=gene_id, label=gene.label), None
-            gene.id = gene_id
+                return MappableConcept(
+                    primaryCoding=gene.primaryCoding,
+                    name=gene.name,
+                    conceptType=gene.conceptType,
+                ), None
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
 
@@ -599,7 +604,7 @@ class FUSOR:
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
-            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
+            if not re.match(CURIE_REGEX, sequence_id):
                 sequence_id = f"sequence.id:{sequence_id}"
 
         if seq_id_target_namespace:

@@ -7,9 +7,13 @@
       "exonEnd": 8,
       "exonEndOffset": 0,
       "gene": {
-        "id": "hgnc:12012",
-        "type": "Gene",
-        "label": "TPM3"
+        "primaryCoding": {
+            "id": "hgnc:12012",
+            "code": "HGNC:12012",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "TPM3"
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -29,9 +33,13 @@
       "exonStart": 10,
       "exonStartOffset": 0,
       "gene": {
-        "id": "hgnc:8031",
-        "type": "Gene",
-        "label": "NTRK1"
+        "primaryCoding": {
+            "id": "hgnc:8031",
+            "code": "HGNC:8031",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "NTRK1"
       },
       "elementGenomicStart": {
         "id": "ga4gh:SL.Hw9hRbWb7AEt3h-naNmsGvV41h9G8vQt",

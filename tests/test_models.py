@@ -32,20 +32,63 @@ from fusor.models import (
 def gene_examples():
     """Provide possible gene input."""
     return [
-        {"id": "hgnc:9339", "label": "G1"},
-        {"id": "hgnc:76", "label": "ABL"},
-        {"id": "hgnc:1014", "label": "BCR1"},
-        {"id": "hgnc:8031", "label": "NTRK1"},
         {
-            "id": "hgnc:1837",
-            "label": "ALK",
+            "primaryCoding": {
+                "id": "hgnc:9339",
+                "code": "HGNC:9339",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "G1",
         },
-        {"id": "hgnc:16262", "label": "YAP1"},
+        {
+            "primaryCoding": {
+                "id": "hgnc:76",
+                "code": "HGNC:76",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "ABL1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:1014",
+                "code": "HGNC:1014",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "BCR1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:8031",
+                "code": "HGNC:8031",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "NTRK1",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:1837",
+                "code": "HGNC:1837",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "ALK",
+        },
+        {
+            "primaryCoding": {
+                "id": "hgnc:16262",
+                "code": "HGNC:16262",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
+            "name": "YAP1",
+        },
         # alternate structure
         {
-            "id": "hgnc:1097",
+            "primaryCoding": {
+                "id": "hgnc:1097",
+                "code": "HGNC:1097",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            },
             "type": "Gene",
-            "label": "BRAF",
+            "name": "BRAF",
         },
     ]
 
@@ -250,19 +293,16 @@ def literal_sequence_expressions():
             "id": "sequence:ACGT",
             "type": "LiteralSequenceExpression",
             "sequence": "ACGT",
-            "residueType": "SO:0000348",
         },
         {
             "id": "sequence:T",
             "type": "LiteralSequenceExpression",
             "sequence": "T",
-            "residueType": "SO:0000348",
         },
         {
             "id": "sequence:actgu",
             "type": "LiteralSequenceExpression",
             "sequence": "ACTGU",
-            "residueType": "SO:0000348",
         },
     ]
 
@@ -317,8 +357,8 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.status == "preserved"
     assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.associatedGene.id == "hgnc:16262"
-    assert test_domain.associatedGene.label == "YAP1"
+    assert test_domain.associatedGene.primaryCoding.id == "hgnc:16262"
+    assert test_domain.associatedGene.name == "YAP1"
     test_loc = test_domain.sequenceLocation
     assert "ga4gh:SL" in test_loc.id
     assert test_loc.type == "SequenceLocation"
@@ -334,8 +374,8 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.status == "lost"
     assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.associatedGene.id == "hgnc:8031"
-    assert test_domain.associatedGene.label == "NTRK1"
+    assert test_domain.associatedGene.primaryCoding.id == "hgnc:8031"
+    assert test_domain.associatedGene.name == "NTRK1"
     test_loc = test_domain.sequenceLocation
     assert "ga4gh:SL" in test_loc.id
     assert test_loc.type == "SequenceLocation"
@@ -377,8 +417,8 @@ def test_transcript_segment_element(transcript_segments):
     assert test_element.exonStartOffset == -9
     assert test_element.exonEnd == 8
     assert test_element.exonEndOffset == 7
-    assert test_element.gene.id == "hgnc:9339"
-    assert test_element.gene.label == "G1"
+    assert test_element.gene.primaryCoding.id == "hgnc:9339"
+    assert test_element.gene.name == "G1"
     test_region_start = test_element.elementGenomicStart
     assert test_region_start.type == "SequenceLocation"
     test_region_end = test_element.elementGenomicEnd
@@ -404,8 +444,8 @@ def test_transcript_segment_element(transcript_segments):
             exonEnd="8",
             exonEndOffset="7",
             gene={
-                "id": "hgnc:1",
-                "label": "G1",
+                "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
+                "name": "G1",
             },
             elementGenomicStart={
                 "location": {
@@ -435,8 +475,8 @@ def test_transcript_segment_element(transcript_segments):
             exonEnd="8",
             exonEndOffset="7",
             gene={
-                "id": "test:1",
-                "label": "G1",
+                "primaryCode": "test:1",
+                "name": "G1",
             },
             elementGenomicStart={
                 "location": {
@@ -464,8 +504,8 @@ def test_transcript_segment_element(transcript_segments):
             exonStart="1",
             exonStartOffset="-9",
             gene={
-                "id": "test:1",
-                "label": "G1",
+                "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
+                "name": "G1",
             },
         )
     msg = "Value error, Must give `elementGenomicStart` if `exonStart` is given"
@@ -479,8 +519,8 @@ def test_transcript_segment_element(transcript_segments):
             exonStartOffset="-9",
             exonEndOffset="7",
             gene={
-                "id": "test:1",
-                "label": "G1",
+                "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
+                "name": "G1",
             },
             elementGenomicStart={
                 "location": {
@@ -571,8 +611,14 @@ def test_genomic_region_element(templated_sequence_elements, sequence_locations)
 
     with pytest.raises(ValidationError) as exc_info:
         TemplatedSequenceElement(
-            region={"interval": {"start": 39408, "stop": 39414}},
-            sequence_id="ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+            region={
+                "start": 39408,
+                "end": 39414,
+                "sequenceReference": {
+                    "id": "refseq:NC_000012.12",
+                    "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                },
+            },
         )
     msg = "Field required"
     check_validation_error(exc_info, msg)
@@ -590,8 +636,8 @@ def test_gene_element(gene_examples):
     """Test that Gene Element initializes correctly."""
     test_element = GeneElement(gene=gene_examples[0])
     assert test_element.type == "GeneElement"
-    assert test_element.gene.id == "hgnc:9339"
-    assert test_element.gene.label == "G1"
+    assert test_element.gene.primaryCoding.id == "hgnc:9339"
+    assert test_element.gene.name == "G1"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
@@ -722,8 +768,8 @@ def test_regulatory_element(regulatory_elements, gene_examples):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.regulatoryClass.value == "promoter"
-    assert test_reg_elmt.associatedGene.id == "hgnc:9339"
-    assert test_reg_elmt.associatedGene.label == "G1"
+    assert test_reg_elmt.associatedGene.primaryCoding.id == "hgnc:9339"
+    assert test_reg_elmt.associatedGene.name == "G1"
 
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
@@ -767,27 +813,34 @@ def test_fusion(
             {
                 "type": "GeneElement",
                 "gene": {
-                    "type": "Gene",
-                    "id": "hgnc:8031",
-                    "label": "NTRK1",
+                    "conceptType": "Gene",
+                    "primaryCoding": {
+                        "id": "hgnc:8031",
+                        "code": "HGNC:8031",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "name": "NTRK1",
                 },
             },
             {
                 "type": "GeneElement",
                 "gene": {
-                    "type": "Gene",
-                    "id": "hgnc:76",
-                    "label": "ABL1",
+                    "conceptType": "Gene",
+                    "primaryCoding": {
+                        "id": "hgnc:76",
+                        "code": "HGNC:76",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "name": "ABL1",
                 },
             },
         ],
         regulatory_element=None,
     )
     assert fusion.structure[0].type == "GeneElement"
-    assert fusion.structure[0].gene.label == "NTRK1"
-    assert fusion.structure[0].gene.id == "hgnc:8031"
+    assert fusion.structure[0].gene.name == "NTRK1"
+    assert fusion.structure[0].gene.primaryCoding.id == "hgnc:8031"
     assert fusion.structure[1].type == "GeneElement"
-    assert fusion.structure[1].gene.type == "Gene"
 
     # test that non-element properties are optional
     assert CategoricalFusion(structure=[transcript_segments[1], transcript_segments[2]])

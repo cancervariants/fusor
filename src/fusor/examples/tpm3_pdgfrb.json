@@ -9,9 +9,13 @@
       "exonEnd": 8,
       "exonEndOffset": 0,
       "gene": {
-        "id": "hgnc:12012",
-        "type": "Gene",
-        "label": "TPM3"
+        "primaryCoding": {
+            "id": "hgnc:12012",
+            "code": "HGNC:12012",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "TPM3"
       },
       "elementGenomicStart": {
         "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -44,9 +48,13 @@
       "exonEnd": 22,
       "exonEndOffset": 0,
       "gene": {
-        "id": "hgnc:8804",
-        "type": "Gene",
-        "label": "PDGFRB"
+        "primaryCoding": {
+            "id": "hgnc:8804",
+            "code": "HGNC:804",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "PDGFRB"
       },
       "elementGenomicStart": {
         "id": "ga4gh:SL.U4E8XJR2ue1PL0-GA_AlfwqhR1qbY7Ma",

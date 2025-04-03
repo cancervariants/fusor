@@ -27,10 +27,10 @@ license = {file = "LICENSE"}
 dependencies = [
     "pydantic ==2.*",
     "polars ~= 1.0",
-    "ga4gh.vrs ==2.0.0a10",
+    "ga4gh.vrs ==2.*",
     "biocommons.seqrepo",
-    "gene-normalizer ==0.4.0",
-    "cool-seq-tool ~=0.11.0",
+    "gene-normalizer ~=0.9.0",
+    "cool-seq-tool ~=0.13.0",
 ]
 dynamic=["version"]
 

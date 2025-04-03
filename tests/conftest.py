@@ -74,12 +74,18 @@ def translator_instance():
 def braf_gene():
     """Create gene params for BRAF."""
     return {
-        "id": "hgnc:1097",
-        "type": "Gene",
-        "label": "BRAF",
-        "description": None,
-        "alternativeLabels": ["NS7", "BRAF1", "RAFB1", "B-RAF1", "BRAF-1", "B-raf"],
+        "primaryCoding": {
+            "id": "hgnc:1097",
+            "code": "HGNC:1097",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        },
+        "name": "BRAF",
+        "conceptType": "Gene",
         "extensions": [
+            {
+                "name": "aliases",
+                "value": ["B-RAF1", "NS7", "BRAF-1", "RAFB1", "BRAF1", "B-raf"],
+            },
             {"name": "symbol_status", "value": "approved", "description": None},
             {
                 "name": "approved_name",
@@ -132,135 +138,105 @@ def braf_gene():
         "mappings": [
             {
                 "coding": {
-                    "label": None,
                     "system": "ensembl",
-                    "version": None,
                     "code": "ENSG00000157764",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ncbigene",
-                    "version": None,
                     "code": "673",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "cosmic",
-                    "version": None,
                     "code": "BRAF",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ena.embl",
-                    "version": None,
                     "code": "M95712",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "omim",
-                    "version": None,
                     "code": "164757",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "iuphar",
-                    "version": None,
                     "code": "1943",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ucsc",
-                    "version": None,
                     "code": "uc003vwc.5",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "vega",
-                    "version": None,
                     "code": "OTTHUMG00000157457",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS87555",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "uniprot",
-                    "version": None,
                     "code": "P15056",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "refseq",
-                    "version": None,
                     "code": "NM_004333",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "pubmed",
-                    "version": None,
                     "code": "1565476",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "orphanet",
-                    "version": None,
                     "code": "119066",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "pubmed",
-                    "version": None,
                     "code": "2284096",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS5863",
                 },
                 "relation": "relatedMatch",
@@ -273,12 +249,27 @@ def braf_gene():
 def alk_gene():
     """Create test fixture for ALK gene params"""
     return {
-        "id": "hgnc:427",
-        "type": "Gene",
-        "label": "ALK",
-        "description": None,
-        "alternativeLabels": ["NBLST3", "CD246", "ALK1"],
+        "primaryCoding": {
+            "id": "hgnc:427",
+            "code": "HGNC:427",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        },
+        "conceptType": "Gene",
+        "name": "ALK",
         "extensions": [
+            {
+                "name": "aliases",
+                "value": [
+                    "WAP4",
+                    "MPI",
+                    "ALK1",
+                    "ALP",
+                    "HUSI-I",
+                    "BLPI",
+                    "WFDC4",
+                    "HUSI",
+                ],
+            },
             {"name": "symbol_status", "value": "approved", "description": None},
             {
                 "name": "approved_name",
@@ -331,135 +322,105 @@ def alk_gene():
         "mappings": [
             {
                 "coding": {
-                    "label": None,
                     "system": "ensembl",
-                    "version": None,
                     "code": "ENSG00000171094",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ncbigene",
-                    "version": None,
                     "code": "238",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "orphanet",
-                    "version": None,
                     "code": "160020",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "hcdmdb",
-                    "version": None,
                     "code": "CD246",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ucsc",
-                    "version": None,
                     "code": "uc002rmy.4",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "refseq",
-                    "version": None,
                     "code": "NM_004304",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS33172",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "omim",
-                    "version": None,
                     "code": "105590",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ena.embl",
-                    "version": None,
                     "code": "D45915",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "vega",
-                    "version": None,
                     "code": "OTTHUMG00000152034",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "uniprot",
-                    "version": None,
                     "code": "Q9UM73",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "iuphar",
-                    "version": None,
                     "code": "1839",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "pubmed",
-                    "version": None,
                     "code": "8122112",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "cosmic",
-                    "version": None,
                     "code": "ALK",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS86828",
                 },
                 "relation": "relatedMatch",
@@ -472,30 +433,40 @@ def alk_gene():
 def tpm3_gene():
     """Create test fixture for TPM3 gene"""
     return {
-        "id": "hgnc:12012",
-        "type": "Gene",
-        "label": "TPM3",
-        "description": None,
-        "alternativeLabels": [
-            "TM3",
-            "NEM1~withdrawn",
-            "TM30",
-            "TM5",
-            "TRK",
-            "HEL-S-82p",
-            "NEM1",
-            "OK/SW-cl.5",
-            "TM30nm",
-            "hscp30",
-            "FLJ35371",
-            "TPMsk3",
-            "HEL-189",
-            "CFTD",
-            "TPM3nu",
-            "TM-5",
-            "CAPM1",
-        ],
+        "primaryCoding": {
+            "id": "hgnc:12012",
+            "code": "HGNC:12012",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        },
+        "conceptType": "Gene",
+        "name": "TPM3",
         "extensions": [
+            {
+                "name": "aliases",
+                "value": [
+                    "TM30",
+                    "CAPM1",
+                    "HEL-S-82p",
+                    "NEM1",
+                    "TRK",
+                    "CMYP4B",
+                    "HEL-189",
+                    "TM5",
+                    "CFTD",
+                    "TPMsk3",
+                    "CMYP4A",
+                    "TM3",
+                    "hscp30",
+                    "OK/SW-cl.5",
+                    "NEM1~withdrawn",
+                    "TM-5",
+                    "CMYO4B",
+                    "FLJ35371",
+                    "TPM3nu",
+                    "TM30nm",
+                    "CMYO4A",
+                ],
+            },
             {"name": "symbol_status", "value": "approved", "description": None},
             {"name": "approved_name", "value": "tropomyosin 3", "description": None},
             {
@@ -549,180 +520,140 @@ def tpm3_gene():
         "mappings": [
             {
                 "coding": {
-                    "label": None,
                     "system": "ensembl",
-                    "version": None,
                     "code": "ENSG00000143549",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ncbigene",
-                    "version": None,
                     "code": "7170",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS41403",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ucsc",
-                    "version": None,
                     "code": "uc001fec.3",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "pubmed",
-                    "version": None,
                     "code": "25369766",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS41401",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS60275",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "uniprot",
-                    "version": None,
                     "code": "P06753",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "cosmic",
-                    "version": None,
                     "code": "TPM3",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS60274",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ena.embl",
-                    "version": None,
                     "code": "BC008425",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS41402",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS1060",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "omim",
-                    "version": None,
                     "code": "191030",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "orphanet",
-                    "version": None,
                     "code": "120227",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS41400",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "refseq",
-                    "version": None,
                     "code": "NM_152263",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "vega",
-                    "version": None,
                     "code": "OTTHUMG00000035853",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "pubmed",
-                    "version": None,
                     "code": "1829807",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
-                    "label": None,
                     "system": "ccds",
-                    "version": None,
                     "code": "CCDS72922",
                 },
                 "relation": "relatedMatch",
@@ -771,8 +702,6 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -786,8 +715,6 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                     "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -807,12 +734,8 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                 "linkerSequence": {
                     "id": "fusor.sequence:ACGT",
                     "type": "LiteralSequenceExpression",
-                    "label": None,
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
-                    "sequence_id": None,
                     "sequence": "ACGT",
                 },
             },
@@ -821,8 +744,6 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                 "region": {
                     "id": "ga4gh:SL.gb3ew2XQ-Doi1AtvlmajeZO7fS1eDPg_",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -858,15 +779,17 @@ def fusion_example():
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "status": "lost",
                 "associatedGene": {
-                    "type": "Gene",
-                    "label": "ALK",
-                    "id": "hgnc:427",
+                    "conceptType": "Gene",
+                    "name": "ALK",
+                    "primaryCoding": {
+                        "id": "hgnc:427",
+                        "code": "HGNC:427",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
                 "sequenceLocation": {
                     "id": "ga4gh:SL.aYx-iUOFEw7GVZb4fwrQLkQQahpiIAVp",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -888,16 +811,18 @@ def fusion_example():
                 "exonEnd": 8,
                 "exonEndOffset": 0,
                 "gene": {
-                    "type": "Gene",
-                    "label": "TPM3",
-                    "id": "hgnc:12012",
+                    "conceptType": "Gene",
+                    "name": "TPM3",
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -911,8 +836,6 @@ def fusion_example():
                     "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -926,9 +849,13 @@ def fusion_example():
             {
                 "type": "GeneElement",
                 "gene": {
-                    "type": "Gene",
-                    "label": "ALK",
-                    "id": "hgnc:427",
+                    "conceptType": "Gene",
+                    "name": "ALK",
+                    "primaryCoding": {
+                        "id": "hgnc:427",
+                        "code": "HGNC:427",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
                 },
             },
             {
@@ -944,8 +871,6 @@ def fusion_example():
                 "region": {
                     "id": "ga4gh:SL.gb3ew2XQ-Doi1AtvlmajeZO7fS1eDPg_",
                     "description": None,
-                    "xrefs": None,
-                    "alternativeLabels": None,
                     "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -964,9 +889,13 @@ def fusion_example():
             "type": "RegulatoryElement",
             "regulatoryClass": "promoter",
             "associatedGene": {
-                "type": "Gene",
-                "label": "BRAF",
-                "id": "hgnc:1097",
+                "conceptType": "Gene",
+                "name": "BRAF",
+                "primaryCoding": {
+                    "id": "hgnc:1097",
+                    "code": "HGNC:1097",
+                    "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                },
             },
         },
     }
