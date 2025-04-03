@@ -8,6 +8,7 @@ import re
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import LiteralSequenceExpression
 from pydantic import BaseModel
 
@@ -144,17 +145,7 @@ class Translator:
         :param symbol: A gene symbol for a fusion partner
         :return: A GeneElement object
         """
-        return GeneElement(
-            gene={
-                "primaryCoding": {
-                    "id": f"gene:{symbol}",
-                    "code": f"gene:{symbol}",
-                    "system": f"Naming system for {symbol} unavailable",
-                },
-                "name": symbol,
-                "conceptType": "Gene",
-            },
-        )
+        return GeneElement(gene=MappableConcept(name=symbol, conceptType="Gene"))
 
     def _get_gene_element(
         self, genes: str, caller: Caller | KnowledgebaseList

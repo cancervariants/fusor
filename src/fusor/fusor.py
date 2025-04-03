@@ -9,7 +9,7 @@ from civicpy.civic import MolecularProfile
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
-from ga4gh.core.models import Coding, MappableConcept
+from ga4gh.core.models import MappableConcept
 from ga4gh.vrs import models
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
@@ -571,13 +571,9 @@ class FUSOR:
             gene = gene_norm_resp.gene
             if use_minimal_gene:
                 return MappableConcept(
-                    primaryCoding=Coding(
-                        id=gene.primaryCoding.id,
-                        code=gene.primaryCoding.code,
-                        system=gene.primaryCoding.system,
-                    ),
+                    primaryCoding=gene.primaryCoding,
                     name=gene.name,
-                    conceptType="Gene",
+                    conceptType=gene.conceptType,
                 ), None
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
