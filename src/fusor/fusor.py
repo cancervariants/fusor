@@ -19,6 +19,7 @@ from ga4gh.vrs.models import (
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
+from gene.schemas import CURIE_REGEX
 from pydantic import StringConstraints, ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -50,9 +51,6 @@ from fusor.nomenclature import generate_nomenclature
 from fusor.tools import get_error_message, translate_identifier
 
 _logger = logging.getLogger(__name__)
-
-
-CURIE_REGEX = r"^\w[^:]*:.+$"
 
 
 class FUSOR:
@@ -572,7 +570,7 @@ class FUSOR:
                     primaryCoding=Coding(
                         id=gene.primaryCoding.id,
                         code=gene.primaryCoding.code,
-                        system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        system=gene.primaryCoding.system,
                     ),
                     name=gene.name,
                     conceptType="Gene",
