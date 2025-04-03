@@ -143,6 +143,7 @@ class Translator:
                 "primaryCoding": {
                     "id": f"gene:{symbol}",
                     "code": f"gene:{symbol}",
+                    "system": f"Naming system for {symbol} unavailable",
                 },
                 "name": symbol,
                 "conceptType": "Gene",
