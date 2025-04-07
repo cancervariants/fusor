@@ -23,6 +23,8 @@ from pydantic import (
     model_validator,
 )
 
+LINKER_REGEX = r"\|([atcg]+)\|"
+
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
     """Base Pydantic model class with extra values forbidden."""

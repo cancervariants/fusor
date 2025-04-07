@@ -26,6 +26,7 @@ from fusor.fusion_caller_models import (
 )
 from fusor.fusor import FUSOR
 from fusor.models import (
+    LINKER_REGEX,
     AnchoredReads,
     Assay,
     AssayedFusion,
@@ -94,6 +95,7 @@ class Translator:
         :param rf: A boolean indicating if the reading frame is preserved
         :param assay: Assay
         :param contig: The contig sequence
+        :param linker_sequence: The non-template linker sequence
         :param reads: The read data
         :return AssayedFusion or CategoricalFusion object
         """
@@ -601,8 +603,7 @@ class Translator:
             spanning=SpanningReads(spanningReads=arriba.discordant_mates)
         )
         contig = ContigSequence(contig=arriba.fusion_transcript)
-        linker_regex = r"\|([atcg]+)\|"
-        linker_sequence = re.search(linker_regex, arriba.fusion_transcript)
+        linker_sequence = re.search(LINKER_REGEX, arriba.fusion_transcript)
         linker_sequence = (
             LinkerElement(
                 linkerSequence=LiteralSequenceExpression(
