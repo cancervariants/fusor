@@ -3,11 +3,13 @@ objects
 """
 
 import logging
+import re
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
 from cool_seq_tool.schemas import Assembly, CoordinateType
 from ga4gh.core.models import MappableConcept
+from ga4gh.vrs.models import LiteralSequenceExpression
 from pydantic import BaseModel
 
 from fusor.fusion_caller_models import (
@@ -24,6 +26,7 @@ from fusor.fusion_caller_models import (
 )
 from fusor.fusor import FUSOR
 from fusor.models import (
+    LINKER_REGEX,
     AnchoredReads,
     Assay,
     AssayedFusion,
@@ -33,6 +36,7 @@ from fusor.models import (
     ContigSequence,
     EventType,
     GeneElement,
+    LinkerElement,
     MultiplePossibleGenesElement,
     ReadData,
     SpanningReads,
@@ -76,6 +80,7 @@ class Translator:
         rf: bool | None = None,
         assay: Assay | None = None,
         contig: ContigSequence | None = None,
+        linker_sequence: LinkerElement | None = None,
         reads: ReadData | None = None,
         molecular_profiles: list[MolecularProfile] | None = None,
     ) -> AssayedFusion | CategoricalFusion:
@@ -90,6 +95,7 @@ class Translator:
         :param rf: A boolean indicating if the reading frame is preserved
         :param assay: Assay
         :param contig: The contig sequence
+        :param linker_sequence: The non-template linker sequence
         :param reads: The read data
         :return AssayedFusion or CategoricalFusion object
         """
@@ -109,6 +115,8 @@ class Translator:
             params["structure"] = [gene_5prime, tr_3prime]
         else:
             params["structure"] = [tr_5prime, tr_3prime]
+        if linker_sequence:
+            params["structure"].insert(1, linker_sequence)
         return fusion_type(**params)
 
     def _get_causative_event(
@@ -585,10 +593,22 @@ class Translator:
             )
         )
         rf = bool(arriba.rf == "in-frame") if arriba.rf != "." else None
+
+        # Process read data and fusion_transcript sequence
         read_data = ReadData(
             spanning=SpanningReads(spanningReads=arriba.discordant_mates)
         )
         contig = ContigSequence(contig=arriba.fusion_transcript)
+        linker_sequence = re.search(LINKER_REGEX, arriba.fusion_transcript)
+        linker_sequence = (
+            LinkerElement(
+                linkerSequence=LiteralSequenceExpression(
+                    sequence=linker_sequence.group(1).upper()
+                )
+            )
+            if linker_sequence
+            else None
+        )
 
         return self._format_fusion(
             AssayedFusion,
@@ -604,6 +624,7 @@ class Translator:
             rf,
             contig=contig,
             reads=read_data,
+            linker_sequence=linker_sequence,
         )
 
     async def from_cicero(

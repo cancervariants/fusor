@@ -616,6 +616,16 @@ async def test_arriba(
     assert arriba_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
     assert arriba_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
+    # Test Linker Sequence
+    arriba_linker = arriba.model_copy(deep=True)
+    arriba_linker.fusion_transcript = "ATAGAT|atatacgat|TATGAT"
+    arriba_fusor_linker = await translator_instance.from_arriba(
+        arriba_linker, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+    )
+    linker_element = arriba_fusor_linker.structure[1]
+    assert linker_element
+    assert linker_element.linkerSequence.sequence.root == "ATATACGAT"
+
     # Test unknown partners
     arriba.gene1 = "NA"
     arriba_fusor_unknown = await translator_instance.from_arriba(
