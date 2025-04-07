@@ -6,6 +6,7 @@ from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusion_caller_models import (
+    CIVIC,
     JAFFA,
     Arriba,
     Caller,
@@ -851,11 +852,27 @@ async def test_civic(
     fusions_list = civic.get_all_fusion_variants()
 
     # Test case where both gene partners known
-    civic_fusor = await translator_instance.from_civic(fusions_list[0])
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[0].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[0].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            0
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[0].molecular_profiles,
+    )
+    civic_fusor = await translator_instance.from_civic(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical().structure
     assert len(civic_fusor.civicMolecularProfiles) == 84
 
     # Test case where one parter is a MultiplePossibleGenesElement object
-    civic_fusor = await translator_instance.from_civic(fusions_list[15])
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[15].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[15].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            15
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[15].molecular_profiles,
+    )
+    civic_fusor = await translator_instance.from_civic(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical_mpge().structure
     assert len(civic_fusor.civicMolecularProfiles) == 5

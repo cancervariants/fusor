@@ -117,11 +117,7 @@ class Translator:
             params["structure"] = [tr_5prime, tr_3prime]
         if linker_sequence:
             params["structure"].insert(1, linker_sequence)
-        return (
-            AssayedFusion(**params)
-            if fusion_type == AssayedFusion
-            else CategoricalFusion(**params)
-        )
+        return fusion_type(**params)
 
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
@@ -906,13 +902,6 @@ class Translator:
         :param civic A CIVIC object
         :return A CategoricalFusion object, if construction is successful
         """
-        if not isinstance(
-            civic.five_prime_end_exon_coordinates, ExonCoordinate
-        ) and not isinstance(civic.three_prime_start_exon_coordinates, ExonCoordinate):
-            msg = "Coordinate location is not available for either fusion partner"
-            _logger.warning(msg)
-            return msg
-
         fusion_partners = civic.vicc_compliant_name
         if fusion_partners.startswith("v::"):
             gene_5prime = "v"
@@ -942,25 +931,25 @@ class Translator:
 
         tr_5prime = None
         if (
-            isinstance(civic.five_prime_end_exon_coordinates, ExonCoordinate)
-            and civic.five_prime_end_exon_coordinates.chromosome
+            isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
+            and civic.five_prime_end_exon_coords.chromosome
         ):
             rb = (
                 Assembly.GRCH37.value
-                if civic.five_prime_end_exon_coordinates.reference_build == "GRCH37"
+                if civic.five_prime_end_exon_coords.reference_build == "GRCH37"
                 else Assembly.GRCH38.value
             )
             strand = (
-                civic.five_prime_end_exon_coordinates.strand
+                civic.five_prime_end_exon_coords.strand
             )  # Choose strand for 5' end exon
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
-                    civic.five_prime_end_exon_coordinates.chromosome, rb
+                    civic.five_prime_end_exon_coords.chromosome, rb
                 ),
-                seg_end_genomic=civic.five_prime_end_exon_coordinates.stop
+                seg_end_genomic=civic.five_prime_end_exon_coords.stop
                 if strand == "POSITIVE"
-                else civic.five_prime_end_exon_coordinates.start,
+                else civic.five_prime_end_exon_coords.start,
                 gene=fusion_partners.gene_5prime,
                 coordinate_type=CoordinateType.RESIDUE,
                 starting_assembly=rb,
@@ -969,25 +958,25 @@ class Translator:
 
         tr_3prime = None
         if (
-            isinstance(civic.three_prime_start_exon_coordinates, ExonCoordinate)
-            and civic.three_prime_start_exon_coordinates.chromosome
+            isinstance(civic.three_prime_start_exon_coords, ExonCoordinate)
+            and civic.three_prime_start_exon_coords.chromosome
         ):
             rb = (
                 Assembly.GRCH37.value
-                if civic.three_prime_start_exon_coordinates.reference_build == "GRCH37"
+                if civic.three_prime_start_exon_coords.reference_build == "GRCH37"
                 else Assembly.GRCH38.value
             )
             strand = (
-                civic.three_prime_start_exon_coordinates.strand
+                civic.three_prime_start_exon_coords.strand
             )  # Choose strand for 3' start exon
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
-                    civic.three_prime_start_exon_coordinates.chromosome, rb
+                    civic.three_prime_start_exon_coords.chromosome, rb
                 ),
-                seg_start_genomic=civic.three_prime_start_exon_coordinates.start
+                seg_start_genomic=civic.three_prime_start_exon_coords.start
                 if strand == "POSITIVE"
-                else civic.three_prime_start_exon_coordinates.stop,
+                else civic.three_prime_start_exon_coords.stop,
                 gene=fusion_partners.gene_3prime,
                 coordinate_type=CoordinateType.RESIDUE,
                 starting_assembly=rb,

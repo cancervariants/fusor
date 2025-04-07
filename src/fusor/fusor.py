@@ -173,6 +173,7 @@ class FUSOR:
         :param critical_functional_domains: lost or preserved functional domains
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
+        :param civic_molecular_profiles: A list of MolecularProfile objects
         :return: CategoricalFusion if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
