@@ -5,6 +5,7 @@ import re
 from typing import Annotated
 
 from bioutils.accessions import coerce_namespace
+from civicpy.civic import MolecularProfile
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
@@ -126,6 +127,7 @@ class FUSOR:
             categorical_attributes = any(
                 [
                     "critical_functional_domains" in kwargs,
+                    "civic_molecular_profiles" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
                     ),
@@ -162,6 +164,7 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         critical_functional_domains: list[FunctionalDomain] | None = None,
         reading_frame_preserved: bool | None = None,
+        civic_molecular_profiles: list[MolecularProfile] | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
 
@@ -170,6 +173,7 @@ class FUSOR:
         :param critical_functional_domains: lost or preserved functional domains
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
+        :param civic_molecular_profiles: A list of MolecularProfile objects
         :return: CategoricalFusion if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
@@ -179,6 +183,7 @@ class FUSOR:
                 criticalFunctionalDomains=critical_functional_domains,
                 readingFramePreserved=reading_frame_preserved,
                 regulatoryElement=regulatory_element,
+                civic_molecular_profiles=civic_molecular_profiles,
             )
         except ValidationError as e:
             error_message = get_error_message(e)

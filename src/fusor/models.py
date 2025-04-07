@@ -4,6 +4,7 @@ from abc import ABC
 from enum import Enum
 from typing import Annotated, Any, Literal
 
+from civicpy.civic import MolecularProfile
 from cool_seq_tool.schemas import Strand
 from ga4gh.core.models import MappableConcept
 from ga4gh.vrs.models import (
@@ -833,8 +834,10 @@ class CategoricalFusion(AbstractFusion):
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: list[CategoricalFusionElement]
+    civicMolecularProfiles: list[MolecularProfile] | None = None
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",

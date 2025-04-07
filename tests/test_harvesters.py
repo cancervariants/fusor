@@ -3,10 +3,12 @@
 from pathlib import Path
 
 import pytest
+from civicpy import civic
 
 from fusor.harvester import (
     ArribaHarvester,
     CiceroHarvester,
+    CIVICHarvester,
     EnFusionHarvester,
     FusionCatcherHarvester,
     GenieHarvester,
@@ -97,3 +99,11 @@ def test_get_genie_records(fixture_data_dir):
     path = Path(fixture_data_dir / "genie_tests.txt")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert harvester.load_records(path)
+
+
+def test_get_civic_records():
+    """Test that get_civic_records works correctly"""
+    civic_variants = civic.get_all_fusion_variants()
+    harvester = CIVICHarvester(fusions_list=civic_variants)
+    fusions_list = harvester.load_records()
+    assert len(fusions_list) == len(civic_variants)
