@@ -179,16 +179,13 @@ class CIVICHarvester(BaseModel):
 
         :return A list of CIVIC objects
         """
-        params = {}
         processed_fusions = []
         for fusion in self.fusions_list:
-            params["vicc_compliant_name"] = fusion.vicc_compliant_name
-            params["five_prime_end_exon_coordinates"] = (
-                fusion.five_prime_end_exon_coordinates
-            )
-            params["three_prime_start_exon_coordinates"] = (
-                fusion.three_prime_start_exon_coordinates
-            )
-            params["molecular_profiles"] = fusion.molecular_profiles
+            params = {
+                "vicc_compliant_name": fusion.vicc_compliant_name,
+                "five_prime_end_exon_coords": fusion.five_prime_end_exon_coordinates,
+                "three_prime_start_exon_coords": fusion.three_prime_start_exon_coordinates,
+                "molecular_profiles": fusion.molecular_profiles,
+            }
             processed_fusions.append(CIVIC(**params))
         return processed_fusions

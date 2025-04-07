@@ -103,7 +103,7 @@ def test_get_genie_records(fixture_data_dir):
 
 def test_get_civic_records():
     """Test that get_civic_records works correctly"""
-    variants = civic.get_all_fusion_variants()
-    harvester = CIVICHarvester(fusions_list=variants)
+    civic_variants = civic.get_all_fusion_variants()
+    harvester = CIVICHarvester(fusions_list=civic_variants)
     fusions_list = harvester.load_records()
-    assert len(fusions_list) == 299
+    assert len(fusions_list) == len(civic_variants)

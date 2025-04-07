@@ -271,10 +271,10 @@ class CIVIC(FusionKnowledgebase):
     vicc_compliant_name: str = Field(
         ..., description="The VICC compliant name for the fusion"
     )
-    five_prime_end_exon_coordinates: ExonCoordinate | None = Field(
+    five_prime_end_exon_coords: ExonCoordinate | None = Field(
         ..., description="Data for the end exon of 5' fusion partner"
     )
-    three_prime_start_exon_coordinates: ExonCoordinate | None = Field(
+    three_prime_start_exon_coords: ExonCoordinate | None = Field(
         ..., description="Data for the start exon 3' fusion partner"
     )
     molecular_profiles: list[MolecularProfile] | None = Field(
