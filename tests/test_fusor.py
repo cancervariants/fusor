@@ -267,7 +267,7 @@ def mane_transcript_segment_element():
     return TranscriptSegmentElement(**params)
 
 
-@pytest.fixture()
+@pytest.fixture
 def fusion_ensg_sequence_id(templated_sequence_element_ensg):
     """Create fixture using Ensemble gene ID."""
     params = {
@@ -461,7 +461,7 @@ def test_fusion(
     assert msg in str(excinfo.value)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_transcript_segment_element(
     fusor_instance, transcript_segment_element, mane_transcript_segment_element
 ):

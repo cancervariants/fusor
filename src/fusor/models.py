@@ -573,7 +573,7 @@ class AbstractFusion(BaseModel, ABC):
             return obj.get(attr_name)
         else:
             msg = "Unrecognized type, should only pass entities with properties"
-            raise ValueError(msg)
+            raise ValueError(msg)  # noqa: TRY004
 
     @classmethod
     def _fetch_gene_id(

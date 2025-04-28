@@ -300,7 +300,7 @@ def test_valid_fusion_partners(translator_instance):
     assert not partners_check
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -362,7 +362,7 @@ async def test_jaffa(
     assert jaffa_fusor_unknown.structure[1] == UnknownGeneElement()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_star_fusion(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -430,7 +430,7 @@ async def test_star_fusion(
     assert star_fusion_fusor_unknown.structure[1] == UnknownGeneElement()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_fusion_catcher(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -501,7 +501,7 @@ async def test_fusion_catcher(
     assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_fusion_map(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -548,7 +548,7 @@ async def test_fusion_map(
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_arriba(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -640,7 +640,7 @@ async def test_arriba(
     assert arriba_fusor_unknown.structure[1] == UnknownGeneElement()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_cicero(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -744,7 +744,7 @@ async def test_cicero(
     assert cicero_fusor_unknown.structure[1] == UnknownGeneElement()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_enfusion(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -793,7 +793,7 @@ async def test_enfusion(
     assert enfusion_fusor_unknown.structure[1] == UnknownGeneElement()
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_genie(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
