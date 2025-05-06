@@ -242,12 +242,12 @@ class FusionMatcher:
         self,
         assayed_fusion: AssayedFusion,
         cache_path: Path | None = None,
-    ) -> list[tuple[CategoricalFusion, int]]:
+    ) -> list[tuple[CategoricalFusion, int]] | None:
         """Return best matching fusion
         :param assayed_fusion: The assayed fusion object
         :param cache_path: The location of the CIViC translated fusions, if present.
             If not, the list of fusions will be generated
-        :return A list of tuples containing matching categorical fusion objects and their associated match score
+        :return A list of tuples containing matching categorical fusion objects and their associated match score or None
         """
         fusions = []
         categorical_fusions = (
