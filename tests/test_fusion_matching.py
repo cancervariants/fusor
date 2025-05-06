@@ -35,7 +35,10 @@ async def test_fusion_matching(
             "v::RET(entrez:5979)",
         }
     ]
-    matches = await fusion_matching_instance.match_fusion(assayed_fusion_star_fusion)
+    path = Path("src/fusor/data/civic_translated_fusions.pkl")
+    matches = await fusion_matching_instance.match_fusion(
+        assayed_fusion_star_fusion, path
+    )
     assert len(matches) == 2
     assert matches[0][0] == matching_categorical_fusions[0]
     assert matches[0][1] == 10
