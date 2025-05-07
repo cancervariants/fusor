@@ -44,3 +44,12 @@ async def test_fusion_matching(
     assert matches[0][1] == 10
     assert matches[1][0] == matching_categorical_fusions[1]
     assert matches[1][1] == 1
+
+    # Test case where fusion does not exist in CIViC
+    assayed_fusion_star_fusion = await translator_instance.from_star_fusion(
+        fusions_list[36], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+    )
+    matches = await fusion_matching_instance.match_fusion(
+        assayed_fusion_star_fusion, path
+    )
+    assert not matches

@@ -53,6 +53,7 @@ class FusionMatcher:
         """Save CIViC categorical fusions in a cache
 
         :param categorical_fusions: A list of categorical fusion objects
+        :param output_path: The location where the cache will be stored
         :return None
         """
         output_path = output_path / "civic_translated_fusions.pkl"
