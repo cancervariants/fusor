@@ -6,6 +6,7 @@ import pytest
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
+from fusor.fusion_matching import CIVICCategoricalFusions
 from fusor.harvester import CIVICHarvester, StarFusionHarvester
 
 
@@ -37,7 +38,8 @@ async def test_fusion_matching(
     ]
     path = Path("src/fusor/data/civic_translated_fusions.pkl")
     matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion_star_fusion, path
+        assayed_fusion_star_fusion,
+        [(CIVICCategoricalFusions(translator_instance), path)],
     )
     assert len(matches) == 2
     assert matches[0][0] == matching_categorical_fusions[0]
@@ -50,6 +52,7 @@ async def test_fusion_matching(
         fusions_list[36], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion_star_fusion, path
+        assayed_fusion_star_fusion,
+        [(CIVICCategoricalFusions(translator_instance), path)],
     )
     assert not matches

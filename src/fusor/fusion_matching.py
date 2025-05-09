@@ -1,6 +1,7 @@
 """Module for matching assayed fusions against categorical fusions"""
 
 import pickle
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from civicpy import civic
@@ -18,21 +19,40 @@ from fusor.models import (
 from fusor.translator import Translator
 
 
-class FusionMatcher:
-    """Class for matching assayed fusions against categorical fusions"""
+class CategoricalFusionSource(ABC):
+    """ABC for CategoricalFusion sources"""
 
-    def __init__(self, translator: Translator) -> None:
-        """Initialize Translator class
+    translator: Translator
 
-        :param translator: A Translator instance
+    @abstractmethod
+    async def save_categorical_fusions(self, output_dir: Path) -> None:
+        """Save CategoricalFusion objects in a cache
+
+        :param output: A path to the cache
         :return None
         """
+
+    @abstractmethod
+    def load_categorical_fusions(self, path: Path) -> list[CategoricalFusion]:
+        """Load in cache of CategoricalFusion objects
+
+        :param path: A path to the cache
+        :return A list of Categorical fusions
+        """
+
+
+class CIVICCategoricalFusions(CategoricalFusionSource):
+    """Class for loading and generating cache of CIViC Categorical Fusions"""
+
+    def __init__(self, translator: Translator):
+        """Initialize Translator"""
         self.translator = translator
 
-    async def generate_civic_categorical_fusions(self) -> list[CategoricalFusion]:
+    async def save_categorical_fusions(self, output_dir: Path) -> None:
         """Load fusion variants from CIViC and convert to CategoricalFusion objects
 
-        :return A list of CategoricalFusion objects
+        :param output_dir: The location where the cache will be stored
+        :return None
         """
         # Load in all accepted fusions variants
         variants = civic.get_all_fusion_variants(include_status="accepted")
@@ -45,23 +65,12 @@ class FusionMatcher:
                 continue
             cex = await self.translator.from_civic(civic=fusion)
             categorical_fusions.append(cex)
-        return categorical_fusions
 
-    def save_civic_categorical_fusions(
-        self, categorical_fusions: list[CategoricalFusion], output_path: Path
-    ) -> None:
-        """Save CIViC categorical fusions in a cache
-
-        :param categorical_fusions: A list of categorical fusion objects
-        :param output_path: The location where the cache will be stored
-        :return None
-        """
-        output_path = output_path / "civic_translated_fusions.pkl"
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with output_path.open("wb") as f:
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
+        with output_dir.open("wb") as f:
             pickle.dump(categorical_fusions, f)
 
-    def load_civic_categorical_fusions(self, path: Path) -> list[CategoricalFusion]:
+    def load_categorical_fusions(self, path: Path) -> list[CategoricalFusion]:
         """Load in cache of CIViC Categorical Fusions
 
         :param path: A path to the cache
@@ -69,6 +78,15 @@ class FusionMatcher:
         """
         with path.open("rb") as civic_categorical_fusions:
             return pickle.load(civic_categorical_fusions)  # noqa: S301
+
+
+FusionSourcePath = tuple[CategoricalFusionSource, Path]
+
+
+class FusionMatcher:
+    """Class for matching assayed fusions against categorical fusions"""
+
+    translator: Translator
 
     def _extract_fusion_partners(
         self,
@@ -242,25 +260,28 @@ class FusionMatcher:
     async def match_fusion(
         self,
         assayed_fusion: AssayedFusion,
-        cache_path: Path | None = None,
+        sources: list[FusionSourcePath],
     ) -> list[tuple[CategoricalFusion, int]] | None:
         """Return best matching fusion
         :param assayed_fusion: The assayed fusion object
-        :param cache_path: The location of the CIViC translated fusions, if present.
-            If not, the list of fusions will be generated
+        :param sources: A list of FusionSourcePath objects
         :return A list of tuples containing matching categorical fusion objects and their associated match score or None
         """
-        fusions = []
-        categorical_fusions = (
-            self.load_civic_categorical_fusions(cache_path)
-            if cache_path
-            else await self.generate_civic_categorical_fusions()
-        )
+        matched_fusions = []
+        categorical_fusions = []
+        for source, path in sources:
+            if not path.exists():
+                await source.save_categorical_fusions(path)
+            categorical_fusions.extend(source.load_categorical_fusions(path))
         categorical_fusions = self._filter_categorical_fusions(
             assayed_fusion, categorical_fusions
         )
         for categorical_fusion in categorical_fusions:
             match_information = self._compare_fusion(assayed_fusion, categorical_fusion)
             if match_information:
-                fusions.append((categorical_fusion, match_information[1]))
-        return sorted(fusions, key=lambda x: x[1], reverse=True) if fusions else None
+                matched_fusions.append((categorical_fusion, match_information[1]))
+        return (
+            sorted(matched_fusions, key=lambda x: x[1], reverse=True)
+            if matched_fusions
+            else None
+        )
