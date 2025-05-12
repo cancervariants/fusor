@@ -6,7 +6,7 @@ import pytest
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.fusion_matching import CIVICCategoricalFusions
+from fusor.fusion_matching import FusionSources
 from fusor.harvester import CIVICHarvester, StarFusionHarvester
 
 
@@ -21,9 +21,9 @@ async def test_fusion_matching(
     assayed_fusion_star_fusion = await translator_instance.from_star_fusion(
         fusions_list[0], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
-    harvester = CIVICHarvester(
-        fusions_list=civic.get_all_fusion_variants(include_status="accepted")
-    )
+    civic_variants = civic.get_all_fusion_variants(include_status="accepted")
+    harvester = CIVICHarvester()
+    harvester.fusions_list = civic_variants
     fusions = harvester.load_records()
 
     # Test valid fusion that exists in CIViC
@@ -36,10 +36,11 @@ async def test_fusion_matching(
             "v::RET(entrez:5979)",
         }
     ]
-    path = Path("src/fusor/data/civic_translated_fusions.pkl")
+    path = Path("src/fusor/data/")
     matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion_star_fusion,
-        [(CIVICCategoricalFusions(translator_instance), path)],
+        assayed_fusion=assayed_fusion_star_fusion,
+        sources=[FusionSources.CIVIC],
+        cache_dir=path,
     )
     assert len(matches) == 2
     assert matches[0][0] == matching_categorical_fusions[0]
@@ -52,7 +53,8 @@ async def test_fusion_matching(
         fusions_list[36], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion_star_fusion,
-        [(CIVICCategoricalFusions(translator_instance), path)],
+        assayed_fusion=assayed_fusion_star_fusion,
+        sources=[FusionSources.CIVIC],
+        cache_dir=path,
     )
     assert not matches

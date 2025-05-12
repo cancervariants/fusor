@@ -72,9 +72,9 @@ def translator_instance():
 
 
 @pytest.fixture(scope="session")
-def fusion_matching_instance():
+def fusion_matching_instance(translator_instance):
     """Create test fixture for fusion matching object"""
-    return FusionMatcher()
+    return FusionMatcher(translator=translator_instance)
 
 
 @pytest.fixture(scope="session")

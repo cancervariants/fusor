@@ -5,8 +5,7 @@ from abc import ABC
 from pathlib import Path
 from typing import ClassVar
 
-from civicpy.civic import FusionVariant
-from pydantic import BaseModel, ConfigDict
+from civicpy import civic
 
 from fusor.fusion_caller_models import (
     CIVIC,
@@ -168,11 +167,31 @@ class GenieHarvester(FusionCallerHarvester):
     fusion_caller = Genie
 
 
-class CIVICHarvester(BaseModel):
+class CIVICHarvester(FusionCallerHarvester):
     """Class for harvesting CIViC Fusion objects"""
 
-    fusions_list: list[FusionVariant]
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    def __init__(
+        self,
+        update_cache: bool = False,
+        update_from_remote: bool = True,
+        local_cache_path: str = civic.LOCAL_CACHE_PATH,
+    ) -> None:
+        """Initialize CivicHarvester class.
+
+        :param update_cache: ``True`` if civicpy cache should be updated. Note
+            this will take several minutes. ``False`` if to use local cache.
+        :param update_from_remote: If set to ``True``, civicpy.update_cache will first
+            download the remote cache designated by REMOTE_CACHE_URL, store it
+            to LOCAL_CACHE_PATH, and then load the downloaded cache into memory.
+            This parameter defaults to ``True``.
+        :param local_cache_path: A filepath destination for the retrieved remote
+            cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
+        """
+        if update_cache:
+            civic.update_cache(from_remote_cache=update_from_remote)
+
+        civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
+        self.fusions_list = None
 
     def load_records(self) -> list[CIVIC]:
         """Extract data from CIVIC fusion objects
