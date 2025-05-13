@@ -254,25 +254,28 @@ class FusionMatcher:
 class CIVICCategoricalFusions(FusionMatcher):
     """Class for loading and generating cache of CIViC Categorical Fusions"""
 
-    cache_name = "civic_translated_fusions.pkl"
+    def __init__(self, translator: Translator) -> None:
+        """Initialize CIVICCategoricalFusions class"""
+        # Load in all accepted fusions variants
+        super().__init__(translator)
+        variants = civic.get_all_fusion_variants(include_status="accepted")
+        harvester = CIVICHarvester()
+        harvester.fusions_list = variants
+        self.fusions_list = harvester.load_records()
+        self.cache_name = "civic_translated_fusions.pkl"
 
     async def save_categorical_fusions(self, output_dir: Path) -> None:
         """Load fusion variants from CIViC and convert to CategoricalFusion objects
 
         :param output_dir: The location where the cache will be stored
         """
-        # Load in all accepted fusions variants
-        variants = civic.get_all_fusion_variants(include_status="accepted")
-        harvester = CIVICHarvester()
-        harvester.fusions_list = variants
-        fusions_list = harvester.load_records()
-
-        for fusion in fusions_list:
+        civic_fusions = []
+        for fusion in self.fusions_list:
             if "?" in fusion.vicc_compliant_name:
                 continue
             cex = await self.translator.from_civic(civic=fusion)
-            self.categorical_fusions.append(cex)
+            civic_fusions.append(cex)
 
         output_dir.parent.mkdir(parents=True, exist_ok=True)
         with output_dir.open("wb") as f:
-            pickle.dump(self.categorical_fusions, f)
+            pickle.dump(civic_fusions, f)
