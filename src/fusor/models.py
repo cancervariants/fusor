@@ -544,6 +544,7 @@ class AbstractFusion(BaseModel, ABC):
     regulatoryElement: RegulatoryElement | None = None
     structure: list[BaseStructuralElement]
     readingFramePreserved: StrictBool | None = None
+    viccNomenclature: StrictStr | None = None
 
     @classmethod
     def _access_object_attr(
