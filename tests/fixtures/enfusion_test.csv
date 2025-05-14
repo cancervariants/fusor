@@ -1,2 +1,6 @@
-	Gene1	Gene2	Chr1	Chr2	Break1	Break2	FusionJunctionSequence
-0	TPM3	PDGFRB	1	5	154170465	150126612	ATATATCTAGAG|ATAGACAGATAGAT
+# Sample: Test
+# NumToolsAggregated:	2
+# - starFusionCalls =	234
+# - arribaCalls =	234
+UnorderedFusion	OrderedFusion	Gene1	Gene2	Chr1	Chr2	Break1	Break2	FusionJunctionSequence
+TPM3+PDGFRB	TPM3>>PDGFRB	TPM3	PDGFRB	1	5	154170465	150126612	ATATATCTAGAG|ATAGACAGATAGAT
