@@ -2,6 +2,7 @@
 
 import csv
 from abc import ABC
+from itertools import dropwhile
 from pathlib import Path
 from typing import ClassVar
 
@@ -46,7 +47,14 @@ class FusionCallerHarvester(ABC):
         fusions_list = []
         fields_to_keep = self.fusion_caller.__annotations__
         with fusion_path.open() as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=self.delimeter)
+            if self.fusion_caller is EnFusion:
+                fusion_lines = dropwhile(
+                    lambda line: not line.startswith("UnorderedFusion"), csvfile
+                )
+                reader = csv.DictReader(fusion_lines, delimiter=self.delimeter)
+            else:
+                reader = csv.DictReader(csvfile, delimiter=self.delimeter)
+
             for row in reader:
                 filtered_row = {}
                 for key, value in row.items():
