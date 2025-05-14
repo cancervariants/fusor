@@ -35,11 +35,6 @@ class FusionCallerHarvester(ABC):
         :param fusion_path: The open fusions file
         :return A csv.DictReader object containing the detected fusions
         """
-        if self.fusion_caller is EnFusion:
-            fusion_lines = dropwhile(
-                lambda line: not line.startswith("UnorderedFusion"), fusions_file
-            )
-            return csv.DictReader(fusion_lines, delimiter=self.delimeter)
         return csv.DictReader(fusions_file, delimiter=self.delimeter)
 
     def load_records(
@@ -163,6 +158,17 @@ class EnFusionHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = EnFusion
+
+    def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
+        """Read in all records from a fusions file
+
+        :param fusion_path: The open fusions file
+        :return A csv.DictReader object containing the detected fusions
+        """
+        fusion_lines = dropwhile(
+            lambda line: not line.startswith("UnorderedFusion"), fusions_file
+        )
+        return csv.DictReader(fusion_lines, delimiter=self.delimeter)
 
 
 class GenieHarvester(FusionCallerHarvester):
