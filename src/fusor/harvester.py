@@ -32,7 +32,7 @@ class FusionCallerHarvester(ABC):
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
 
-        :param fusion_path: The open fusions file
+        :param fusion_file: The open fusions file
         :return A csv.DictReader object containing the detected fusions
         """
         return csv.DictReader(fusions_file, delimiter=self.delimeter)
@@ -162,7 +162,7 @@ class EnFusionHarvester(FusionCallerHarvester):
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
 
-        :param fusion_path: The open fusions file
+        :param fusion_file: The open fusions file
         :return A csv.DictReader object containing the detected fusions
         """
         fusion_lines = dropwhile(
