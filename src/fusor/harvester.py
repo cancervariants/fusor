@@ -4,7 +4,7 @@ import csv
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, TextIO
 
 from civicpy.civic import FusionVariant
 from pydantic import BaseModel, ConfigDict
@@ -29,6 +29,19 @@ class FusionCallerHarvester(ABC):
     column_rename: dict
     delimeter: str
 
+    def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
+        """Read in all records from a fusions file
+
+        :param fusion_path: The open fusions file
+        :return A csv.DictReader object containing the detected fusions
+        """
+        if self.fusion_caller is EnFusion:
+            fusion_lines = dropwhile(
+                lambda line: not line.startswith("UnorderedFusion"), fusions_file
+            )
+            return csv.DictReader(fusion_lines, delimiter=self.delimeter)
+        return csv.DictReader(fusions_file, delimiter=self.delimeter)
+
     def load_records(
         self,
         fusion_path: Path,
@@ -46,22 +59,15 @@ class FusionCallerHarvester(ABC):
             raise ValueError(statement)
         fusions_list = []
         fields_to_keep = self.fusion_caller.__annotations__
-        with fusion_path.open() as csvfile:
-            if self.fusion_caller is EnFusion:
-                fusion_lines = dropwhile(
-                    lambda line: not line.startswith("UnorderedFusion"), csvfile
-                )
-                reader = csv.DictReader(fusion_lines, delimiter=self.delimeter)
-            else:
-                reader = csv.DictReader(csvfile, delimiter=self.delimeter)
+        reader = self._get_records(fusion_path.open())
 
-            for row in reader:
-                filtered_row = {}
-                for key, value in row.items():
-                    renamed_key = self.column_rename.get(key, key)
-                    if renamed_key in fields_to_keep:
-                        filtered_row[renamed_key] = value
-                fusions_list.append(self.fusion_caller(**filtered_row))
+        for row in reader:
+            filtered_row = {}
+            for key, value in row.items():
+                renamed_key = self.column_rename.get(key, key)
+                if renamed_key in fields_to_keep:
+                    filtered_row[renamed_key] = value
+            fusions_list.append(self.fusion_caller(**filtered_row))
         return fusions_list
 
 
