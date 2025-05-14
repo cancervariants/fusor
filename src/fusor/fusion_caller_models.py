@@ -234,8 +234,12 @@ class EnFusion(FusionCaller):
     type: Literal[Caller.ENFUSION] = Caller.ENFUSION
     gene_5prime: str = Field(..., description="The 5' gene fusion partner")
     gene_3prime: str = Field(..., description="The 3' gene fusion partner")
-    chr_5prime: int = Field(..., description="The 5' gene fusion partner chromosome")
-    chr_3prime: int = Field(..., description="The 3' gene fusion partner chromosome")
+    chr_5prime: int | str = Field(
+        ..., description="The 5' gene fusion partner chromosome"
+    )
+    chr_3prime: int | str = Field(
+        ..., description="The 3' gene fusion partner chromosome"
+    )
     break_5prime: int = Field(
         ..., description="The 5' gene fusion partner genomic breakpoint"
     )
