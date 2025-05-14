@@ -28,8 +28,14 @@ class FusionSources(str, Enum):
 class FusionMatcher:
     """Class for matching assayed fusions against categorical fusions"""
 
-    def __init__(self, translator: Translator):
-        """Initialize CategoricalFusion source"""
+    def __init__(
+        self,
+        translator: Translator,
+    ) -> None:
+        """Initialize CategoricalFusion source
+
+        :param translator: A translator object
+        """
         self.translator = translator
         self.categorical_fusions: list[CategoricalFusion] = []
 
@@ -75,7 +81,7 @@ class FusionMatcher:
         """Determine if assayed fusion and categorical fusion have the same partners
 
         :param assayed_fusion_gene_symbols: AssayedFusion object
-        :param categorical_fusion_gene_symbols: CategoricalFusion object
+        :param categorical_fusion: CategoricalFusion object
         :return ``True`` if the symbols for the fusion match match, ``False`` if not
         """
         assayed_fusion_gene_symbols = self._extract_fusion_partners(
@@ -122,8 +128,8 @@ class FusionMatcher:
         is_five_prime_partner: bool,
     ) -> tuple[bool | str, int]:
         """Compare transcript segments for an assayed and categorical fusions
-        :param assayed_transcript: The assayed fusion transcript or unknown gene element or gene element
-        :param categorical_transcript: The categorical fusion transcript or mulitple possible genes element
+        :param assayed_element: The assayed fusion transcript or unknown gene element or gene element
+        :param categorical_element: The categorical fusion transcript or mulitple possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
         :return A boolean or string indicating if a match is found and a score indiciating the degree of match
         """
@@ -156,14 +162,12 @@ class FusionMatcher:
             else:
                 return False, 0
 
-            if is_five_prime_partner:
-                fields_to_compare = ["exonEnd", "exonEndOffset", "elementGenomicEnd"]
-            else:
-                fields_to_compare = [
-                    "exonStart",
-                    "exonStartOffset",
-                    "elementGenomicStart",
-                ]
+            start_or_end = "End" if is_five_prime_partner else "Start"
+            fields_to_compare = [
+                f"exon{start_or_end}",
+                f"exon{start_or_end}Offset",
+                f"elementGenomic{start_or_end}",
+            ]
 
             for field in fields_to_compare:
                 if getattr(assayed_element, field) == getattr(
@@ -179,6 +183,7 @@ class FusionMatcher:
         self, assayed_fusion: AssayedFusion, categorical_fusion: CategoricalFusion
     ) -> bool | tuple[bool, int]:
         """Compare assayed and categorical fusions
+
         :param assayed_fusion: AssayedFusion object
         :param categorical_fusion: CategoricalFusion object
         :return A boolean or a tuple containing a boolean and match score
@@ -220,6 +225,7 @@ class FusionMatcher:
         cache_dir: Path,
     ) -> list[tuple[CategoricalFusion, int]] | None:
         """Return best matching fusion
+
         :param assayed_fusion: The assayed fusion object
         :param sources: A list of FusionSources
         :param cache_dir: The location where the cached categorical fusion objects are stored
@@ -254,15 +260,21 @@ class FusionMatcher:
 class CIVICCategoricalFusions(FusionMatcher):
     """Class for loading and generating cache of CIViC Categorical Fusions"""
 
-    def __init__(self, translator: Translator) -> None:
-        """Initialize CIVICCategoricalFusions class"""
+    def __init__(
+        self, translator: Translator, cache_name: str = "civic_translated_fusions.pkl"
+    ) -> None:
+        """Initialize CIVICCategoricalFusions class
+
+        :param translator: A translator object
+        :param cache_name: The file name to save the cached CategoricalFusion objects
+        """
         # Load in all accepted fusions variants
         super().__init__(translator)
         variants = civic.get_all_fusion_variants(include_status="accepted")
         harvester = CIVICHarvester()
         harvester.fusions_list = variants
         self.fusions_list = harvester.load_records()
-        self.cache_name = "civic_translated_fusions.pkl"
+        self.cache_name = cache_name
 
     async def save_categorical_fusions(self, output_dir: Path) -> None:
         """Load fusion variants from CIViC and convert to CategoricalFusion objects
