@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from cool_seq_tool.app import CoolSeqTool
 
+from fusor.fusion_matching import FusionMatcher
 from fusor.fusor import FUSOR
 from fusor.translator import Translator
 
@@ -68,6 +69,12 @@ def fusor_instance():
 def translator_instance():
     """Create test fixture for translator object"""
     return Translator(fusor=FUSOR())
+
+
+@pytest.fixture(scope="session")
+def fusion_matching_instance(translator_instance):
+    """Create test fixture for fusion matching object"""
+    return FusionMatcher(translator=translator_instance)
 
 
 @pytest.fixture(scope="session")
