@@ -106,18 +106,19 @@ class FusionMatcher:
         self,
         assayed_fusion: AssayedFusion,
         categorical_fusions: list[CategoricalFusion],
-    ) -> list[CategoricalFusion]:
+    ) -> list[CategoricalFusion] | None:
         """Filter CategoricalFusion list to ensure fusion matching is run on relevant list
 
         :param assayed_fusion: The AssayedFusion object that is being queried
         :param categorical_fusions: A list of CategoricalFusion objects
-        :return A list of filtered categorical fusion objects
+        :return A list of filtered categorical fusion objects, or None if the list is empty
         """
-        return [
+        fusions_list = [
             categorical_fusion
             for categorical_fusion in categorical_fusions
             if self._match_fusion_partners(assayed_fusion, categorical_fusion)
         ]
+        return fusions_list if fusions_list else None
 
     def _compare_structure(
         self,
@@ -243,13 +244,21 @@ class FusionMatcher:
             self.categorical_fusions.extend(
                 self.load_categorical_fusions(output_dir=cache_path)
             )
+
         categorical_fusions = self._filter_categorical_fusions(
             assayed_fusion, self.categorical_fusions
         )
+        if (
+            not categorical_fusions
+        ):  # Return none if no applicable cateogorical fusion exist
+            return None
+
         for categorical_fusion in categorical_fusions:
             match_information = self._compare_fusion(assayed_fusion, categorical_fusion)
             if match_information:
                 matched_fusions.append((categorical_fusion, match_information[1]))
+
+        self.categorical_fusions.clear()  # Reset categorical fusions list
         return (
             sorted(matched_fusions, key=lambda x: x[1], reverse=True)
             if matched_fusions
