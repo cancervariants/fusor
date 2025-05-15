@@ -93,6 +93,7 @@ def fusion_data_example():
             "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
             "r_frame_preserved": True,
             "assay": None,
+            "viccNomenclature": "NM_152263.4(TPM3):e.8-66::NM_002609.4(PDGFRB):e.11+2",
         }
         assayed_fusion = AssayedFusion(**params)
         return assayed_fusion.model_copy(update=kwargs)
@@ -164,6 +165,7 @@ def fusion_data_example_nonexonic():
             "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
             "r_frame_preserved": True,
             "assay": None,
+            "viccNomenclature": "NM_152263.4(TPM3):e.4+5::NM_002609.4(PDGFRB):e.11-559",
         }
         assayed_fusion = AssayedFusion(**params)
         return assayed_fusion.model_copy(update=kwargs)
@@ -232,6 +234,7 @@ def fusion_data_example_categorical():
                     },
                 },
             ],
+            "viccNomenclature": "NM_004327.4(BCR):e.14::NM_005157.6(ABL1):e.2",
         }
         categorical_fusion = CategoricalFusion(**params)
         return categorical_fusion.model_copy(update=kwargs)
@@ -277,6 +280,7 @@ def fusion_data_example_categorical_mpge():
                     },
                 },
             ],
+            "viccNomenclature": "v::NM_002529.4(NTRK1):e.9",
         }
         categorical_fusion = CategoricalFusion(**params)
         return categorical_fusion.model_copy(update=kwargs)
@@ -331,6 +335,7 @@ async def test_jaffa(
     )
     assert jaffa_fusor.structure == fusion_data_example.structure
     assert jaffa_fusor.readData == fusion_data_example.readData
+    assert jaffa_fusor.viccNomenclature == fusion_data_example.viccNomenclature
 
     # Test non-exonic breakpoint
     jaffa.base1 = 154173079
@@ -348,6 +353,10 @@ async def test_jaffa(
     )
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
     assert jaffa_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
+    assert (
+        jaffa_fusor_nonexonic.viccNomenclature
+        == fusion_data_example_nonexonic.viccNomenclature
+    )
 
     # Test unknown partner
     jaffa.fusion_genes = "NA:PDGFRB"
@@ -355,11 +364,13 @@ async def test_jaffa(
         jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert jaffa_fusor_unknown.structure[0] == UnknownGeneElement()
+    assert jaffa_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     jaffa.fusion_genes = "TPM3:NA"
     jaffa_fusor_unknown = await translator_instance.from_jaffa(
         jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert jaffa_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert jaffa_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio()
@@ -390,6 +401,7 @@ async def test_star_fusion(
     )
     assert star_fusion_fusor.structure == fusion_data_example.structure
     assert star_fusion_fusor.readData == fusion_data_example.readData
+    assert star_fusion_fusor.viccNomenclature == fusion_data_example.viccNomenclature
 
     # Test non-exonic breakpoints
     star_fusion.left_breakpoint = "chr1:154173079:-"
@@ -411,6 +423,10 @@ async def test_star_fusion(
     assert (
         star_fusion_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
     )
+    assert (
+        star_fusion_fusor_nonexonic.viccNomenclature
+        == fusion_data_example_nonexonic.viccNomenclature
+    )
 
     # Test unknown partners
     star_fusion.left_gene = "NA"
@@ -420,6 +436,9 @@ async def test_star_fusion(
         Assembly.GRCH38.value,
     )
     assert star_fusion_fusor_unknown.structure[0] == UnknownGeneElement()
+    assert (
+        star_fusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
+    )
     star_fusion.left_gene = "TPM3"
     star_fusion.right_gene = "NA"
     star_fusion_fusor_unknown = await translator_instance.from_star_fusion(
@@ -428,6 +447,7 @@ async def test_star_fusion(
         Assembly.GRCH38.value,
     )
     assert star_fusion_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert star_fusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+4::?"
 
 
 @pytest.mark.asyncio()
@@ -461,6 +481,9 @@ async def test_fusion_catcher(
     assert fusion_catcher_fusor.structure == fusion_data_example.structure
     assert fusion_catcher_fusor.readData == fusion_data_example.readData
     assert fusion_catcher_fusor.contig == fusion_catcher_fusor.contig
+    assert (
+        fusion_catcher_fusor.viccNomenclature == fusion_catcher_fusor.viccNomenclature
+    )
 
     # Test non-exonic breakpoints
     fusion_catcher.five_prime_fusion_point = "1:154173079:-"
@@ -486,6 +509,10 @@ async def test_fusion_catcher(
         == fusion_data_example_nonexonic.readData
     )
     assert fusion_catcher_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
+    assert (
+        fusion_catcher_fusor_nonexonic.viccNomenclature
+        == fusion_catcher_fusor_nonexonic.viccNomenclature
+    )
 
     # Test unknown partners
     fusion_catcher.five_prime_partner = "NA"
@@ -493,12 +520,17 @@ async def test_fusion_catcher(
         fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert fusion_catcher_fusor_unknown.structure[0] == UnknownGeneElement()
+    assert (
+        fusion_catcher_fusor_unknown.viccNomenclature
+        == "?::NM_002609.4(PDGFRB):e.11-559"
+    )
     fusion_catcher.five_prime_partner = "TPM3"
     fusion_catcher.three_prime_partner = "NA"
     fusion_catcher_fusor_unknown = await translator_instance.from_fusion_catcher(
         fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert fusion_catcher_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio()
@@ -590,6 +622,7 @@ async def test_arriba(
     assert arriba_fusor.structure == fusion_data_example.structure
     assert arriba_fusor.readData == fusion_data_example.readData
     assert arriba_fusor.contig == fusion_data_example.contig
+    assert arriba_fusor.viccNomenclature == fusion_data_example.viccNomenclature
 
     # Test non-exonic breakpoint
     arriba.breakpoint1 = "1:154173079"
@@ -615,6 +648,10 @@ async def test_arriba(
     assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
     assert arriba_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
     assert arriba_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
+    assert (
+        arriba_fusor_nonexonic.viccNomenclature
+        == fusion_data_example_nonexonic.viccNomenclature
+    )
 
     # Test Linker Sequence
     arriba_linker = arriba.model_copy(deep=True)
@@ -625,6 +662,10 @@ async def test_arriba(
     linker_element = arriba_fusor_linker.structure[1]
     assert linker_element
     assert linker_element.linkerSequence.sequence.root == "ATATACGAT"
+    assert (
+        arriba_fusor_linker.viccNomenclature
+        == "NM_152263.4(TPM3):e.4+5::ATATACGAT::NM_002609.4(PDGFRB):e.11-559"
+    )
 
     # Test unknown partners
     arriba.gene1 = "NA"
@@ -632,12 +673,14 @@ async def test_arriba(
         arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert arriba_fusor_unknown.structure[0] == UnknownGeneElement()
+    assert arriba_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     arriba.gene1 = "TPM3"
     arriba.gene2 = "NA"
     arriba_fusor_unknown = await translator_instance.from_arriba(
         arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert arriba_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert arriba_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio()
@@ -677,6 +720,7 @@ async def test_cicero(
     assert cicero_fusor.structure == fusion_data_example.structure
     assert cicero_fusor.readData == fusion_data_example.readData
     assert cicero_fusor.contig == fusion_data_example.contig
+    assert cicero_fusor.viccNomenclature == fusion_data_example.viccNomenclature
 
     # Test non-exonic breakpoint
     cicero.pos_5prime = 154173079
@@ -701,6 +745,10 @@ async def test_cicero(
     assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
     assert cicero_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
     assert cicero_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
+    assert (
+        cicero_fusor_nonexonic.viccNomenclature
+        == cicero_fusor_nonexonic.viccNomenclature
+    )
 
     # Test case where the called fusion does not have confident biological meaning
     cicero.sv_ort = "?"
@@ -735,6 +783,7 @@ async def test_cicero(
     cicero_fusor_unknown = await translator_instance.from_cicero(
         cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
+    assert cicero_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     assert cicero_fusor_unknown.structure[0] == UnknownGeneElement()
     cicero.gene_5prime = "TPM3"
     cicero.gene_3prime = "NA"
@@ -742,6 +791,7 @@ async def test_cicero(
         cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert cicero_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert cicero_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio()
@@ -765,6 +815,7 @@ async def test_enfusion(
         Assembly.GRCH38.value,
     )
     assert enfusion_fusor.structure == fusion_data_example().structure
+    assert enfusion_fusor.viccNomenclature == fusion_data_example().viccNomenclature
 
     # Test non-exonic breakpoint
     enfusion.break_5prime = 154173079
@@ -778,6 +829,10 @@ async def test_enfusion(
     assert (
         enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
     )
+    assert (
+        enfusion_fusor_nonexonic.viccNomenclature
+        == fusion_data_example_nonexonic().viccNomenclature
+    )
 
     # Test unknown partner
     enfusion.gene_5prime = "NA"
@@ -785,12 +840,14 @@ async def test_enfusion(
         enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert enfusion_fusor_unknown.structure[0] == UnknownGeneElement()
+    assert enfusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     enfusion.gene_5prime = "TPM3"
     enfusion.gene_3prime = "NA"
     enfusion_fusor_unknown = await translator_instance.from_enfusion(
         enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert enfusion_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert enfusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio()
@@ -816,6 +873,7 @@ async def test_genie(
         Assembly.GRCH38.value,
     )
     assert genie_fusor.structure == fusion_data_example().structure
+    assert genie_fusor.viccNomenclature == fusion_data_example().viccNomenclature
 
     # Test non-exonic breakpoint
     genie.site1_pos = 154173079
@@ -827,6 +885,10 @@ async def test_genie(
         Assembly.GRCH38.value,
     )
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
+    assert (
+        genie_fusor_nonexonic.viccNomenclature
+        == fusion_data_example_nonexonic().viccNomenclature
+    )
 
     # Test unknown partner
     genie.site1_hugo = "NA"
@@ -834,12 +896,14 @@ async def test_genie(
         genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert genie_fusor_unknown.structure[0] == UnknownGeneElement()
+    assert genie_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     genie.site1_hugo = "TPM3"
     genie.site2_hugo = "NA"
     genie_fusor_unknown = await translator_instance.from_genie(
         genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert genie_fusor_unknown.structure[1] == UnknownGeneElement()
+    assert genie_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio()
@@ -862,6 +926,10 @@ async def test_civic(
     )
     civic_fusor = await translator_instance.from_civic(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical().structure
+    assert (
+        civic_fusor.viccNomenclature
+        == fusion_data_example_categorical().viccNomenclature
+    )
     assert len(civic_fusor.civicMolecularProfiles) == 84
 
     # Test case where one parter is a MultiplePossibleGenesElement object
@@ -875,4 +943,8 @@ async def test_civic(
     )
     civic_fusor = await translator_instance.from_civic(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical_mpge().structure
+    assert (
+        civic_fusor.viccNomenclature
+        == fusion_data_example_categorical_mpge().viccNomenclature
+    )
     assert len(civic_fusor.civicMolecularProfiles) == 5

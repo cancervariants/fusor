@@ -97,6 +97,7 @@ class Translator:
         :param contig: The contig sequence
         :param linker_sequence: The non-template linker sequence
         :param reads: The read data
+        :param molecular_profiles: A list of CIViC Molecular Profiles
         :return AssayedFusion or CategoricalFusion object
         """
         params = {
@@ -117,7 +118,11 @@ class Translator:
             params["structure"] = [tr_5prime, tr_3prime]
         if linker_sequence:
             params["structure"].insert(1, linker_sequence)
-        return fusion_type(**params)
+        fusion = fusion_type(**params)
+
+        # Assign VICC Nomenclature string to fusion event
+        fusion.viccNomenclature = self.fusor.generate_nomenclature(fusion)
+        return fusion
 
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
