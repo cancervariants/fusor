@@ -6,7 +6,6 @@ import pytest
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.fusion_matching import FusionSources
 from fusor.harvester import CIVICHarvester, StarFusionHarvester
 
 
@@ -39,16 +38,12 @@ async def test_fusion_matching_valid(
     ]
     matches = await fusion_matching_instance.match_fusion(
         assayed_fusion=assayed_fusion_star_fusion,
-        sources=[FusionSources.CIVIC],
-        cache_dir=Path("src/fusor/data/"),
     )
     assert len(matches) == 2
     assert matches[0][0] == matching_categorical_fusions[0]
     assert matches[0][1] == 10
     assert matches[1][0] == matching_categorical_fusions[1]
     assert matches[1][1] == 1
-
-    fusion_matching_instance.categorical_fusions.clear()
 
     # Test EML4::ALK fusion (exon 13 of EML4 fused with exon 20 of ALK)
     # Note: There are numerous EML4::ALK fusions in CIViC, but only one entry that
@@ -67,8 +62,6 @@ async def test_fusion_matching_valid(
     ]
     matches = await fusion_matching_instance.match_fusion(
         assayed_fusion=assayed_fusion_star_fusion,
-        sources=[FusionSources.CIVIC],
-        cache_dir=Path("src/fusor/data/"),
     )
     assert len(matches) == 2
     assert matches[0][0] == matching_categorical_fusions[0]
@@ -91,7 +84,5 @@ async def test_fusion_matching_invalid(
     )
     matches = await fusion_matching_instance.match_fusion(
         assayed_fusion=assayed_fusion_star_fusion,
-        sources=[FusionSources.CIVIC],
-        cache_dir=Path("src/fusor/data/"),
     )
     assert not matches
