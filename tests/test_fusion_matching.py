@@ -48,6 +48,8 @@ async def test_fusion_matching_valid(
     assert matches[1][0] == matching_categorical_fusions[1]
     assert matches[1][1] == 1
 
+    fusion_matching_instance.categorical_fusions.clear()
+
     # Test EML4::ALK fusion (exon 13 of EML4 fused with exon 20 of ALK)
     # Note: There are numerous EML4::ALK fusions in CIViC, but only one entry that
     # contains the exact matching transcript junctions

@@ -258,7 +258,6 @@ class FusionMatcher:
             if match_information:
                 matched_fusions.append((categorical_fusion, match_information[1]))
 
-        self.categorical_fusions.clear()  # Reset categorical fusions list
         return (
             sorted(matched_fusions, key=lambda x: x[1], reverse=True)
             if matched_fusions
