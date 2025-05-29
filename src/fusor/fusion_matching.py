@@ -119,33 +119,33 @@ class FusionMatcher:
         self,
         assayed_fusion: AssayedFusion,
         categorical_fusions: list[CategoricalFusion],
-    ) -> list[CategoricalFusion] | None:
+    ) -> list[CategoricalFusion]:
         """Filter CategoricalFusion list to ensure fusion matching is run on relevant list
 
         :param assayed_fusion: The AssayedFusion object that is being queried
         :param categorical_fusions: A list of CategoricalFusion objects
         :return A list of filtered categorical fusion objects, or None if the list is empty
         """
-        fusions_list = [
+        return [
             categorical_fusion
             for categorical_fusion in categorical_fusions
             if self._match_fusion_partners(assayed_fusion, categorical_fusion)
         ]
-        return fusions_list if fusions_list else None
 
-    def _compare_structure(
+    def _match_fusion_structure(
         self,
         assayed_element: TranscriptSegmentElement | UnknownGeneElement | GeneElement,
         categorical_element: TranscriptSegmentElement
         | MultiplePossibleGenesElement
         | GeneElement,
         is_five_prime_partner: bool,
-    ) -> tuple[bool | str, int]:
+    ) -> int | str:
         """Compare transcript segments for an assayed and categorical fusions
         :param assayed_element: The assayed fusion transcript or unknown gene element or gene element
         :param categorical_element: The categorical fusion transcript or mulitple possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
-        :return A boolean or string indicating if a match is found and a score indiciating the degree of match
+        :return A score indiciating the degree of match or "NA" if the partner is
+            ? or v
         """
         # Set default match score
         match_score = 0
@@ -155,13 +155,13 @@ class FusionMatcher:
         if isinstance(assayed_element, UnknownGeneElement) or isinstance(
             categorical_element, MultiplePossibleGenesElement
         ):
-            return "NA", 0
+            return "NA"
 
         # Compare gene partners first
         if assayed_element.gene == categorical_element.gene:
             match_score += 1
         else:
-            return False, 0
+            return 0
 
         # Then compare transcript partners if transcript data exists
         if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
@@ -174,7 +174,7 @@ class FusionMatcher:
             ):
                 match_score += 1
             else:
-                return False, 0
+                return 0
 
             start_or_end = "End" if is_five_prime_partner else "Start"
             fields_to_compare = [
@@ -189,9 +189,9 @@ class FusionMatcher:
                 ):
                     match_score += 1
                 else:
-                    return False, 0
+                    return 0
 
-        return True, match_score
+        return match_score
 
     def _compare_fusion(
         self, assayed_fusion: AssayedFusion, categorical_fusion: CategoricalFusion
@@ -220,22 +220,26 @@ class FusionMatcher:
                 return False
 
         # Compare other structural elements
-        match_data_5prime = self._compare_structure(
+        match_data_5prime = self._match_fusion_structure(
             assayed_transcript_segments[0], categorical_transcript_segments[0], True
         )
-        if not match_data_5prime[0]:
+        if match_data_5prime == 0:
             return False
-        match_data_3prime = self._compare_structure(
+        match_data_3prime = self._match_fusion_structure(
             assayed_transcript_segments[1], categorical_transcript_segments[1], False
         )
-        if not match_data_3prime[0]:
+        if match_data_3prime == 0:
             return False
-        return True, match_score + match_data_5prime[1] + match_data_3prime[1]
+
+        # Update match scores in event partner is ? or v
+        match_data_5prime = 0 if match_data_5prime == "NA" else match_data_5prime
+        match_data_3prime = 0 if match_data_3prime == "NA" else match_data_3prime
+        return True, match_score + match_data_5prime + match_data_3prime
 
     async def match_fusion(
         self,
         assayed_fusion: AssayedFusion,
-    ) -> list[tuple[CategoricalFusion, int]] | None:
+    ) -> list[tuple[CategoricalFusion, int]]:
         """Return best matching fusion
 
         :param assayed_fusion: The assayed fusion object
@@ -247,19 +251,15 @@ class FusionMatcher:
         )
         if (
             not categorical_fusions
-        ):  # Return none if no applicable cateogorical fusion exist
-            return None
+        ):  # Return empty list if no filtered fusions are generated
+            return []
 
         for categorical_fusion in categorical_fusions:
             match_information = self._compare_fusion(assayed_fusion, categorical_fusion)
             if match_information:
                 matched_fusions.append((categorical_fusion, match_information[1]))
 
-        return (
-            sorted(matched_fusions, key=lambda x: x[1], reverse=True)
-            if matched_fusions
-            else None
-        )
+        return sorted(matched_fusions, key=lambda x: x[1], reverse=True)
 
 
 class CIVICCategoricalFusions(FusionMatcher):
