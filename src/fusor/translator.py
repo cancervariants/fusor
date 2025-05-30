@@ -3,7 +3,9 @@ objects
 """
 
 import logging
+import pickle
 import re
+from pathlib import Path
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -996,3 +998,26 @@ class Translator:
             tr_3prime if isinstance(tr_3prime, TranscriptSegmentElement) else None,
             molecular_profiles=civic.molecular_profiles,
         )
+
+
+######### Categorical Fusions Caching #############
+def save_categorical_fusions_cache(
+    fusions_list: list[CategoricalFusion],
+    cache_dir: Path | None,
+    cache_name: str | None = None,
+) -> None:
+    """Save a list of translated categorical fusions as a cache
+
+    :param fusions_list: A list of FUSOR-translated fusions
+    :param output_dir: The location to store the cached file or None
+    :param cache_name: The name for the resultant cached file or None
+    """
+    if not cache_dir:
+        cache_dir = Path(__file__).resolve().parent / "data"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    output_file = cache_dir / cache_name
+    if output_file.exists():
+        _logger.warning("Cached categorical fusions file already exists")
+        return
+    with output_file.open("wb") as f:
+        pickle.dump(fusions_list, f)
