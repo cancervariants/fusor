@@ -3,86 +3,75 @@
 from pathlib import Path
 
 import pytest
+import yaml
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.harvester import CIVICHarvester, StarFusionHarvester
 
 
+def _assert_subset(actual: dict, expected: dict) -> None:
+    """Compare actual and expected categorical fusion fields
+
+    :param acutal: The actual categorical fusion dictionary
+    :param expected: The expected categorical fusion dictionary
+    """
+    for i, expected_item in enumerate(expected):
+        actual_item = actual[i]
+        for field in expected_item:
+            expected_value = expected_item[field]
+            actual_value = actual_item[field]
+
+            if isinstance(expected_value, dict):
+                for subfield in expected_value:
+                    assert actual_value[subfield] == expected_value[subfield]
+            else:
+                assert actual_value == expected_value
+
+
 @pytest.mark.asyncio()
-async def test_fusion_matching_valid(
+async def test_fusion_matching(
     fixture_data_dir, translator_instance, fusion_matching_instance
 ):
     """Test fusion matching worklow using example output from STAR-Fusion"""
+    with Path.open(
+        Path(__file__).parent / "fusion_matching_test_cases.yaml"
+    ) as test_cases:
+        test_cases = yaml.safe_load(test_cases)["tests"]
+
+    # Load STAR-Fusion records
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
     harvester = StarFusionHarvester()
     fusions_list = harvester.load_records(path)
 
-    # Test KIF5B::RET Fusion
-    assayed_fusion_star_fusion = await translator_instance.from_star_fusion(
-        fusions_list[0], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
-    )
+    # Load CIViC Records
     civic_variants = civic.get_all_fusion_variants(include_status="accepted")
     harvester = CIVICHarvester()
     harvester.fusions_list = civic_variants
-    fusions = harvester.load_records()
 
-    matching_categorical_fusions = [
-        await translator_instance.from_civic(fusion)
-        for fusion in fusions
-        if fusion.vicc_compliant_name
-        in {
-            "KIF5B(entrez:3799)::RET(entrez:5979)",
-            "v::RET(entrez:5979)",
-        }
-    ]
-    matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion=assayed_fusion_star_fusion,
-    )
-    assert len(matches) == 2
-    assert matches[0][0] == matching_categorical_fusions[0]
-    assert matches[0][1] == 10
-    assert matches[1][0] == matching_categorical_fusions[1]
-    assert matches[1][1] == 1
+    for case in test_cases:
+        assayed_fusion = await translator_instance.from_star_fusion(
+            fusions_list[case["input_index"]],
+            CoordinateType.RESIDUE.value,
+            Assembly.GRCH38.value,
+        )
+        fusion_matching_instance.assayed_fusion = assayed_fusion
+        matches = await fusion_matching_instance.match_fusion()
 
-    # Test EML4::ALK fusion (exon 13 of EML4 fused with exon 20 of ALK)
-    # Note: There are numerous EML4::ALK fusions in CIViC, but only one entry that
-    # contains the exact matching transcript junctions
-    assayed_fusion_star_fusion = await translator_instance.from_star_fusion(
-        fusions_list[1], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
-    )
-    matching_categorical_fusions = [
-        await translator_instance.from_civic(fusion)
-        for fusion in fusions
-        if fusion.vicc_compliant_name
-        in {
-            "EML4(entrez:27436)::ALK(entrez:238)",
-            "v::ALK(entrez:238)",
-        }
-    ]
-    matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion=assayed_fusion_star_fusion,
-    )
-    assert len(matches) == 2
-    assert matches[0][0] == matching_categorical_fusions[0]
-    assert matches[0][1] == 10
-    assert matches[1][0] == matching_categorical_fusions[1]
-    assert matches[1][1] == 5
+        if not case["expected_matches"]:
+            assert not matches
+            continue
 
+        for i, expected in enumerate(case["expected_matches"]):
+            fusion, score = matches[i]
+            expected_fusion = expected["fields"]
+            expected_score = expected["score"]
 
-@pytest.mark.asyncio()
-async def test_fusion_matching_invalid(
-    fixture_data_dir, translator_instance, fusion_matching_instance
-):
-    """Test case where assayed fusion would not have a categorical fusion match"""
-    path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
-    harvester = StarFusionHarvester()
-    fusions_list = harvester.load_records(path)
+            fusion = fusion.model_dump(exclude_none=True)
+            for field, expected_value in expected_fusion.items():
+                if field == "structure":
+                    _assert_subset(fusion["structure"], expected_value)
+                else:
+                    assert fusion[field] == expected_value
 
-    assayed_fusion_star_fusion = await translator_instance.from_star_fusion(
-        fusions_list[36], CoordinateType.RESIDUE.value, Assembly.GRCH38.value
-    )
-    matches = await fusion_matching_instance.match_fusion(
-        assayed_fusion=assayed_fusion_star_fusion,
-    )
-    assert not matches
+            assert score == expected_score

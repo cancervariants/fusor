@@ -1,0 +1,65 @@
+tests:
+  - name: "KIF5B::RET"
+    input_index: 0
+    expected_matches:
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "KIF5B"
+              exonEnd: 24
+              exonEndOffset: 0
+              transcript: "refseq:NM_004521.3"
+              elementGenomicEnd:
+                start: 32017142
+            - gene:
+                name: "RET"
+              exonStart: 11
+              exonStartOffset: 0
+              transcript: "refseq:NM_020975.6"
+              elementGenomicStart:
+                  start: 43114479
+        score: 10
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "RET"
+        score: 1
+  - name: "EML4::ALK"
+    input_index: 1
+    expected_matches:
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 13
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42295516
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        score: 10
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        score: 5
+  - name: "INVALID"
+    input_index: 36
+    expected_matches: []

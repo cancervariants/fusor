@@ -1,12 +1,8 @@
 """Module for matching assayed fusions against categorical fusions"""
 
 import pickle
-from enum import Enum
 from pathlib import Path
 
-from civicpy import civic
-
-from fusor.harvester import CIVICHarvester
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
@@ -16,32 +12,25 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
-from fusor.translator import Translator
-
-
-class FusionSources(str, Enum):
-    """Define CategoricalFusion sources"""
-
-    CIVIC = "CIViC"
 
 
 class FusionMatcher:
     """Class for matching assayed fusions against categorical fusions"""
 
     def __init__(
-        self, translator: Translator, sources: list[FusionSources], cache_dir: Path
+        self,
+        cache_dir: Path,
+        assayed_fusion: AssayedFusion = None,
     ) -> None:
         """Initialize FusionMatcher class and comparator categorical fusion objects
 
-        :param translator: A translator object
-        :param sources: A list of CategoricalFusion sources
         :param cache_dir: The path to the cached categorical fusions files. If the
             path does not exist, a cached file at the provided location will be
             generated for each source
+        :param assayed_fusion: An AssayedFusion object to be queried
         """
-        self.translator = translator
-        self.sources = sources
         self.cache_dir = cache_dir
+        self.assayed_fusion = assayed_fusion
 
     async def _load_categorical_fusions(self) -> list[CategoricalFusion]:
         """Load in cache of CategoricalFusion objects
@@ -49,18 +38,10 @@ class FusionMatcher:
         :return A list of Categorical fusions
         """
         categorical_fusions = []
-        categorical_fusion_classes = {FusionSources.CIVIC: CIVICCategoricalFusions}
-        sources = {
-            k: v for k, v in categorical_fusion_classes.items() if k in self.sources
-        }
-        for source in sources:
-            source_class = sources[source]
-            source_class = source_class(self.translator)
-            cache_path = self.cache_dir / source_class.cache_name
-            if not cache_path.exists():
-                await source_class.save_categorical_fusions(output_dir=self.cache_dir)
-            with cache_path.open("rb") as f:
-                categorical_fusions.extend(pickle.load(f))  # noqa: S301
+        for cached_file in self.cache_dir.iterdir():
+            if cached_file.is_file() and cached_file.suffix == ".pkl":
+                with cached_file.open("rb") as f:
+                    categorical_fusions.extend(pickle.load(f))  # noqa: S301
         return categorical_fusions
 
     def _extract_fusion_partners(
@@ -238,16 +219,14 @@ class FusionMatcher:
 
     async def match_fusion(
         self,
-        assayed_fusion: AssayedFusion,
     ) -> list[tuple[CategoricalFusion, int]]:
         """Return best matching fusion
 
-        :param assayed_fusion: The assayed fusion object
         :return A list of tuples containing matching categorical fusion objects and their associated match score or None
         """
         matched_fusions = []
         categorical_fusions = self._filter_categorical_fusions(
-            assayed_fusion, await self._load_categorical_fusions()
+            self.assayed_fusion, await self._load_categorical_fusions()
         )
         if (
             not categorical_fusions
@@ -255,45 +234,10 @@ class FusionMatcher:
             return []
 
         for categorical_fusion in categorical_fusions:
-            match_information = self._compare_fusion(assayed_fusion, categorical_fusion)
+            match_information = self._compare_fusion(
+                self.assayed_fusion, categorical_fusion
+            )
             if match_information:
                 matched_fusions.append((categorical_fusion, match_information[1]))
 
         return sorted(matched_fusions, key=lambda x: x[1], reverse=True)
-
-
-class CIVICCategoricalFusions(FusionMatcher):
-    """Class for loading and generating cache of CIViC Categorical Fusions"""
-
-    def __init__(
-        self, translator: Translator, cache_name: str = "civic_translated_fusions.pkl"
-    ) -> None:
-        """Initialize CIVICCategoricalFusions class
-
-        :param translator: A translator object
-        :param cache_name: The file name to save the cached CategoricalFusion objects
-        """
-        # Load in all accepted fusions variants
-        super().__init__(translator, [FusionSources.CIVIC], cache_name)
-        variants = civic.get_all_fusion_variants(include_status="accepted")
-        harvester = CIVICHarvester()
-        harvester.fusions_list = variants
-        self.fusions_list = harvester.load_records()
-        self.cache_name = cache_name
-
-    async def save_categorical_fusions(self, output_dir: Path) -> None:
-        """Load fusion variants from CIViC and convert to CategoricalFusion objects
-
-        :param output_dir: The location where the cache will be stored
-        """
-        civic_fusions = []
-        for fusion in self.fusions_list:
-            if "?" in fusion.vicc_compliant_name:
-                continue
-            cex = await self.translator.from_civic(civic=fusion)
-            civic_fusions.append(cex)
-
-        output_dir.parent.mkdir(parents=True, exist_ok=True)
-        output_file = output_dir / self.cache_name
-        with output_file.open("wb") as f:
-            pickle.dump(civic_fusions, f)
