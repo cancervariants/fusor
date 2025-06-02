@@ -6,6 +6,7 @@ from pathlib import Path
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
+    FusionSet,
     GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
@@ -17,20 +18,17 @@ from fusor.models import (
 class FusionMatcher:
     """Class for matching assayed fusions against categorical fusions"""
 
-    def __init__(
-        self,
-        cache_dir: Path,
-        assayed_fusion: AssayedFusion = None,
-    ) -> None:
+    def __init__(self, cache_dir: Path, fusion_set: FusionSet) -> None:
         """Initialize FusionMatcher class and comparator categorical fusion objects
 
         :param cache_dir: The path to the cached categorical fusions files. If the
             path does not exist, a cached file at the provided location will be
             generated for each source
-        :param assayed_fusion: An AssayedFusion object to be queried
+        :param fusion_set: A FusionSet object
         """
         self.cache_dir = cache_dir
-        self.assayed_fusion = assayed_fusion
+        self.assayed_fusions = fusion_set.assayedFusions
+        self.categorical_fusions = fusion_set.categoricalFusions
 
     async def _load_categorical_fusions(self) -> list[CategoricalFusion]:
         """Load in cache of CategoricalFusion objects
@@ -219,25 +217,31 @@ class FusionMatcher:
 
     async def match_fusion(
         self,
-    ) -> list[tuple[CategoricalFusion, int]]:
+    ) -> list[list[tuple[CategoricalFusion, int]]]:
         """Return best matching fusion
 
-        :return A list of tuples containing matching categorical fusion objects and their associated match score or None
+        :return A list of tuples containing matching categorical fusion objects
+            and their associated match score or None, for each examined AssayedFusion
+            object
         """
         matched_fusions = []
-        categorical_fusions = self._filter_categorical_fusions(
-            self.assayed_fusion, await self._load_categorical_fusions()
-        )
-        if (
-            not categorical_fusions
-        ):  # Return empty list if no filtered fusions are generated
-            return []
-
-        for categorical_fusion in categorical_fusions:
-            match_information = self._compare_fusion(
-                self.assayed_fusion, categorical_fusion
+        for assayed_fusion in self.assayed_fusions:
+            categorical_fusions = self._filter_categorical_fusions(
+                assayed_fusion,
+                self.categorical_fusions
+                if self.categorical_fusions
+                else await self._load_categorical_fusions(),
             )
-            if match_information:
-                matched_fusions.append((categorical_fusion, match_information[1]))
+            if (
+                not categorical_fusions
+            ):  # Return empty list if no filtered fusions are generated
+                return []
+
+            for categorical_fusion in categorical_fusions:
+                match_information = self._compare_fusion(
+                    assayed_fusion, categorical_fusion
+                )
+                if match_information:
+                    matched_fusions.append((categorical_fusion, match_information[1]))
 
         return sorted(matched_fusions, key=lambda x: x[1], reverse=True)

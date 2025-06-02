@@ -1,7 +1,10 @@
 """Model for fusion class"""
 
+import logging
+import pickle
 from abc import ABC
 from enum import Enum
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from civicpy.civic import MolecularProfile
@@ -22,6 +25,8 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+
+_logger = logging.getLogger(__name__)
 
 LINKER_REGEX = r"\|([atcg]+)\|"
 
@@ -934,3 +939,62 @@ class CategoricalFusion(AbstractFusion):
 
 
 Fusion = CategoricalFusion | AssayedFusion
+
+
+class FusionSet(BaseModelForbidExtra):
+    """Define class for creating sets of AssayedFusion and CategoricalFusion objects"""
+
+    assayedFusions: list[AssayedFusion] = Field(default_factory=list)
+    categoricalFusions: list[CategoricalFusion] = Field(default_factory=list)
+
+    def add_assayed_fusion(self, fusion: AssayedFusion) -> None:
+        """Add fusion to AssayedFusion list
+
+        :param fusion: An AssayedFusion object
+        """
+        self.assayedFusions.append(fusion)
+
+    def add_categorical_fusion(self, fusion: CategoricalFusion) -> None:
+        """Add fusion to CategoricalFusion list
+
+        :param fusion: A CategoricalFusion object
+        """
+        self.categoricalFusions.append(fusion)
+
+    def remove_assayed_fusion(self, fusion: AssayedFusion) -> None:
+        """Remove all occurrences of fusion from AssayedFusion list
+
+        :param fusion: An AssayedFusion object
+        """
+        self.assayedFusions = [fus for fus in self.assayedFusions if fus != fusion]
+
+    def remove_categorical_fusion(self, fusion: CategoricalFusion) -> None:
+        """Remove all occurrences of fusion from CategoricalFusions list
+
+        :param fusion: A CategoricalFusion object
+        """
+        self.categoricalFusions = [
+            fus for fus in self.categoricalFusions if fus != fusion
+        ]
+
+    def save_fusions_cache(
+        self,
+        fusions_list: list[AssayedFusion | CategoricalFusion],
+        cache_dir: Path | None,
+        cache_name: str | None = None,
+    ) -> None:
+        """Save a list of translated fusions as a cache
+
+        :param fusions_list: A list of FUSOR-translated fusions
+        :param output_dir: The location to store the cached file or None
+        :param cache_name: The name for the resultant cached file or None
+        """
+        if not cache_dir:
+            cache_dir = Path(__file__).resolve().parent / "data"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        output_file = cache_dir / cache_name
+        if output_file.exists():
+            _logger.warning("Cached fusions file already exists")
+            return
+        with output_file.open("wb") as f:
+            pickle.dump(fusions_list, f)

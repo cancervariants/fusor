@@ -4,10 +4,9 @@ from pathlib import Path
 
 import pytest
 import yaml
-from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.harvester import CIVICHarvester, StarFusionHarvester
+from fusor.harvester import StarFusionHarvester
 
 
 def _assert_subset(actual: dict, expected: dict) -> None:
@@ -44,18 +43,13 @@ async def test_fusion_matching(
     harvester = StarFusionHarvester()
     fusions_list = harvester.load_records(path)
 
-    # Load CIViC Records
-    civic_variants = civic.get_all_fusion_variants(include_status="accepted")
-    harvester = CIVICHarvester()
-    harvester.fusions_list = civic_variants
-
     for case in test_cases:
         assayed_fusion = await translator_instance.from_star_fusion(
             fusions_list[case["input_index"]],
             CoordinateType.RESIDUE.value,
             Assembly.GRCH38.value,
         )
-        fusion_matching_instance.assayed_fusion = assayed_fusion
+        fusion_matching_instance.assayed_fusions = [assayed_fusion]
         matches = await fusion_matching_instance.match_fusion()
 
         if not case["expected_matches"]:

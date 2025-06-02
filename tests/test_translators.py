@@ -1,7 +1,5 @@
 """Module for testing FUSOR Translators"""
 
-from pathlib import Path
-
 import polars as pl
 import pytest
 from civicpy import civic
@@ -18,7 +16,6 @@ from fusor.fusion_caller_models import (
     Genie,
     STARFusion,
 )
-from fusor.harvester import CIVICHarvester
 from fusor.models import (
     AnchoredReads,
     AssayedFusion,
@@ -30,7 +27,6 @@ from fusor.models import (
     SplitReads,
     UnknownGeneElement,
 )
-from fusor.translator import save_categorical_fusions_cache
 
 
 @pytest.fixture(scope="module")
@@ -952,26 +948,3 @@ async def test_civic(
         == fusion_data_example_categorical_mpge().viccNomenclature
     )
     assert len(civic_fusor.civicMolecularProfiles) == 5
-
-
-@pytest.mark.asyncio()
-async def test_save_categorical_fusions_cache(fixture_data_dir, translator_instance):
-    """Test cateogorical fusions cache function"""
-    # Save categorical fusions cache
-    harvester = CIVICHarvester()
-    harvester.fusions_list = civic.get_all_fusion_variants(include_status="accepted")
-    fusions_list = harvester.load_records()[:5]  # Take first five fusions for testing
-
-    civic_fusions = []
-    for fusion in fusions_list:
-        if "?" in fusion.vicc_compliant_name:
-            continue
-        cex = await translator_instance.from_civic(civic=fusion)
-        civic_fusions.append(cex)
-    cache_dir = Path(fixture_data_dir)
-    save_categorical_fusions_cache(
-        fusions_list=civic_fusions,
-        cache_dir=cache_dir,
-        cache_name="civic_translated_fusions_test.pkl",
-    )
-    assert Path.exists(fixture_data_dir / "civic_translated_fusions_test.pkl")
