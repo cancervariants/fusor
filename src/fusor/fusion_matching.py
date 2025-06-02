@@ -226,6 +226,7 @@ class FusionMatcher:
         """
         matched_fusions = []
         for assayed_fusion in self.assayed_fusions:
+            matching_output = []
             categorical_fusions = self._filter_categorical_fusions(
                 assayed_fusion,
                 self.categorical_fusions
@@ -242,6 +243,9 @@ class FusionMatcher:
                     assayed_fusion, categorical_fusion
                 )
                 if match_information:
-                    matched_fusions.append((categorical_fusion, match_information[1]))
+                    matching_output.append((categorical_fusion, match_information[1]))
+            matched_fusions.append(
+                sorted(matching_output, key=lambda x: x[1], reverse=True)
+            )
 
-        return sorted(matched_fusions, key=lambda x: x[1], reverse=True)
+        return matched_fusions
