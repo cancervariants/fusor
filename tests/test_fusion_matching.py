@@ -56,6 +56,7 @@ async def test_fusion_matching(
             assert not matches
             continue
 
+        matches = matches[0]
         for i, expected in enumerate(case["expected_matches"]):
             fusion, score = matches[i]
             expected_fusion = expected["fields"]
