@@ -980,14 +980,14 @@ class FusionSet(BaseModelForbidExtra):
     def save_fusions_cache(
         self,
         fusions_list: list[AssayedFusion | CategoricalFusion],
-        cache_dir: Path | None,
-        cache_name: str | None = None,
+        cache_dir: Path,
+        cache_name: str,
     ) -> None:
         """Save a list of translated fusions as a cache
 
         :param fusions_list: A list of FUSOR-translated fusions
-        :param output_dir: The location to store the cached file or None
-        :param cache_name: The name for the resultant cached file or None
+        :param output_dir: The location to store the cached file
+        :param cache_name: The name for the resultant cached file
         """
         if not cache_dir:
             cache_dir = Path(__file__).resolve().parent / "data"

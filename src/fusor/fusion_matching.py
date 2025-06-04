@@ -220,7 +220,7 @@ class FusionMatcher:
     ) -> list[list[tuple[CategoricalFusion, int]]]:
         """Return best matching fusion
 
-        :return A list of tuples containing matching categorical fusion objects
+        :return A list of list of tuples containing matching categorical fusion objects
             and their associated match score or None, for each examined AssayedFusion
             object
         """
