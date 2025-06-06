@@ -7,10 +7,13 @@ from pathlib import Path
 import pytest
 from cool_seq_tool.app import CoolSeqTool
 
+from fusor.fusion_matching import FusionMatcher
 from fusor.fusor import FUSOR
+from fusor.models import FusionSet
 from fusor.translator import Translator
 
 FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
+CACHE_DATA_DIR = Path(__file__).resolve().parent.parent / "src" / "fusor" / "data"
 
 
 def pytest_addoption(parser):
@@ -68,6 +71,12 @@ def fusor_instance():
 def translator_instance():
     """Create test fixture for translator object"""
     return Translator(fusor=FUSOR())
+
+
+@pytest.fixture(scope="session")
+def fusion_matching_instance():
+    """Create test fixture for fusion matching object"""
+    return FusionMatcher(cache_dir=CACHE_DATA_DIR, fusion_set=FusionSet())
 
 
 @pytest.fixture(scope="session")
