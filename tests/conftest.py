@@ -14,6 +14,7 @@ from fusor.translator import Translator
 
 FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
 CACHE_DATA_DIR = Path(__file__).resolve().parent.parent / "src" / "fusor" / "data"
+CACHE_DATA_DIR.mkdir(parents=True, exist_ok=True)  # Create cache data directory
 
 
 def pytest_addoption(parser):
