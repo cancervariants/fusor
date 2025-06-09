@@ -1,8 +1,10 @@
 """Module for testing FUSOR Translators"""
 
+import pickle
+from pathlib import Path
+
 import polars as pl
 import pytest
-from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusion_caller_models import (
@@ -911,9 +913,12 @@ async def test_civic(
     fusion_data_example_categorical,
     fusion_data_example_categorical_mpge,
     translator_instance,
+    fixture_data_dir,
 ):
     """Test CIVIC translator"""
-    fusions_list = civic.get_all_fusion_variants()
+    path = fixture_data_dir / "test_civic_cache.pkl"
+    with Path.open(path, "rb") as cache_file:
+        fusions_list = pickle.load(cache_file)  # noqa: S301
 
     # Test case where both gene partners known
     test_fusion = CIVIC(
@@ -934,12 +939,12 @@ async def test_civic(
 
     # Test case where one parter is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
-        vicc_compliant_name=fusions_list[15].vicc_compliant_name,
-        five_prime_end_exon_coords=fusions_list[15].five_prime_end_exon_coordinates,
+        vicc_compliant_name=fusions_list[1].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[1].five_prime_end_exon_coordinates,
         three_prime_start_exon_coords=fusions_list[
-            15
+            1
         ].three_prime_start_exon_coordinates,
-        molecular_profiles=fusions_list[15].molecular_profiles,
+        molecular_profiles=fusions_list[1].molecular_profiles,
     )
     civic_fusor = await translator_instance.from_civic(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical_mpge().structure
