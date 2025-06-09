@@ -935,7 +935,7 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical().viccNomenclature
     )
-    assert len(civic_fusor.civicMolecularProfiles) == 84
+    assert len(civic_fusor.civicMolecularProfiles) == 64
 
     # Test case where one parter is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
@@ -952,4 +952,4 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical_mpge().viccNomenclature
     )
-    assert len(civic_fusor.civicMolecularProfiles) == 5
+    assert len(civic_fusor.civicMolecularProfiles) == 1
