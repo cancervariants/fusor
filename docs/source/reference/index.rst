@@ -9,7 +9,10 @@ API Reference
    :template: module_summary.rst
 
    fusor.exceptions
+   fusor.fusion_caller_models
    fusor.fusor
+   fusor.harvester
    fusor.models
    fusor.nomenclature
    fusor.tools
+   fusor.translator
