@@ -1,5 +1,5 @@
-fusor.translator
-===========
+﻿fusor.translator
+================
 
 .. automodule:: fusor.translator
    :members:

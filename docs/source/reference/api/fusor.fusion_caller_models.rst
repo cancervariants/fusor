@@ -1,5 +1,5 @@
-fusor.fusion_caller_models
-===========
+﻿fusor.fusion_caller_models
+==========================
 
 .. automodule:: fusor.fusion_caller_models
    :members:
