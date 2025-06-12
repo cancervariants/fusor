@@ -16,11 +16,15 @@ Constructing fusions
    ...     structure=[
    ...         {
    ...             "type": "GeneElement",
-   ...             "gene": {
-   ...                 "type": "Gene",
-   ...                 "label": "EWSR1",
-   ...                 "id": "hgnc:3508"
-   ...             }
+   ...              "gene": {
+                        "primaryCoding": {
+                              "id": "hgnc:3508",
+                              "code": "HGNC:3508",
+                              "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+                        },
+                        "conceptType": "Gene",
+                        "name": "EWSR1"
+                     }
    ...         },
    ...         {
    ...           "type": "UnknownGeneElement"
@@ -44,8 +48,8 @@ As seen in the example above, :py:meth:`fusor.fusor.FUSOR.fusion()` can infer fu
    >>> from fusor import FUSOR
    >>> f = FUSOR()
    >>> structure = [
-   ...     {"gene": {"id": "hgnc:3508", "label": "EWSR1"}, "type": "GeneElement"},
-   ...     {"gene": {"id": "hgnc:3446", "label": "ERG"}, "type": "GeneElement"}
+           {"gene": {"primaryCoding": {"id": "hgnc:3508", "code": "HGNC:3508", "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"}, "conceptType": "Gene", "name": "EWSR1"},  "type": "GeneElement"},
+           {"gene": {"primaryCoding": {"id": "hgnc:3446", "code": "HGNC:3446", "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"}, "conceptType": "Gene", "name": "ERG"},  "type": "GeneElement"}
    ... ]
    >>> fusion = f.fusion(**{"structure": structure, "type": "CategoricalFusion"})
    >>> fusion.type
