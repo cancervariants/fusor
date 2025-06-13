@@ -21,9 +21,9 @@ class FusionMatcher:
     def __init__(self, cache_dir: Path, fusion_set: FusionSet) -> None:
         """Initialize FusionMatcher class and comparator categorical fusion objects
 
-        :param cache_dir: The path to the cached categorical fusions files. If the
-            path does not exist, a cached file at the provided location will be
-            generated for each source
+        :param cache_dir: The directory containing the cached categorical fusions
+            files. If cached files do not exist in the directory, a cached file at
+            the provided location will be generated for each source.
         :param fusion_set: A FusionSet object
         """
         self.cache_dir = cache_dir
@@ -103,7 +103,8 @@ class FusionMatcher:
 
         :param assayed_fusion: The AssayedFusion object that is being queried
         :param categorical_fusions: A list of CategoricalFusion objects
-        :return A list of filtered categorical fusion objects, or None if the list is empty
+        :return A list of filtered categorical fusion objects, or None if the list is
+            empty
         """
         return [
             categorical_fusion
@@ -118,10 +119,12 @@ class FusionMatcher:
         | MultiplePossibleGenesElement
         | GeneElement,
         is_five_prime_partner: bool,
-    ) -> int | str:
+    ) -> int | None:
         """Compare transcript segments for an assayed and categorical fusions
-        :param assayed_element: The assayed fusion transcript or unknown gene element or gene element
-        :param categorical_element: The categorical fusion transcript or mulitple possible genes element
+        :param assayed_element: The assayed fusion transcript or unknown gene element
+            or gene element
+        :param categorical_element: The categorical fusion transcript or mulitple
+            possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
         :return A score indiciating the degree of match or "NA" if the partner is
             ? or v
@@ -129,18 +132,19 @@ class FusionMatcher:
         # Set default match score
         match_score = 0
 
-        # If the assayed partner is unknown or the categorical partner is a multiple possible gene element, return match score of 0 as no precise information
+        # If the assayed partner is unknown or the categorical partner is a multiple
+        # possible gene element, return match score of 0 as no precise information
         # regarding the compared elements is known
         if isinstance(assayed_element, UnknownGeneElement) or isinstance(
             categorical_element, MultiplePossibleGenesElement
         ):
-            return "NA"
+            return None
 
         # Compare gene partners first
         if assayed_element.gene == categorical_element.gene:
-            match_score += 1
+            match_score += 1  # GeneElement objects match
         else:
-            return 0
+            return 0  # GeneElement objects do not match
 
         # Then compare transcript partners if transcript data exists
         if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
@@ -151,9 +155,9 @@ class FusionMatcher:
                 and categorical_element.transcript
                 and assayed_element.transcript == categorical_element.transcript
             ):
-                match_score += 1
+                match_score += 1  # Transcript accessions match
             else:
-                return 0
+                return 0  # Transcript accessions do not match
 
             start_or_end = "End" if is_five_prime_partner else "Start"
             fields_to_compare = [
@@ -166,9 +170,11 @@ class FusionMatcher:
                 if getattr(assayed_element, field) == getattr(
                     categorical_element, field
                 ):
-                    match_score += 1
+                    match_score += (
+                        1  # Exon number, offset, and genomic breakpoint match
+                    )
                 else:
-                    return 0
+                    return 0  # Exon number, offset, and genomic breakpoint do not match
 
         return match_score
 
@@ -179,7 +185,10 @@ class FusionMatcher:
 
         :param assayed_fusion: AssayedFusion object
         :param categorical_fusion: CategoricalFusion object
-        :return A boolean or a tuple containing a boolean and match score
+        :return A boolean or a tuple containing a boolean and match score. The boolean
+            indicates if the AssayedFusion and CategoricalFusion objects match, and the
+            match score describes the quality of the match. A higher match score
+            indicates a higher quality match.
         """
         assayed_transcript_segments = assayed_fusion.structure
         categorical_transcript_segments = categorical_fusion.structure
@@ -196,7 +205,7 @@ class FusionMatcher:
                 assayed_transcript_segments.pop(1)
                 categorical_transcript_segments.pop(1)
             else:
-                return False
+                return False  # Linker Sequences are not equivalent, no match
 
         # Compare other structural elements
         match_data_5prime = self._match_fusion_structure(
@@ -211,9 +220,10 @@ class FusionMatcher:
             return False
 
         # Update match scores in event partner is ? or v
-        match_data_5prime = 0 if match_data_5prime == "NA" else match_data_5prime
-        match_data_3prime = 0 if match_data_3prime == "NA" else match_data_3prime
-        return True, match_score + match_data_5prime + match_data_3prime
+        match_data_5prime = match_data_5prime if match_data_5prime else 0
+        match_data_3prime = match_data_3prime if match_data_3prime else 0
+        match_score = match_score + match_data_5prime + match_data_3prime
+        return True, match_score if match_score > 0 else False
 
     async def match_fusion(
         self,
@@ -222,7 +232,14 @@ class FusionMatcher:
 
         :return A list of list of tuples containing matching categorical fusion objects
             and their associated match score or None, for each examined AssayedFusion
-            object
+            object. This method iterates through all supplied AssayedFusion objects to
+            find corresponding matches. The match score represents how many attributes
+            are equivalent between an AssayedFusion and CategoricalFusion. The
+            attributes that are compared include the gene partner, transcript accession,
+            exon number, exon offset, and genomic breakpoint. A higher match score
+            indicates that more fields were equivalent. Matches are returned for each
+            queried AssayedFusion in descending order, with the highest quality match
+            reported first.
         """
         matched_fusions = []
         for assayed_fusion in self.assayed_fusions:

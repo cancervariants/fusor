@@ -986,10 +986,12 @@ class FusionSet(BaseModelForbidExtra):
         """Save a list of translated fusions as a cache
 
         :param fusions_list: A list of FUSOR-translated fusions
-        :param output_dir: The location to store the cached file
+        :param output_dir: The location to store the cached file. If this parameter is
+            not supplied, it will default to creating a `data` directory under
+            `src/fusor`
         :param cache_name: The name for the resultant cached file
         """
-        if not cache_dir:
+        if not cache_dir or not Path.is_dir(cache_dir):
             cache_dir = Path(__file__).resolve().parent / "data"
         cache_dir.mkdir(parents=True, exist_ok=True)
         output_file = cache_dir / cache_name
