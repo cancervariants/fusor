@@ -67,23 +67,23 @@ Validating fusions
 .. code-block:: pycon
 
    >>> from fusor.models import GeneElement, UnknownGeneElement, AssayedFusion
-   >>> gene = GeneElement(gene={"id": "hgnc:1097", "label": "BRAF"})
+   >>> gene = GeneElement(gene={"primaryCoding": {"id": "hgnc:1097", "code": "HGNC:1097", "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"}, "conceptType": "Gene", "name": "BRAF"})
    >>> fusion = AssayedFusion(structure=[UnknownGeneElement(), gene])
    >>> fusion
-   AssayedFusion(type=<FUSORTypes.ASSAYED_FUSION: 'AssayedFusion'>, regulatoryElement=None, structure=[UnknownGeneElement(type=<FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>), GeneElement(type=<FUSORTypes.GENE_ELEMENT: 'GeneElement'>, gene=Gene(id='hgnc:1097', type='Gene', label='BRAF', description=None, alternativeLabels=None, extensions=None, mappings=None))], readingFramePreserved=None, causativeEvent=None, assay=None)
+   AssayedFusion(type=<FUSORTypes.ASSAYED_FUSION: 'AssayedFusion'>, regulatoryElement=None, structure=[UnknownGeneElement(type=<FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>), GeneElement(type=<FUSORTypes.GENE_ELEMENT: 'GeneElement'>, gene=Gene(primaryCoding=(id="hgnc:1097", "code": "HGNC:1097", "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"}, "conceptType": "Gene", "name": "BRAF")))], readingFramePreserved=None, causativeEvent=None, assay=None)
 
 In this example, a fusion is constructed with only one structural element, even though fusions are defined as `"the joining of two or more genes" <https://fusions.cancervariants.org/en/latest/terminology.html#gene-fusions>`_:
 
 .. code-block:: pycon
 
    >>> from fusor.models import AssayedFusion
-   >>> AssayedFusion(**{"structure": [{"type": "GeneElement", "gene": {"label": "EWSR1", "id": "hgnc:3508"}}]})
+   >>> AssayedFusion(**{"structure": [{"gene": {"primaryCoding": {"id": "hgnc:3508", "code": "HGNC:3508", "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"}, "conceptType": "Gene", "name": "EWSR1"},  "type": "GeneElement"}]})
    Traceback (most recent call last):
      File "<stdin>", line 1, in <module>
      File "/Users/jss009/code/fusor/.venv/lib/python3.12/site-packages/pydantic/main.py", line 159, in __init__
        __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
    pydantic_core._pydantic_core.ValidationError: 1 validation error for AssayedFusion
-     Value error, Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element [type=value_error, input_value={'structure': [{'type': '...', 'id': 'hgnc:3508'}}]}, input_type=dict]
+     Value error, Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element [type=value_error, input_value={'structure': [{'type': '...', 'name': 'EWSR1'}}]}, input_type=dict]
        For further information visit https://errors.pydantic.dev/2.1/v/value_error
 
 Example fusions
@@ -99,7 +99,7 @@ Example fusions
    >>> examples.alk.structure[0]
    MultiplePossibleGenesElement(type=<FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>)
    >>> examples.alk.structure[1]
-   GeneElement(type=<FUSORTypes.GENE_ELEMENT: 'GeneElement'>, gene=Gene(id='hgnc:427', type='Gene', label='ALK', description=None, alternativeLabels=None, extensions=None, mappings=None))
+   GeneElement(type=<FUSORTypes.GENE_ELEMENT: 'GeneElement'>, gene=Gene(primaryCoding=(id="hgnc:427", code="HGNC:427", system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"), conceptType="Gene", name="ALK"))
    >>> examples.alk.criticalFunctionalDomains[0].status
    <DomainStatus.PRESERVED: 'preserved'>
    >>> examples.alk.criticalFunctionalDomains[0].id
