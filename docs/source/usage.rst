@@ -16,7 +16,7 @@ Constructing fusions
    ...     structure=[
    ...         {
    ...             "type": "GeneElement",
-   ...              "gene": {
+   ...             "gene": {
                         "primaryCoding": {
                               "id": "hgnc:3508",
                               "code": "HGNC:3508",
@@ -24,7 +24,7 @@ Constructing fusions
                         },
                         "conceptType": "Gene",
                         "name": "EWSR1"
-                     }
+                  }
    ...         },
    ...         {
    ...           "type": "UnknownGeneElement"
