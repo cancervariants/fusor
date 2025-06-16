@@ -991,7 +991,7 @@ class FusionSet(BaseModelForbidExtra):
             `src/fusor`
         :param cache_name: The name for the resultant cached file
         """
-        if not cache_dir or not Path.is_dir(cache_dir):
+        if not Path.is_dir(cache_dir):
             cache_dir = Path(__file__).resolve().parent / "data"
         cache_dir.mkdir(parents=True, exist_ok=True)
         output_file = cache_dir / cache_name

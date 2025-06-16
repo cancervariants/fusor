@@ -103,8 +103,8 @@ class FusionMatcher:
 
         :param assayed_fusion: The AssayedFusion object that is being queried
         :param categorical_fusions: A list of CategoricalFusion objects
-        :return A list of filtered categorical fusion objects, or None if the list is
-            empty
+        :return A list of filtered categorical fusion objects, or an empty list if no
+            filtered categorical fusions are generated
         """
         return [
             categorical_fusion
@@ -120,20 +120,26 @@ class FusionMatcher:
         | GeneElement,
         is_five_prime_partner: bool,
     ) -> int | None:
-        """Compare transcript segments for an assayed and categorical fusions
+        """Compare fusion partner information for assayed and categorical fusions. A
+            maximum of 5 fields are compared: the gene symbol, transcript accession,
+            exon number, exon offset, and genomic breakpoint. A match score of 5 is
+            returned if all these fields are equivalent. A match score of 0 is returned
+            if one of these fields differs. `None` is returned when a gene partner
+            is ambiguous and a clear comparison cannot be made.
+
         :param assayed_element: The assayed fusion transcript or unknown gene element
             or gene element
         :param categorical_element: The categorical fusion transcript or mulitple
             possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
-        :return A score indiciating the degree of match or "NA" if the partner is
+        :return A score indiciating the degree of match or None if the partner is
             ? or v
         """
         # Set default match score
         match_score = 0
 
         # If the assayed partner is unknown or the categorical partner is a multiple
-        # possible gene element, return match score of 0 as no precise information
+        # possible gene element, return None as no precise information
         # regarding the compared elements is known
         if isinstance(assayed_element, UnknownGeneElement) or isinstance(
             categorical_element, MultiplePossibleGenesElement
@@ -142,9 +148,9 @@ class FusionMatcher:
 
         # Compare gene partners first
         if assayed_element.gene == categorical_element.gene:
-            match_score += 1  # GeneElement objects match
+            match_score += 1
         else:
-            return 0  # GeneElement objects do not match
+            return 0
 
         # Then compare transcript partners if transcript data exists
         if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
@@ -155,9 +161,9 @@ class FusionMatcher:
                 and categorical_element.transcript
                 and assayed_element.transcript == categorical_element.transcript
             ):
-                match_score += 1  # Transcript accessions match
+                match_score += 1
             else:
-                return 0  # Transcript accessions do not match
+                return 0
 
             start_or_end = "End" if is_five_prime_partner else "Start"
             fields_to_compare = [
@@ -170,11 +176,9 @@ class FusionMatcher:
                 if getattr(assayed_element, field) == getattr(
                     categorical_element, field
                 ):
-                    match_score += (
-                        1  # Exon number, offset, and genomic breakpoint match
-                    )
+                    match_score += 1
                 else:
-                    return 0  # Exon number, offset, and genomic breakpoint do not match
+                    return 0
 
         return match_score
 
