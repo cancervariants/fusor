@@ -172,6 +172,7 @@ class FusionMatcher:
                 f"elementGenomic{start_or_end}",
             ]
 
+            # Determine if exon number, offset, and genomic breakpoint match
             for field in fields_to_compare:
                 if getattr(assayed_element, field) == getattr(
                     categorical_element, field
