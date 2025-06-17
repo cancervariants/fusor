@@ -18,17 +18,26 @@ from fusor.models import (
 class FusionMatcher:
     """Class for matching assayed fusions against categorical fusions"""
 
-    def __init__(self, cache_dir: Path, fusion_set: FusionSet) -> None:
+    def __init__(
+        self,
+        cache_dir: Path,
+        fusion_set: FusionSet,
+        cache_files: list[str] | None = None,
+    ) -> None:
         """Initialize FusionMatcher class and comparator categorical fusion objects
 
         :param cache_dir: The directory containing the cached categorical fusions
             files. If cached files do not exist in the directory, a cached file at
             the provided location will be generated for each source.
         :param fusion_set: A FusionSet object
+        :param cache_files: A list of cache file names containing CategoricalFusion
+            objects to load, or None. By default this is set to None.
         """
         self.cache_dir = cache_dir
         self.assayed_fusions = fusion_set.assayedFusions
         self.categorical_fusions = fusion_set.categoricalFusions
+        if cache_files:
+            self.cache_files = cache_files
 
     async def _load_categorical_fusions(self) -> list[CategoricalFusion]:
         """Load in cache of CategoricalFusion objects
@@ -36,8 +45,9 @@ class FusionMatcher:
         :return A list of Categorical fusions
         """
         categorical_fusions = []
-        for cached_file in self.cache_dir.iterdir():
-            if cached_file.is_file() and cached_file.suffix == ".pkl":
+        for file in self.cache_files:
+            cached_file = self.cache_dir / file
+            if cached_file.is_file():
                 with cached_file.open("rb") as f:
                     categorical_fusions.extend(pickle.load(f))  # noqa: S301
         return categorical_fusions

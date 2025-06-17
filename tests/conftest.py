@@ -68,7 +68,11 @@ def translator_instance():
 @pytest.fixture(scope="session")
 def fusion_matching_instance():
     """Create test fixture for fusion matching object"""
-    return FusionMatcher(cache_dir=CACHE_DATA_DIR, fusion_set=FusionSet())
+    return FusionMatcher(
+        cache_dir=CACHE_DATA_DIR,
+        fusion_set=FusionSet(),
+        cache_files=["civic_translated_fusions.pkl"],
+    )
 
 
 @pytest.fixture(scope="session")
