@@ -6,7 +6,6 @@ from pathlib import Path
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
-    FusionSet,
     GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
@@ -20,8 +19,9 @@ class FusionMatcher:
 
     def __init__(
         self,
-        cache_dir: Path,
-        fusion_set: FusionSet,
+        cache_dir: Path | None = None,
+        assayed_fusions: list[AssayedFusion] | None = None,
+        categorical_fusions: list[CategoricalFusion] | None = None,
         cache_files: list[str] | None = None,
     ) -> None:
         """Initialize FusionMatcher class and comparator categorical fusion objects
@@ -29,21 +29,30 @@ class FusionMatcher:
         :param cache_dir: The directory containing the cached categorical fusions
             files. If cached files do not exist in the directory, a cached file at
             the provided location will be generated for each source.
-        :param fusion_set: A FusionSet object
+        :param assayed_fusions: A list of AssayedFusion objects
+        :param categorical_fusions: A list of CategoricalFusion objects
         :param cache_files: A list of cache file names containing CategoricalFusion
             objects to load, or None. By default this is set to None.
+        :raises ValueError: If categorical_fusions is not provided and either
+            `cache_dir` or `cache_files` is not provided.
         """
+        if not categorical_fusions and (not cache_dir or not cache_files):
+            msg = "Either a list of CategoricalFusion objects must be provided to `categorical_fusions` or a Path and list of file names must be provided to `cache_dir` and `cache_files`, respectively"
+            raise ValueError(msg)
         self.cache_dir = cache_dir
-        self.assayed_fusions = fusion_set.assayedFusions
-        self.categorical_fusions = fusion_set.categoricalFusions
-        if cache_files:
-            self.cache_files = cache_files
+        self.assayed_fusions = assayed_fusions
+        self.categorical_fusions = categorical_fusions
+        self.cache_files = cache_files
 
     async def _load_categorical_fusions(self) -> list[CategoricalFusion]:
         """Load in cache of CategoricalFusion objects
 
+        :raises ValueError: If the cache_dir or cache_files variables are None
         :return A list of Categorical fusions
         """
+        if not self.cache_dir or not self.cache_files:
+            msg = "`cache_dir` and `cache_files` parameters must be provided"
+            raise ValueError(msg)
         categorical_fusions = []
         for file in self.cache_files:
             cached_file = self.cache_dir / file
@@ -245,6 +254,7 @@ class FusionMatcher:
     ) -> list[list[tuple[CategoricalFusion, int]]]:
         """Return best matching fusion
 
+        :raises ValueError: If a list of AssayedFusion objects is not provided
         :return A list of list of tuples containing matching categorical fusion objects
             and their associated match score or None, for each examined AssayedFusion
             object. This method iterates through all supplied AssayedFusion objects to
@@ -256,21 +266,28 @@ class FusionMatcher:
             queried AssayedFusion in descending order, with the highest quality match
             reported first.
         """
+        if not self.assayed_fusions:
+            msg = "`assayed_fusions` must be provided a list of AssayedFusion objects before running `match_fusion`"
+            raise ValueError(msg)
         matched_fusions = []
+
+        # Load in CategoricalFusions, prioritizing those directly provided by the user
+        # with self.categorical_fusions
+        categorical_fusions = (
+            self.categorical_fusions
+            if self.categorical_fusions
+            else await self._load_categorical_fusions()
+        )
         for assayed_fusion in self.assayed_fusions:
             matching_output = []
-            categorical_fusions = self._filter_categorical_fusions(
-                assayed_fusion,
-                self.categorical_fusions
-                if self.categorical_fusions
-                else await self._load_categorical_fusions(),
+            filtered_categorical_fusions = self._filter_categorical_fusions(
+                assayed_fusion, categorical_fusions
             )
             if (
-                not categorical_fusions
+                not filtered_categorical_fusions
             ):  # Return empty list if no filtered fusions are generated
                 return []
-
-            for categorical_fusion in categorical_fusions:
+            for categorical_fusion in filtered_categorical_fusions:
                 match_information = self._compare_fusion(
                     assayed_fusion, categorical_fusion
                 )

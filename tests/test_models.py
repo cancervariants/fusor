@@ -17,7 +17,6 @@ from fusor.models import (
     ContigSequence,
     EventType,
     FunctionalDomain,
-    FusionSet,
     GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
@@ -28,6 +27,7 @@ from fusor.models import (
     TemplatedSequenceElement,
     TranscriptSegmentElement,
     UnknownGeneElement,
+    save_fusions_cache,
 )
 
 
@@ -1054,9 +1054,8 @@ def test_model_examples():
             model(**schema["example"])
 
 
-def test_fusion_set(fixture_data_dir):
-    """Test FusionSet class functionality"""
-    fs = FusionSet()
+def test_save_cache(fixture_data_dir):
+    """Test cache saving functionality"""
     assayed_fusion = AssayedFusion(
         **AssayedFusion.model_config["json_schema_extra"]["example"]
     )
@@ -1065,25 +1064,17 @@ def test_fusion_set(fixture_data_dir):
     )
 
     # Test AssayedFusion
-    fs.add_assayed_fusion(assayed_fusion)
-    assert len(fs.assayedFusions) == 1
-    fs.save_fusions_cache(
-        fusions_list=fs.assayedFusions,
+    save_fusions_cache(
+        fusions_list=[assayed_fusion],
         cache_dir=Path(fixture_data_dir),
         cache_name="assayed_cache_test.pkl",
     )
     assert Path.exists(fixture_data_dir / "assayed_cache_test.pkl")
-    fs.remove_assayed_fusion(assayed_fusion)
-    assert len(fs.assayedFusions) == 0
 
     # Test CategoricalFusion
-    fs.add_categorical_fusion(categorical_fusion)
-    assert len(fs.categoricalFusions) == 1
-    fs.save_fusions_cache(
-        fusions_list=fs.categoricalFusions,
+    save_fusions_cache(
+        fusions_list=[categorical_fusion],
         cache_dir=Path(fixture_data_dir),
         cache_name="categorical_cache_test.pkl",
     )
     assert Path.exists(fixture_data_dir / "categorical_cache_test.pkl")
-    fs.remove_categorical_fusion(categorical_fusion)
-    assert len(fs.categoricalFusions) == 0
