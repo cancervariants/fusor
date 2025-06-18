@@ -45,9 +45,13 @@ Fusion and subcomponent constructors are provided through a core `FUSOR` class:
 ...         {
 ...             "type": "GeneElement",
 ...             "gene": {
-...                 "type": "Gene",
-...                 "label": "EWSR1",
-...                 "id": "hgnc:3508"
+                    "primaryCoding": {
+    ...                 "id": "hgnc:3508",
+                        "code": "HGNC:3508",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+                    }
+                    "conceptType": "Gene",
+                    "name": "EWSR1"
 ...             }
 ...         },
 ...         {
