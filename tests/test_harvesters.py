@@ -17,16 +17,16 @@ from fusor.harvester import (
 )
 
 
-def test_get_jaffa_records(fixture_data_dir):
+async def test_get_jaffa_records(fixture_data_dir):
     """Test that get_jaffa_records works correctly"""
     path = Path(fixture_data_dir / "jaffa_results.csv")
     harvester = JAFFAHarvester()
-    records = harvester.load_records(path)
+    records = await harvester.load_records(path)
     assert len(records) == 491
 
     path = Path(fixture_data_dir / "jaffa_resultss.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
 def test_get_star_fusion_records(fixture_data_dir):
@@ -101,10 +101,12 @@ def test_get_genie_records(fixture_data_dir):
         assert harvester.load_records(path)
 
 
-def test_get_civic_records():
+async def test_get_civic_records():
     """Test that get_civic_records works correctly"""
     civic_variants = civic.get_all_fusion_variants()
     harvester = CIVICHarvester()
     harvester.fusions_list = civic_variants
-    fusions_list = harvester.load_records()
-    assert len(fusions_list) == len(civic_variants)
+    fusions_list = await harvester.load_records()
+    assert (
+        len(fusions_list) == len(civic_variants) - 1
+    )  # One CIViC Variant uses "?" in nomenclature, indicating an AssayedFusion object
