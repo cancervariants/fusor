@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from civicpy import civic
+from cool_seq_tool.schemas import Assembly
 
 from fusor.harvester import (
     ArribaHarvester,
@@ -20,7 +21,7 @@ from fusor.harvester import (
 async def test_get_jaffa_records(fixture_data_dir):
     """Test that get_jaffa_records works correctly"""
     path = Path(fixture_data_dir / "jaffa_results.csv")
-    harvester = JAFFAHarvester()
+    harvester = JAFFAHarvester(assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
     assert len(records) == 491
 
@@ -32,7 +33,7 @@ async def test_get_jaffa_records(fixture_data_dir):
 def test_get_star_fusion_records(fixture_data_dir):
     """Test that get_star_fusion_records works correctly"""
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
-    harvester = StarFusionHarvester()
+    harvester = StarFusionHarvester(assembly=Assembly.GRCH38.value)
     records = harvester.load_records(path)
     assert len(records) == 37
 
@@ -44,7 +45,7 @@ def test_get_star_fusion_records(fixture_data_dir):
 def test_get_fusion_catcher_records(fixture_data_dir):
     """Test that get_fusion_catcher_records works correctly"""
     path = Path(fixture_data_dir / "final-list_candidate-fusion-genes.txt")
-    harvester = FusionCatcherHarvester()
+    harvester = FusionCatcherHarvester(assembly=Assembly.GRCH38.value)
     fusions_list = harvester.load_records(path)
     assert len(fusions_list) == 355
 
@@ -56,7 +57,7 @@ def test_get_fusion_catcher_records(fixture_data_dir):
 def test_get_arriba_records(fixture_data_dir):
     """Test that get_arriba_records works correctly"""
     path = Path(fixture_data_dir / "fusions_arriba_test.tsv")
-    harvester = ArribaHarvester()
+    harvester = ArribaHarvester(assembly=Assembly.GRCH37.value)
     fusions_list = harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -68,7 +69,7 @@ def test_get_arriba_records(fixture_data_dir):
 def test_get_cicero_records(fixture_data_dir):
     """Test that get_cicero_records works correctly"""
     path = Path(fixture_data_dir / "annotated.fusion.txt")
-    harvester = CiceroHarvester()
+    harvester = CiceroHarvester(assembly=Assembly.GRCH38.value)
     fusions_list = harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -80,7 +81,7 @@ def test_get_cicero_records(fixture_data_dir):
 def test_get_enfusion_records(fixture_data_dir):
     """Test that get_enfusion_records works correctly"""
     path = Path(fixture_data_dir / "enfusion_test.csv")
-    harvester = EnFusionHarvester()
+    harvester = EnFusionHarvester(assembly=Assembly.GRCH38.value)
     fusions_list = harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -92,7 +93,7 @@ def test_get_enfusion_records(fixture_data_dir):
 def test_get_genie_records(fixture_data_dir):
     """Test that get_genie_records works correctly"""
     path = Path(fixture_data_dir / "genie_test.txt")
-    harvester = GenieHarvester()
+    harvester = GenieHarvester(assembly=Assembly.GRCH38.value)
     fusions_list = harvester.load_records(path)
     assert len(fusions_list) == 1
 

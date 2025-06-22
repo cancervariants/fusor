@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import ClassVar, TextIO
 
 from civicpy import civic
+from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusion_caller_models import (
     CIVIC,
@@ -33,11 +34,14 @@ class FusionCallerHarvester(ABC):
     column_rename: dict
     delimeter: str
     translator: Translator
-    translator_method = ClassVar[callable]
+    translator_method_name: ClassVar[str]
+    coordinate_type: CoordinateType
 
-    def __init__(self) -> None:
+    def __init__(self, assembly: Assembly) -> None:
         """Initialize FusionCallerHarvester"""
         self.translator = Translator(FUSOR())
+        self.coordinate_type = self.coordinate_type
+        self.assembly = assembly
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
@@ -72,12 +76,18 @@ class FusionCallerHarvester(ABC):
                 renamed_key = self.column_rename.get(key, key)
                 if renamed_key in fields_to_keep:
                     filtered_row[renamed_key] = value
-        fusions_list.append(self.fusion_caller(**filtered_row))
+            fusions_list.append(self.fusion_caller(**filtered_row))
 
         translated_fusions = []
+        translator_method = getattr(self.translator, self.translator_method_name)
         for fusion in fusions_list:
-            translated_fusion = await self.translator_method(self.translator, fusion)
-            translated_fusions.append(translated_fusion)
+            try:
+                translated_fusion = await translator_method(
+                    fusion, self.coordinate_type, self.assembly
+                )
+                translated_fusions.append(translated_fusion)
+            except ValueError as error:
+                _logger.error(error)
         diff = len(fusions_list) - len(translated_fusions)
         if diff > 0:
             msg = f"{diff} fusions were dropped during translation"
@@ -96,7 +106,8 @@ class JAFFAHarvester(FusionCallerHarvester):
     }
     delimeter = ","
     fusion_caller = JAFFA
-    translator_method = Translator.from_jaffa
+    translator_method_name = "from_jaffa"
+    coordinate_type = CoordinateType.RESIDUE
 
 
 class StarFusionHarvester(FusionCallerHarvester):
@@ -112,7 +123,8 @@ class StarFusionHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = STARFusion
-    translator_method = Translator.from_star_fusion
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_star_fusion"
 
 
 class FusionCatcherHarvester(FusionCallerHarvester):
@@ -131,6 +143,8 @@ class FusionCatcherHarvester(FusionCallerHarvester):
     delimeter = "\t"
     fusion_caller = FusionCatcher
     translator_method = Translator.from_fusion_catcher
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_fusion_catcher"
 
 
 class ArribaHarvester(FusionCallerHarvester):
@@ -145,7 +159,8 @@ class ArribaHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Arriba
-    translator_method = Translator.from_arriba
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_arriba"
 
 
 class CiceroHarvester(FusionCallerHarvester):
@@ -166,7 +181,8 @@ class CiceroHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Cicero
-    translator_method = Translator.from_cicero
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_cicero"
 
 
 class EnFusionHarvester(FusionCallerHarvester):
@@ -183,7 +199,8 @@ class EnFusionHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = EnFusion
-    translator_method = Translator.from_enfusion
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_enfusion"
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
@@ -212,7 +229,8 @@ class GenieHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Genie
-    translator_method = Translator.from_genie
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_genie"
 
 
 class CIVICHarvester(FusionCallerHarvester):
@@ -236,6 +254,7 @@ class CIVICHarvester(FusionCallerHarvester):
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         """
+        self.translator = Translator(FUSOR())
         if update_cache:
             civic.update_cache(from_remote_cache=update_from_remote)
 
