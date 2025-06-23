@@ -30,76 +30,76 @@ async def test_get_jaffa_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-def test_get_star_fusion_records(fixture_data_dir):
+async def test_get_star_fusion_records(fixture_data_dir):
     """Test that get_star_fusion_records works correctly"""
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
     harvester = StarFusionHarvester(assembly=Assembly.GRCH38.value)
-    records = harvester.load_records(path)
+    records = await harvester.load_records(path)
     assert len(records) == 37
 
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsvs")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
-def test_get_fusion_catcher_records(fixture_data_dir):
+async def test_get_fusion_catcher_records(fixture_data_dir):
     """Test that get_fusion_catcher_records works correctly"""
     path = Path(fixture_data_dir / "final-list_candidate-fusion-genes.txt")
     harvester = FusionCatcherHarvester(assembly=Assembly.GRCH38.value)
-    fusions_list = harvester.load_records(path)
+    fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 355
 
     path = Path(fixture_data_dir / "final-list_candidate-fusion-genes.txts")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
-def test_get_arriba_records(fixture_data_dir):
+async def test_get_arriba_records(fixture_data_dir):
     """Test that get_arriba_records works correctly"""
     path = Path(fixture_data_dir / "fusions_arriba_test.tsv")
     harvester = ArribaHarvester(assembly=Assembly.GRCH37.value)
-    fusions_list = harvester.load_records(path)
+    fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
     path = Path(fixture_data_dir / "fusionsd_arriba_test.tsv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
-def test_get_cicero_records(fixture_data_dir):
+async def test_get_cicero_records(fixture_data_dir):
     """Test that get_cicero_records works correctly"""
     path = Path(fixture_data_dir / "annotated.fusion.txt")
     harvester = CiceroHarvester(assembly=Assembly.GRCH38.value)
-    fusions_list = harvester.load_records(path)
+    fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
     path = Path(fixture_data_dir / "annnotated.fusion.txt")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
-def test_get_enfusion_records(fixture_data_dir):
+async def test_get_enfusion_records(fixture_data_dir):
     """Test that get_enfusion_records works correctly"""
     path = Path(fixture_data_dir / "enfusion_test.csv")
     harvester = EnFusionHarvester(assembly=Assembly.GRCH38.value)
-    fusions_list = harvester.load_records(path)
+    fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
     path = Path(fixture_data_dir / "enfusions_test.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
-def test_get_genie_records(fixture_data_dir):
+async def test_get_genie_records(fixture_data_dir):
     """Test that get_genie_records works correctly"""
     path = Path(fixture_data_dir / "genie_test.txt")
     harvester = GenieHarvester(assembly=Assembly.GRCH38.value)
-    fusions_list = harvester.load_records(path)
+    fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
     path = Path(fixture_data_dir / "genie_tests.txt")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert harvester.load_records(path)
+        assert await harvester.load_records(path)
 
 
 async def test_get_civic_records():
