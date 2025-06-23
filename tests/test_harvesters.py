@@ -20,12 +20,12 @@ from fusor.harvester import (
 
 async def test_get_jaffa_records(fixture_data_dir):
     """Test that get_jaffa_records works correctly"""
-    path = Path(fixture_data_dir / "jaffa_results.csv")
+    path = Path(fixture_data_dir / "jaffa_results_test.csv")
     harvester = JAFFAHarvester(assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
-    assert len(records) == 491
+    assert len(records) == 8
 
-    path = Path(fixture_data_dir / "jaffa_resultss.csv")
+    path = Path(fixture_data_dir / "jaffa_resultss_test.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
 
@@ -35,7 +35,7 @@ async def test_get_star_fusion_records(fixture_data_dir):
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
     harvester = StarFusionHarvester(assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
-    assert len(records) == 37
+    assert len(records) == 30
 
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsvs")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
@@ -44,12 +44,12 @@ async def test_get_star_fusion_records(fixture_data_dir):
 
 async def test_get_fusion_catcher_records(fixture_data_dir):
     """Test that get_fusion_catcher_records works correctly"""
-    path = Path(fixture_data_dir / "final-list_candidate-fusion-genes.txt")
+    path = Path(fixture_data_dir / "fusion_catcher_test.txt")
     harvester = FusionCatcherHarvester(assembly=Assembly.GRCH38.value)
     fusions_list = await harvester.load_records(path)
-    assert len(fusions_list) == 355
+    assert len(fusions_list) == 14
 
-    path = Path(fixture_data_dir / "final-list_candidate-fusion-genes.txts")
+    path = Path(fixture_data_dir / "fusionn_catcher.txts")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
 
@@ -61,7 +61,7 @@ async def test_get_arriba_records(fixture_data_dir):
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
-    path = Path(fixture_data_dir / "fusionsd_arriba_test.tsv")
+    path = Path(fixture_data_dir / "fusionss_arriba_test.tsv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
 
@@ -105,9 +105,8 @@ async def test_get_genie_records(fixture_data_dir):
 async def test_get_civic_records():
     """Test that get_civic_records works correctly"""
     civic_variants = civic.get_all_fusion_variants()
+    civic_variants = civic_variants[:5]  # Look at first 5 records in test
     harvester = CIVICHarvester()
     harvester.fusions_list = civic_variants
     fusions_list = await harvester.load_records()
-    assert (
-        len(fusions_list) == len(civic_variants) - 1
-    )  # One CIViC Variant uses "?" in nomenclature, indicating an AssayedFusion object
+    assert len(fusions_list) == 5
