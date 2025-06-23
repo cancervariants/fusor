@@ -192,6 +192,7 @@ def transcript_segment_element():
     """Create transcript segment element test fixture"""
     params = {
         "type": "TranscriptSegmentElement",
+        "strand": -1,
         "exonEnd": 8,
         "exonEndOffset": 0,
         "exonStart": 1,
@@ -237,6 +238,7 @@ def mane_transcript_segment_element():
     """Create transcript segment element test fixture"""
     params = {
         "type": "TranscriptSegmentElement",
+        "strand": 1,
         "exonEnd": None,
         "exonEndOffset": None,
         "exonStart": 2,

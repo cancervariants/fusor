@@ -238,6 +238,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
     transcript: Annotated[str, StringConstraints(pattern=CURIE_REGEX)]
+    strand: Strand
     exonStart: StrictInt | None = None
     exonStartOffset: StrictInt | None = 0
     exonEnd: StrictInt | None = None
@@ -281,6 +282,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
             "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
                 "exonEnd": 8,
@@ -866,6 +868,7 @@ class CategoricalFusion(AbstractFusion):
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
+                        "strand": -1,
                         "exonStart": 1,
                         "exonStartOffset": 0,
                         "exonEnd": 8,

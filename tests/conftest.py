@@ -1,6 +1,5 @@
 """Module containing methods and fixtures used throughout tests."""
 
-import asyncio
 import logging
 from pathlib import Path
 
@@ -35,14 +34,6 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="session")
 def fixture_data_dir():
     """Provide test data directory."""
     return FIXTURE_DATA_DIR
@@ -64,7 +55,7 @@ def fusor_instance():
     return FUSOR(cool_seq_tool=cst)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def translator_instance():
     """Create test fixture for translator object"""
     return Translator(fusor=FUSOR())
@@ -693,6 +684,7 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
                 "exonEnd": 8,
@@ -806,6 +798,7 @@ def fusion_example():
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
                 "exonEnd": 8,
