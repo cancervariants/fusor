@@ -132,6 +132,7 @@ def exon_offset_example():
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_002529.3",
+                "strand": 1,
                 "exonStart": 2,
                 "exonStartOffset": 20,
                 "gene": {
@@ -164,6 +165,7 @@ def tx_seg_example():
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
+        strand=-1,
         exonStart=1,
         exonStartOffset=0,
         exonEnd=8,
@@ -206,6 +208,7 @@ def junction_example():
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
+        strand=-1,
         exonEnd=8,
         exonEndOffset=0,
         gene={
