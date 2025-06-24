@@ -23,7 +23,7 @@ async def test_get_jaffa_records(fixture_data_dir):
     path = Path(fixture_data_dir / "jaffa_results_test.csv")
     harvester = JAFFAHarvester(assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
-    assert len(records) == 8
+    assert len(records) == 9
 
     path = Path(fixture_data_dir / "jaffa_resultss_test.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
@@ -35,7 +35,7 @@ async def test_get_star_fusion_records(fixture_data_dir):
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
     harvester = StarFusionHarvester(assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
-    assert len(records) == 30
+    assert len(records) == 37
 
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsvs")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
