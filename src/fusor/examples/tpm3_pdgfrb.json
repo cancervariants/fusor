@@ -4,6 +4,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_152263.3",
+      "strand": -1,
       "exonStart": 1,
       "exonStartOffset": 0,
       "exonEnd": 8,
@@ -43,6 +44,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_002609.3",
+      "strand": -1,
       "exonStart": 11,
       "exonStartOffset": 0,
       "exonEnd": 22,
