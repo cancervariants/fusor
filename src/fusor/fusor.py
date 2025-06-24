@@ -310,6 +310,7 @@ class FUSOR:
         return (
             TranscriptSegmentElement(
                 transcript=data.tx_ac,
+                strand=data.strand,
                 # offset by 1 because in CST exons are 0-based
                 exonStart=seg_start.exon_ord + 1 if seg_start else None,
                 exonStartOffset=seg_start.offset if seg_start else None,
