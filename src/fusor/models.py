@@ -243,6 +243,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
     transcript: Annotated[str, StringConstraints(pattern=CURIE_REGEX)]
+    strand: Strand
     exonStart: StrictInt | None = None
     exonStartOffset: StrictInt | None = 0
     exonEnd: StrictInt | None = None
@@ -286,6 +287,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
             "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
                 "exonEnd": 8,
@@ -597,11 +599,15 @@ class AbstractFusion(BaseModel, ABC):
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
             gene_id = cls._access_object_attr(gene_info, "primaryCoding")
-            if isinstance(gene_id, str):
-                return gene_id
-            gene_id = cls._access_object_attr(gene_id, "id")
             if gene_id:
-                return gene_id
+                if isinstance(gene_id, str):
+                    return gene_id
+                gene_id = cls._access_object_attr(gene_id, "id")
+                if gene_id:
+                    return gene_id
+            gene_name = cls._access_object_attr(gene_info, "name")
+            if gene_name:
+                return gene_name
         return None
 
     @model_validator(mode="before")
@@ -871,6 +877,7 @@ class CategoricalFusion(AbstractFusion):
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
+                        "strand": -1,
                         "exonStart": 1,
                         "exonStartOffset": 0,
                         "exonEnd": 8,

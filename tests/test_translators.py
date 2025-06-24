@@ -42,6 +42,7 @@ def fusion_data_example():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_152263.4",
+                    "strand": -1,
                     "exonEnd": 8,
                     "exonEndOffset": -66,
                     "gene": {
@@ -68,6 +69,7 @@ def fusion_data_example():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_002609.4",
+                    "strand": -1,
                     "exonStart": 11,
                     "exonStartOffset": 2,
                     "gene": {
@@ -114,6 +116,7 @@ def fusion_data_example_nonexonic():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_152263.4",
+                    "strand": -1,
                     "exonEnd": 4,
                     "exonEndOffset": 5,
                     "gene": {
@@ -140,6 +143,7 @@ def fusion_data_example_nonexonic():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_002609.4",
+                    "strand": -1,
                     "exonStart": 11,
                     "exonStartOffset": -559,
                     "gene": {
@@ -186,6 +190,7 @@ def fusion_data_example_categorical():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_004327.4",
+                    "strand": 1,
                     "exonEnd": 14,
                     "exonEndOffset": 0,
                     "gene": {
@@ -212,6 +217,7 @@ def fusion_data_example_categorical():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_005157.6",
+                    "strand": 1,
                     "exonStart": 2,
                     "exonStartOffset": 0,
                     "gene": {
@@ -258,6 +264,7 @@ def fusion_data_example_categorical_mpge():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_002529.4",
+                    "strand": 1,
                     "exonStart": 9,
                     "exonStartOffset": 0,
                     "gene": {
