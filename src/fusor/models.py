@@ -1,7 +1,10 @@
 """Model for fusion class"""
 
+import logging
+import pickle
 from abc import ABC
 from enum import Enum
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 from civicpy.civic import MolecularProfile
@@ -22,6 +25,8 @@ from pydantic import (
     StringConstraints,
     model_validator,
 )
+
+_logger = logging.getLogger(__name__)
 
 LINKER_REGEX = r"\|([atcg]+)\|"
 
@@ -937,3 +942,27 @@ class CategoricalFusion(AbstractFusion):
 
 
 Fusion = CategoricalFusion | AssayedFusion
+
+
+def save_fusions_cache(
+    fusions_list: list[AssayedFusion | CategoricalFusion],
+    cache_dir: Path,
+    cache_name: str,
+) -> None:
+    """Save a list of translated fusions as a cache
+
+    :param fusions_list: A list of FUSOR-translated fusions
+    :param output_dir: The location to store the cached file. If this parameter is
+        not supplied, it will default to creating a `data` directory under
+        `src/fusor`
+    :param cache_name: The name for the resultant cached file
+    """
+    if not Path.is_dir(cache_dir):
+        cache_dir = Path(__file__).resolve().parent / "data"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    output_file = cache_dir / cache_name
+    if output_file.exists():
+        _logger.warning("Cached fusions file already exists")
+        return
+    with output_file.open("wb") as f:
+        pickle.dump(fusions_list, f)

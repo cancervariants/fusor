@@ -167,3 +167,5 @@ fusor/*.txt
 fusor/*.csv
 fusor/*.tsv
 test_data/
+
+*.pkl
