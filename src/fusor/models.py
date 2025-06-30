@@ -602,6 +602,8 @@ class AbstractFusion(BaseModel, ABC):
             if isinstance(gene_id, str):
                 return gene_id
             gene_id = cls._access_object_attr(gene_id, "id")
+            if gene_id:
+                return gene_id
         return None
 
     @model_validator(mode="before")
