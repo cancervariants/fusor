@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from cool_seq_tool.schemas import Assembly, CoordinateType
+from cool_seq_tool.schemas import Assembly
 
 from fusor.harvester import StarFusionHarvester
 
@@ -29,9 +29,7 @@ def _assert_subset(actual: dict, expected: dict) -> None:
 
 
 @pytest.mark.asyncio()
-async def test_fusion_matching(
-    fixture_data_dir, translator_instance, fusion_matching_instance
-):
+async def test_fusion_matching(fixture_data_dir, fusion_matching_instance):
     """Test fusion matching worklow using example output from STAR-Fusion"""
     with Path.open(
         Path(__file__).parent / "fusion_matching_test_cases.yaml"
@@ -40,15 +38,11 @@ async def test_fusion_matching(
 
     # Load STAR-Fusion records
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
-    harvester = StarFusionHarvester()
-    fusions_list = harvester.load_records(path)
+    harvester = StarFusionHarvester(assembly=Assembly.GRCH38.value)
+    fusions_list = await harvester.load_records(path)
 
     for case in test_cases:
-        assayed_fusion = await translator_instance.from_star_fusion(
-            fusions_list[case["input_index"]],
-            CoordinateType.RESIDUE.value,
-            Assembly.GRCH38.value,
-        )
+        assayed_fusion = fusions_list[case["input_index"]]
         fusion_matching_instance.assayed_fusions = [assayed_fusion]
         matches = await fusion_matching_instance.match_fusion()
 

@@ -1,12 +1,14 @@
 """Harvester methods for output from different fusion callers"""
 
 import csv
+import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
 from typing import ClassVar, TextIO
 
 from civicpy import civic
+from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusion_caller_models import (
     CIVIC,
@@ -19,6 +21,10 @@ from fusor.fusion_caller_models import (
     Genie,
     STARFusion,
 )
+from fusor.models import AssayedFusion, CategoricalFusion
+from fusor.translator import Translator
+
+_logger = logging.getLogger(__name__)
 
 
 class FusionCallerHarvester(ABC):
@@ -27,6 +33,18 @@ class FusionCallerHarvester(ABC):
     fusion_caller: FusionCaller
     column_rename: dict
     delimeter: str
+    translator: Translator
+    translator_method_name: ClassVar[str]
+    coordinate_type: CoordinateType
+
+    def __init__(self, translator: Translator, assembly: Assembly) -> None:
+        """Initialize FusionCallerHarvester
+
+        :param translator: A Translator object
+        :param assembly: The assembly that the coordinates are described on
+        """
+        self.translator = translator
+        self.assembly = assembly
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
@@ -36,17 +54,30 @@ class FusionCallerHarvester(ABC):
         """
         return csv.DictReader(fusions_file, delimiter=self.delimeter)
 
-    def load_records(
+    @staticmethod
+    def _count_dropped_fusions(
+        initial_fusions: list,
+        translated_fusions: list[AssayedFusion | CategoricalFusion],
+    ) -> None:
+        """Count the number of fusions that were dropped during translation
+
+        :param initial_fusions: A list containing the original fusions from the provided source
+        :param translated_fusions: A list of translated fusions (assayed or categorical)
+        """
+        diff = len(initial_fusions) - len(translated_fusions)
+        if diff:
+            msg = f"{diff} fusion(s) were dropped during translation"
+            _logger.warning(msg)
+
+    async def load_records(
         self,
         fusion_path: Path,
     ) -> list[FusionCaller]:
         """Convert rows of fusion caller output to Pydantic classes
 
         :param fusion_path: The path to the fusions file
-        :param column_rename: A dictionary of column mappings
-        :param delimeter: The delimeter for the fusions file
         :raise ValueError: if the file does not exist at the specified path
-        :return: A list of fusions, represented as Pydantic objects
+        :return: A list of translated fusions, represented as Pydantic objects
         """
         if not fusion_path.exists():
             statement = f"{fusion_path!s} does not exist"
@@ -62,7 +93,21 @@ class FusionCallerHarvester(ABC):
                 if renamed_key in fields_to_keep:
                     filtered_row[renamed_key] = value
             fusions_list.append(self.fusion_caller(**filtered_row))
-        return fusions_list
+
+        translated_fusions = []
+        translator_method = getattr(self.translator, self.translator_method_name)
+        for fusion in fusions_list:
+            try:
+                translated_fusion = await translator_method(
+                    fusion, self.coordinate_type, self.assembly
+                )
+            except ValueError as error:
+                _logger.exception(error)
+            else:
+                translated_fusions.append(translated_fusion)
+        self._count_dropped_fusions(fusions_list, translated_fusions)
+
+        return translated_fusions
 
 
 class JAFFAHarvester(FusionCallerHarvester):
@@ -75,6 +120,8 @@ class JAFFAHarvester(FusionCallerHarvester):
     }
     delimeter = ","
     fusion_caller = JAFFA
+    translator_method_name = "from_jaffa"
+    coordinate_type = CoordinateType.RESIDUE
 
 
 class StarFusionHarvester(FusionCallerHarvester):
@@ -90,6 +137,8 @@ class StarFusionHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = STARFusion
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_star_fusion"
 
 
 class FusionCatcherHarvester(FusionCallerHarvester):
@@ -107,6 +156,9 @@ class FusionCatcherHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = FusionCatcher
+    translator_method = Translator.from_fusion_catcher
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_fusion_catcher"
 
 
 class ArribaHarvester(FusionCallerHarvester):
@@ -121,6 +173,8 @@ class ArribaHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Arriba
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_arriba"
 
 
 class CiceroHarvester(FusionCallerHarvester):
@@ -141,6 +195,8 @@ class CiceroHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Cicero
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_cicero"
 
 
 class EnFusionHarvester(FusionCallerHarvester):
@@ -157,6 +213,8 @@ class EnFusionHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = EnFusion
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_enfusion"
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
@@ -185,6 +243,8 @@ class GenieHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = Genie
+    coordinate_type = CoordinateType.RESIDUE
+    translator_method_name = "from_genie"
 
 
 class CIVICHarvester(FusionCallerHarvester):
@@ -192,12 +252,14 @@ class CIVICHarvester(FusionCallerHarvester):
 
     def __init__(
         self,
+        translator: Translator,
         update_cache: bool = False,
         update_from_remote: bool = True,
         local_cache_path: str = civic.LOCAL_CACHE_PATH,
     ) -> None:
         """Initialize CivicHarvester class.
 
+        :param translator: A Translator class instance
         :param update_cache: ``True`` if civicpy cache should be updated. Note
             this will take several minutes. ``False`` if to use local cache.
         :param update_from_remote: If set to ``True``, civicpy.update_cache will first
@@ -207,13 +269,14 @@ class CIVICHarvester(FusionCallerHarvester):
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         """
+        super().__init__(translator, Assembly.GRCH37)
         if update_cache:
             civic.update_cache(from_remote_cache=update_from_remote)
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
         self.fusions_list = None
 
-    def load_records(self) -> list[CIVIC]:
+    async def load_records(self) -> list[CIVIC]:
         """Extract data from CIVIC fusion objects
 
         :return A list of CIVIC objects
@@ -227,4 +290,15 @@ class CIVICHarvester(FusionCallerHarvester):
                 "molecular_profiles": fusion.molecular_profiles,
             }
             processed_fusions.append(CIVIC(**params))
-        return processed_fusions
+
+        translated_fusions = []
+        for fusion in processed_fusions:
+            if (
+                "?" in fusion.vicc_compliant_name
+            ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
+                continue
+            cat_fusion = await self.translator.from_civic(civic=fusion)
+            translated_fusions.append(cat_fusion)
+        self._count_dropped_fusions(processed_fusions, translated_fusions)
+
+        return translated_fusions
