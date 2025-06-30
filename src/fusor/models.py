@@ -599,15 +599,9 @@ class AbstractFusion(BaseModel, ABC):
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
             gene_id = cls._access_object_attr(gene_info, "primaryCoding")
-            if gene_id:
-                if isinstance(gene_id, str):
-                    return gene_id
-                gene_id = cls._access_object_attr(gene_id, "id")
-                if gene_id:
-                    return gene_id
-            gene_name = cls._access_object_attr(gene_info, "name")
-            if gene_name:
-                return gene_name
+            if isinstance(gene_id, str):
+                return gene_id
+            gene_id = cls._access_object_attr(gene_id, "id")
         return None
 
     @model_validator(mode="before")

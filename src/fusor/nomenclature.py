@@ -126,8 +126,12 @@ def gene_nomenclature(element: GeneElement) -> str:
 
     :param element: a gene element object
     :return: element nomenclature representation
+    :raises ValueError: if unable to retrieve gene ID
     """
-    gene_id = element.gene.primaryCoding.id if element.gene.primaryCoding else "unknown"
+    if element.gene.primaryCoding:
+        gene_id = element.gene.primaryCoding.id
+    else:
+        raise ValueError
     return f"{element.gene.name}({gene_id})"
 
 
@@ -160,14 +164,14 @@ def generate_nomenclature(fusion: Fusion, sr: SeqRepo) -> str:
             parts.append(element.linkerSequence.sequence.root)
         elif isinstance(element, TranscriptSegmentElement):
             if not any(
-                [gene == element.gene.name for gene in element_genes]  # noqa: C419
+                [gene == element.gene.label for gene in element_genes]  # noqa: C419
             ):
                 parts.append(tx_segment_nomenclature(element))
         elif isinstance(element, TemplatedSequenceElement):
             parts.append(templated_seq_nomenclature(element, sr))
         elif isinstance(element, GeneElement):
             if not any(
-                [gene == element.gene.name for gene in element_genes]  # noqa: C419
+                [gene == element.gene.label for gene in element_genes]  # noqa: C419
             ):
                 parts.append(gene_nomenclature(element))
         else:

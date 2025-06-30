@@ -76,10 +76,8 @@ class FusionCallerHarvester(ABC):
         """Convert rows of fusion caller output to Pydantic classes
 
         :param fusion_path: The path to the fusions file
-        :param column_rename: A dictionary of column mappings
-        :param delimeter: The delimeter for the fusions file
         :raise ValueError: if the file does not exist at the specified path
-        :return: A list of fusions, represented as Pydantic objects
+        :return: A list of translated fusions, represented as Pydantic objects
         """
         if not fusion_path.exists():
             statement = f"{fusion_path!s} does not exist"
@@ -103,9 +101,10 @@ class FusionCallerHarvester(ABC):
                 translated_fusion = await translator_method(
                     fusion, self.coordinate_type, self.assembly
                 )
-                translated_fusions.append(translated_fusion)
             except ValueError as error:
-                _logger.error(error)
+                _logger.exception(error)
+            else:
+                translated_fusions.append(translated_fusion)
         self._count_dropped_fusions(fusions_list, translated_fusions)
 
         return translated_fusions
@@ -294,7 +293,9 @@ class CIVICHarvester(FusionCallerHarvester):
 
         translated_fusions = []
         for fusion in processed_fusions:
-            if "?" in fusion.vicc_compliant_name:
+            if (
+                "?" in fusion.vicc_compliant_name
+            ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
                 continue
             cat_fusion = await self.translator.from_civic(civic=fusion)
             translated_fusions.append(cat_fusion)
