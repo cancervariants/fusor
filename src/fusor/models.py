@@ -584,26 +584,30 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError(msg)
 
     @classmethod
-    def _fetch_gene_id(
+    def _fetch_gene_id_or_name(
         cls,
         obj: dict | BaseModel,
         alt_field: str | None = None,
     ) -> str | None:
-        """Get gene ID if element includes a gene annotation.
+        """Get gene ID or name if element includes a gene annotation.
 
         :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
             TemplatedSequenceElement) so we have to use safe checks to fetch.
         :param alt_field: the field to fetch the gene from, if it is not called "gene" (ex: associatedGene instead)
-        :return: gene ID if gene is defined
+        :return: gene ID or name if gene is defined
         """
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
             gene_id = cls._access_object_attr(gene_info, "primaryCoding")
-            if isinstance(gene_id, str):
-                return gene_id
-            gene_id = cls._access_object_attr(gene_id, "id")
             if gene_id:
-                return gene_id
+                if isinstance(gene_id, str):
+                    return gene_id
+                gene_id = cls._access_object_attr(gene_id, "id")
+                if gene_id:
+                    return gene_id
+            gene_name = cls._access_object_attr(gene_info, "name")
+            if gene_name:
+                return gene_name
         return None
 
     @model_validator(mode="before")
@@ -638,12 +642,14 @@ class AbstractFusion(BaseModel, ABC):
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id(obj=reg_element, alt_field="associatedGene")
+            gene_id = cls._fetch_gene_id_or_name(
+                obj=reg_element, alt_field="associatedGene"
+            )
             if gene_id:
                 gene_ids.append(gene_id)
 
         for element in structure:
-            gene_id = cls._fetch_gene_id(obj=element)
+            gene_id = cls._fetch_gene_id_or_name(obj=element)
             if gene_id:
                 gene_ids.append(gene_id)
 
