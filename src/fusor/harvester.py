@@ -21,7 +21,7 @@ from fusor.fusion_caller_models import (
     Genie,
     STARFusion,
 )
-from fusor.fusor import FUSOR
+from fusor.models import AssayedFusion, CategoricalFusion
 from fusor.translator import Translator
 
 _logger = logging.getLogger(__name__)
@@ -37,9 +37,13 @@ class FusionCallerHarvester(ABC):
     translator_method_name: ClassVar[str]
     coordinate_type: CoordinateType
 
-    def __init__(self, assembly: Assembly) -> None:
-        """Initialize FusionCallerHarvester"""
-        self.translator = Translator(FUSOR())
+    def __init__(self, translator: Translator, assembly: Assembly) -> None:
+        """Initialize FusionCallerHarvester
+
+        :param translator: A Translator object
+        :param assembly: The assembly that the coordinates are described on
+        """
+        self.translator = translator
         self.assembly = assembly
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
@@ -49,6 +53,21 @@ class FusionCallerHarvester(ABC):
         :return A csv.DictReader object containing the detected fusions
         """
         return csv.DictReader(fusions_file, delimiter=self.delimeter)
+
+    @staticmethod
+    def _count_dropped_fusions(
+        initial_fusions: list,
+        translated_fusions: list[AssayedFusion | CategoricalFusion],
+    ) -> None:
+        """Count the number of fusions that were dropped during translation
+
+        :param initial_fusions: A list containing the original fusions from the provided source
+        :param translated_fusions: A list of translated fusions (assayed or categorical)
+        """
+        diff = len(initial_fusions) - len(translated_fusions)
+        if diff:
+            msg = f"{diff} fusion(s) were dropped during translation"
+            _logger.warning(msg)
 
     async def load_records(
         self,
@@ -87,10 +106,7 @@ class FusionCallerHarvester(ABC):
                 translated_fusions.append(translated_fusion)
             except ValueError as error:
                 _logger.error(error)
-        diff = len(fusions_list) - len(translated_fusions)
-        if diff > 0:
-            msg = f"{diff} fusions were dropped during translation"
-            _logger.warning(msg)
+        self._count_dropped_fusions(fusions_list, translated_fusions)
 
         return translated_fusions
 
@@ -237,6 +253,7 @@ class CIVICHarvester(FusionCallerHarvester):
 
     def __init__(
         self,
+        translator: Translator,
         update_cache: bool = False,
         update_from_remote: bool = True,
         local_cache_path: str = civic.LOCAL_CACHE_PATH,
@@ -253,7 +270,7 @@ class CIVICHarvester(FusionCallerHarvester):
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         """
-        self.translator = Translator(FUSOR())
+        super().__init__(translator, Assembly.GRCH37)
         if update_cache:
             civic.update_cache(from_remote_cache=update_from_remote)
 
@@ -281,9 +298,6 @@ class CIVICHarvester(FusionCallerHarvester):
                 continue
             cat_fusion = await self.translator.from_civic(civic=fusion)
             translated_fusions.append(cat_fusion)
-        diff = len(processed_fusions) - len(translated_fusions)
-        if diff > 0:
-            msg = f"{diff} fusions were dropped during translation"
-            _logger.warning(msg)
+        self._count_dropped_fusions(processed_fusions, translated_fusions)
 
         return translated_fusions

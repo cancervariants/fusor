@@ -18,10 +18,10 @@ from fusor.harvester import (
 )
 
 
-async def test_get_jaffa_records(fixture_data_dir):
+async def test_get_jaffa_records(fixture_data_dir, translator_instance):
     """Test that get_jaffa_records works correctly"""
     path = Path(fixture_data_dir / "jaffa_results_test.csv")
-    harvester = JAFFAHarvester(assembly=Assembly.GRCH38.value)
+    harvester = JAFFAHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
     assert len(records) == 9
 
@@ -30,10 +30,10 @@ async def test_get_jaffa_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_star_fusion_records(fixture_data_dir):
+async def test_get_star_fusion_records(fixture_data_dir, translator_instance):
     """Test that get_star_fusion_records works correctly"""
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
-    harvester = StarFusionHarvester(assembly=Assembly.GRCH38.value)
+    harvester = StarFusionHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
     assert len(records) == 37
 
@@ -42,10 +42,12 @@ async def test_get_star_fusion_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_fusion_catcher_records(fixture_data_dir):
+async def test_get_fusion_catcher_records(fixture_data_dir, translator_instance):
     """Test that get_fusion_catcher_records works correctly"""
     path = Path(fixture_data_dir / "fusion_catcher_test.txt")
-    harvester = FusionCatcherHarvester(assembly=Assembly.GRCH38.value)
+    harvester = FusionCatcherHarvester(
+        translator_instance, assembly=Assembly.GRCH38.value
+    )
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 14
 
@@ -54,10 +56,10 @@ async def test_get_fusion_catcher_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_arriba_records(fixture_data_dir):
+async def test_get_arriba_records(fixture_data_dir, translator_instance):
     """Test that get_arriba_records works correctly"""
     path = Path(fixture_data_dir / "fusions_arriba_test.tsv")
-    harvester = ArribaHarvester(assembly=Assembly.GRCH37.value)
+    harvester = ArribaHarvester(translator_instance, assembly=Assembly.GRCH37.value)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -66,10 +68,10 @@ async def test_get_arriba_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_cicero_records(fixture_data_dir):
+async def test_get_cicero_records(fixture_data_dir, translator_instance):
     """Test that get_cicero_records works correctly"""
     path = Path(fixture_data_dir / "annotated.fusion.txt")
-    harvester = CiceroHarvester(assembly=Assembly.GRCH38.value)
+    harvester = CiceroHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -78,10 +80,10 @@ async def test_get_cicero_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_enfusion_records(fixture_data_dir):
+async def test_get_enfusion_records(fixture_data_dir, translator_instance):
     """Test that get_enfusion_records works correctly"""
     path = Path(fixture_data_dir / "enfusion_test.csv")
-    harvester = EnFusionHarvester(assembly=Assembly.GRCH38.value)
+    harvester = EnFusionHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -90,10 +92,10 @@ async def test_get_enfusion_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_genie_records(fixture_data_dir):
+async def test_get_genie_records(fixture_data_dir, translator_instance):
     """Test that get_genie_records works correctly"""
     path = Path(fixture_data_dir / "genie_test.txt")
-    harvester = GenieHarvester(assembly=Assembly.GRCH38.value)
+    harvester = GenieHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -102,11 +104,11 @@ async def test_get_genie_records(fixture_data_dir):
         assert await harvester.load_records(path)
 
 
-async def test_get_civic_records():
+async def test_get_civic_records(translator_instance):
     """Test that get_civic_records works correctly"""
     civic_variants = civic.get_all_fusion_variants()
     civic_variants = civic_variants[:5]  # Look at first 5 records in test
-    harvester = CIVICHarvester()
+    harvester = CIVICHarvester(translator=translator_instance)
     harvester.fusions_list = civic_variants
     fusions_list = await harvester.load_records()
     assert len(fusions_list) == 5
