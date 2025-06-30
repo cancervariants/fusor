@@ -53,7 +53,7 @@ async def test_fusion_matching(
         matches = await fusion_matching_instance.match_fusion()
 
         if not case["expected_matches"]:
-            assert not matches
+            assert not matches[0]
             continue
 
         matches = matches[0]

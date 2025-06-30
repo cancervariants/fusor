@@ -4,6 +4,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_004327.3",
+      "strand": 1,
       "exonEnd": 2,
       "exonEndOffset": 182,
       "gene": {
@@ -216,6 +217,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_005157.5",
+      "strand": 1,
       "exonStart": 2,
       "exonStartOffset": -173,
       "gene": {

@@ -4,6 +4,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_152263.3",
+      "strand": -1,
       "exonEnd": 8,
       "exonEndOffset": 0,
       "gene": {
@@ -30,6 +31,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_002529.3",
+      "strand": 1,
       "exonStart": 10,
       "exonStartOffset": 0,
       "gene": {

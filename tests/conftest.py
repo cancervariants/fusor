@@ -1,6 +1,5 @@
 """Module containing methods and fixtures used throughout tests."""
 
-import asyncio
 import logging
 from pathlib import Path
 
@@ -9,7 +8,6 @@ from cool_seq_tool.app import CoolSeqTool
 
 from fusor.fusion_matching import FusionMatcher
 from fusor.fusor import FUSOR
-from fusor.models import FusionSet
 from fusor.translator import Translator
 
 FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
@@ -39,14 +37,6 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="session")
 def fixture_data_dir():
     """Provide test data directory."""
     return FIXTURE_DATA_DIR
@@ -68,7 +58,7 @@ def fusor_instance():
     return FUSOR(cool_seq_tool=cst)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def translator_instance():
     """Create test fixture for translator object"""
     return Translator(fusor=FUSOR())
@@ -77,7 +67,10 @@ def translator_instance():
 @pytest.fixture(scope="session")
 def fusion_matching_instance():
     """Create test fixture for fusion matching object"""
-    return FusionMatcher(cache_dir=CACHE_DATA_DIR, fusion_set=FusionSet())
+    return FusionMatcher(
+        cache_dir=CACHE_DATA_DIR,
+        cache_files=["civic_translated_fusions.pkl"],
+    )
 
 
 @pytest.fixture(scope="session")
@@ -703,6 +696,7 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
                 "exonEnd": 8,
@@ -816,6 +810,7 @@ def fusion_example():
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
                 "exonEnd": 8,

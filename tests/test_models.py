@@ -17,7 +17,6 @@ from fusor.models import (
     ContigSequence,
     EventType,
     FunctionalDomain,
-    FusionSet,
     GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
@@ -28,6 +27,7 @@ from fusor.models import (
     TemplatedSequenceElement,
     TranscriptSegmentElement,
     UnknownGeneElement,
+    save_fusions_cache,
 )
 
 
@@ -219,6 +219,7 @@ def transcript_segments(sequence_locations, gene_examples):
     return [
         {
             "transcript": "refseq:NM_152263.3",
+            "strand": -1,
             "exonStart": 1,
             "exonStartOffset": -9,
             "exonEnd": 8,
@@ -232,6 +233,7 @@ def transcript_segments(sequence_locations, gene_examples):
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_034348.3",
+            "strand": 1,
             "exonStart": 1,
             "exonEnd": 8,
             "gene": gene_examples[3],
@@ -241,6 +243,7 @@ def transcript_segments(sequence_locations, gene_examples):
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
+            "strand": 1,
             "exonStart": 7,
             "exonEnd": 14,
             "exonEndOffset": -5,
@@ -251,6 +254,7 @@ def transcript_segments(sequence_locations, gene_examples):
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
+            "strand": 1,
             "exonStart": 7,
             "gene": gene_examples[4],
             "elementGenomicStart": sequence_locations[0],
@@ -416,6 +420,7 @@ def test_transcript_segment_element(transcript_segments):
     """Test TranscriptSegmentElement object initializes correctly"""
     test_element = TranscriptSegmentElement(**transcript_segments[0])
     assert test_element.transcript == "refseq:NM_152263.3"
+    assert test_element.strand == -1
     assert test_element.exonStart == 1
     assert test_element.exonStartOffset == -9
     assert test_element.exonEnd == 8
@@ -431,6 +436,7 @@ def test_transcript_segment_element(transcript_segments):
 
     test_element = TranscriptSegmentElement(**transcript_segments[3])
     assert test_element.transcript == "refseq:NM_938439.4"
+    assert test_element.strand == 1
     assert test_element.exonStart == 7
     assert test_element.exonStartOffset == 0
     assert test_element.exonEnd is None
@@ -442,6 +448,7 @@ def test_transcript_segment_element(transcript_segments):
     with pytest.raises(ValidationError) as exc_info:
         TranscriptSegmentElement(
             transcript="NM_152263.3",
+            strand="-1",
             exonStart="1",
             exonStartOffset="-9",
             exonEnd="8",
@@ -473,6 +480,7 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             type="TemplatedSequenceElement",
             transcript="NM_152263.3",
+            strand="-1",
             exonStart="1",
             exonStartOffset="-9",
             exonEnd="8",
@@ -504,6 +512,7 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             element_type="templated_sequence",
             transcript="NM_152263.3",
+            strand="-1",
             exonStart="1",
             exonStartOffset="-9",
             gene={
@@ -519,6 +528,7 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             type="TranscriptSegmentElement",
             transcript="NM_152263.3",
+            strand="-1",
             exonStartOffset="-9",
             exonEndOffset="7",
             gene={
@@ -1054,9 +1064,8 @@ def test_model_examples():
             model(**schema["example"])
 
 
-def test_fusion_set(fixture_data_dir):
-    """Test FusionSet class functionality"""
-    fs = FusionSet()
+def test_save_cache(fixture_data_dir):
+    """Test cache saving functionality"""
     assayed_fusion = AssayedFusion(
         **AssayedFusion.model_config["json_schema_extra"]["example"]
     )
@@ -1065,25 +1074,17 @@ def test_fusion_set(fixture_data_dir):
     )
 
     # Test AssayedFusion
-    fs.add_assayed_fusion(assayed_fusion)
-    assert len(fs.assayedFusions) == 1
-    fs.save_fusions_cache(
-        fusions_list=fs.assayedFusions,
+    save_fusions_cache(
+        fusions_list=[assayed_fusion],
         cache_dir=Path(fixture_data_dir),
         cache_name="assayed_cache_test.pkl",
     )
     assert Path.exists(fixture_data_dir / "assayed_cache_test.pkl")
-    fs.remove_assayed_fusion(assayed_fusion)
-    assert len(fs.assayedFusions) == 0
 
     # Test CategoricalFusion
-    fs.add_categorical_fusion(categorical_fusion)
-    assert len(fs.categoricalFusions) == 1
-    fs.save_fusions_cache(
-        fusions_list=fs.categoricalFusions,
+    save_fusions_cache(
+        fusions_list=[categorical_fusion],
         cache_dir=Path(fixture_data_dir),
         cache_name="categorical_cache_test.pkl",
     )
     assert Path.exists(fixture_data_dir / "categorical_cache_test.pkl")
-    fs.remove_categorical_fusion(categorical_fusion)
-    assert len(fs.categoricalFusions) == 0
