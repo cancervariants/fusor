@@ -40,7 +40,6 @@ class FusionCallerHarvester(ABC):
     def __init__(self, assembly: Assembly) -> None:
         """Initialize FusionCallerHarvester"""
         self.translator = Translator(FUSOR())
-        self.coordinate_type = self.coordinate_type
         self.assembly = assembly
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:

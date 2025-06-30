@@ -31,24 +31,32 @@ class FusionMatcher:
             the provided location will be generated for each source.
         :param assayed_fusions: A list of AssayedFusion objects
         :param categorical_fusions: A list of CategoricalFusion objects
-        :param cache_files: A list of cache file names containing CategoricalFusion
-            objects to load, or None. By default this is set to None.
-        :raises ValueError: If categorical_fusions is not provided and either
-            `cache_dir` or `cache_files` is not provided.
+        :param cache_files: A list of cache file names in ``cache_dir`` containing
+            CategoricalFusion objects to load, or None. By default this is set to None.
+            It assumes that files contain lists of valid CategoricalFusion objects.
+        :raises ValueError: If ``categorical_fusions`` is not provided and either
+            ``cache_dir`` or ``cache_files`` is not provided.
         """
         if not categorical_fusions and (not cache_dir or not cache_files):
             msg = "Either a list of CategoricalFusion objects must be provided to `categorical_fusions` or a Path and list of file names must be provided to `cache_dir` and `cache_files`, respectively"
             raise ValueError(msg)
         self.cache_dir = cache_dir
         self.assayed_fusions = assayed_fusions
-        self.categorical_fusions = categorical_fusions
         self.cache_files = cache_files
 
-    async def _load_categorical_fusions(self) -> list[CategoricalFusion]:
+        # Load in CategoricalFusions, prioritizing those directly provided by the user
+        # with self.categorical_fusions
+        self.categorical_fusions = (
+            categorical_fusions
+            if categorical_fusions
+            else self._load_categorical_fusions()
+        )
+
+    def _load_categorical_fusions(self) -> list[CategoricalFusion]:
         """Load in cache of CategoricalFusion objects
 
         :raises ValueError: If the cache_dir or cache_files variables are None
-        :return A list of Categorical fusions
+        :return: A list of Categorical fusions
         """
         if not self.cache_dir or not self.cache_files:
             msg = "`cache_dir` and `cache_files` parameters must be provided"
@@ -74,7 +82,7 @@ class FusionMatcher:
         """Extract gene symbols for a fusion event to allow for filtering
 
         :param fusion_elements: A list of possible fusion elements
-        :return The two gene symbols involved in the fusion, or ?/v if one partner is not known/provided
+        :return: The two gene symbols involved in the fusion, or ?/v if one partner is not known/provided
         """
         gene_symbols = []
         for element in fusion_elements:
@@ -91,9 +99,9 @@ class FusionMatcher:
     ) -> bool:
         """Determine if assayed fusion and categorical fusion have the same partners
 
-        :param assayed_fusion_gene_symbols: AssayedFusion object
+        :param assayed_fusion: AssayedFusion object
         :param categorical_fusion: CategoricalFusion object
-        :return ``True`` if the symbols for the fusion match match, ``False`` if not
+        :return: ``True`` if the symbols for the fusion match, ``False`` if not
         """
         assayed_fusion_gene_symbols = self._extract_fusion_partners(
             assayed_fusion.structure
@@ -116,18 +124,17 @@ class FusionMatcher:
     def _filter_categorical_fusions(
         self,
         assayed_fusion: AssayedFusion,
-        categorical_fusions: list[CategoricalFusion],
     ) -> list[CategoricalFusion]:
-        """Filter CategoricalFusion list to ensure fusion matching is run on relevant list
+        """Filter CategoricalFusion list to ensure fusion matching is run on fusions
+        whose partners match those in the AssayedFusion object
 
         :param assayed_fusion: The AssayedFusion object that is being queried
-        :param categorical_fusions: A list of CategoricalFusion objects
-        :return A list of filtered categorical fusion objects, or an empty list if no
+        :return: A list of filtered categorical fusion objects, or an empty list if no
             filtered categorical fusions are generated
         """
         return [
             categorical_fusion
-            for categorical_fusion in categorical_fusions
+            for categorical_fusion in self.categorical_fusions
             if self._match_fusion_partners(assayed_fusion, categorical_fusion)
         ]
 
@@ -140,18 +147,18 @@ class FusionMatcher:
         is_five_prime_partner: bool,
     ) -> int | None:
         """Compare fusion partner information for assayed and categorical fusions. A
-            maximum of 5 fields are compared: the gene symbol, transcript accession,
-            exon number, exon offset, and genomic breakpoint. A match score of 5 is
-            returned if all these fields are equivalent. A match score of 0 is returned
-            if one of these fields differs. `None` is returned when a gene partner
-            is ambiguous and a clear comparison cannot be made.
+        maximum of 5 fields are compared: the gene symbol, transcript accession,
+        exon number, exon offset, and genomic breakpoint. A match score of 5 is
+        returned if all these fields are equivalent. A match score of 0 is returned
+        if one of these fields differs. `None` is returned when a gene partner
+        is ambiguous and a clear comparison cannot be made.
 
         :param assayed_element: The assayed fusion transcript or unknown gene element
             or gene element
         :param categorical_element: The categorical fusion transcript or mulitple
             possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
-        :return A score indiciating the degree of match or None if the partner is
+        :return: A score indiciating the degree of match or None if the partner is
             ? or v
         """
         # Set default match score
@@ -175,11 +182,7 @@ class FusionMatcher:
         if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
             categorical_element, TranscriptSegmentElement
         ):
-            if (
-                assayed_element.transcript
-                and categorical_element.transcript
-                and assayed_element.transcript == categorical_element.transcript
-            ):
+            if assayed_element.transcript == categorical_element.transcript:
                 match_score += 1
             else:
                 return 0
@@ -204,58 +207,61 @@ class FusionMatcher:
 
     def _compare_fusion(
         self, assayed_fusion: AssayedFusion, categorical_fusion: CategoricalFusion
-    ) -> bool | tuple[bool, int]:
-        """Compare assayed and categorical fusions
+    ) -> tuple[bool, int]:
+        """Compare assayed and categorical fusions to determine if their attributes
+        are equivalent. If one attribute does not match, then we know the fusions
+        do not match.
 
         :param assayed_fusion: AssayedFusion object
         :param categorical_fusion: CategoricalFusion object
-        :return A boolean or a tuple containing a boolean and match score. The boolean
+        :return: A tuple containing a boolean and match score. The boolean
             indicates if the AssayedFusion and CategoricalFusion objects match, and the
             match score describes the quality of the match. A higher match score
             indicates a higher quality match.
         """
-        assayed_transcript_segments = assayed_fusion.structure
-        categorical_transcript_segments = categorical_fusion.structure
+        assayed_fusion_structure = assayed_fusion.structure
+        categorical_fusion_structure = categorical_fusion.structure
         match_score = 0
 
         # Check for linker elements first
-        if (
-            len(assayed_transcript_segments)
-            == len(categorical_transcript_segments)
-            == 3
-        ):
-            if assayed_transcript_segments[1] == categorical_transcript_segments[1]:
+        if len(assayed_fusion_structure) == len(categorical_fusion_structure) == 3:
+            if assayed_fusion_structure[1] == categorical_fusion_structure[1]:
                 match_score += 1
-                assayed_transcript_segments.pop(1)
-                categorical_transcript_segments.pop(1)
+                # Remove linker sequences for additional comparison
+                assayed_fusion_structure.pop(1)
+                categorical_fusion_structure.pop(1)
             else:
-                return False  # Linker Sequences are not equivalent, no match
+                return False, 0  # Linker Sequences are not equivalent, no match
 
         # Compare other structural elements
         match_data_5prime = self._match_fusion_structure(
-            assayed_transcript_segments[0], categorical_transcript_segments[0], True
+            assayed_fusion_structure[0], categorical_fusion_structure[0], True
         )
         if match_data_5prime == 0:
-            return False
+            return False, 0
         match_data_3prime = self._match_fusion_structure(
-            assayed_transcript_segments[1], categorical_transcript_segments[1], False
+            assayed_fusion_structure[1], categorical_fusion_structure[1], False
         )
         if match_data_3prime == 0:
-            return False
+            return False, 0
 
         # Update match scores in event partner is ? or v
         match_data_5prime = match_data_5prime if match_data_5prime else 0
         match_data_3prime = match_data_3prime if match_data_3prime else 0
         match_score = match_score + match_data_5prime + match_data_3prime
-        return True, match_score if match_score > 0 else False
+        return (True, match_score) if match_score > 0 else (False, 0)
 
     async def match_fusion(
         self,
-    ) -> list[list[tuple[CategoricalFusion, int]]]:
+    ) -> list[list[tuple[CategoricalFusion, int]] | None]:
         """Return best matching fusion
 
+        This method prioritizes using categorical fusion objects that are
+        provided in ``self.categorical_fusions`` as opposed those that exist in the
+        ``cache_dir`` directory.
+
         :raises ValueError: If a list of AssayedFusion objects is not provided
-        :return A list of list of tuples containing matching categorical fusion objects
+        :return: A list of list of tuples containing matching categorical fusion objects
             and their associated match score or None, for each examined AssayedFusion
             object. This method iterates through all supplied AssayedFusion objects to
             find corresponding matches. The match score represents how many attributes
@@ -271,28 +277,21 @@ class FusionMatcher:
             raise ValueError(msg)
         matched_fusions = []
 
-        # Load in CategoricalFusions, prioritizing those directly provided by the user
-        # with self.categorical_fusions
-        categorical_fusions = (
-            self.categorical_fusions
-            if self.categorical_fusions
-            else await self._load_categorical_fusions()
-        )
         for assayed_fusion in self.assayed_fusions:
             matching_output = []
             filtered_categorical_fusions = self._filter_categorical_fusions(
-                assayed_fusion, categorical_fusions
+                assayed_fusion,
             )
-            if (
-                not filtered_categorical_fusions
-            ):  # Return empty list if no filtered fusions are generated
-                return []
+            if not filtered_categorical_fusions:  # Add None to matched_fusions
+                matched_fusions.append(None)
+                continue
+
             for categorical_fusion in filtered_categorical_fusions:
-                match_information = self._compare_fusion(
+                is_match, match_score = self._compare_fusion(
                     assayed_fusion, categorical_fusion
                 )
-                if match_information:
-                    matching_output.append((categorical_fusion, match_information[1]))
+                if is_match:
+                    matching_output.append((categorical_fusion, match_score))
             matched_fusions.append(
                 sorted(matching_output, key=lambda x: x[1], reverse=True)
             )

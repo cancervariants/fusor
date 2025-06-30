@@ -47,7 +47,7 @@ async def test_fusion_matching(fixture_data_dir, fusion_matching_instance):
         matches = await fusion_matching_instance.match_fusion()
 
         if not case["expected_matches"]:
-            assert not matches
+            assert not matches[0]
             continue
 
         matches = matches[0]
