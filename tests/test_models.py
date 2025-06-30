@@ -1,5 +1,7 @@
 """Module for testing the fusion model."""
 
+from pathlib import Path
+
 import pytest
 from cool_seq_tool.schemas import Strand
 from pydantic import ValidationError
@@ -25,6 +27,7 @@ from fusor.models import (
     TemplatedSequenceElement,
     TranscriptSegmentElement,
     UnknownGeneElement,
+    save_fusions_cache,
 )
 
 
@@ -1059,3 +1062,29 @@ def test_model_examples():
         schema = model.model_config["json_schema_extra"]
         if "example" in schema:
             model(**schema["example"])
+
+
+def test_save_cache(fixture_data_dir):
+    """Test cache saving functionality"""
+    assayed_fusion = AssayedFusion(
+        **AssayedFusion.model_config["json_schema_extra"]["example"]
+    )
+    categorical_fusion = CategoricalFusion(
+        **CategoricalFusion.model_config["json_schema_extra"]["example"]
+    )
+
+    # Test AssayedFusion
+    save_fusions_cache(
+        fusions_list=[assayed_fusion],
+        cache_dir=Path(fixture_data_dir),
+        cache_name="assayed_cache_test.pkl",
+    )
+    assert Path.exists(fixture_data_dir / "assayed_cache_test.pkl")
+
+    # Test CategoricalFusion
+    save_fusions_cache(
+        fusions_list=[categorical_fusion],
+        cache_dir=Path(fixture_data_dir),
+        cache_name="categorical_cache_test.pkl",
+    )
+    assert Path.exists(fixture_data_dir / "categorical_cache_test.pkl")
