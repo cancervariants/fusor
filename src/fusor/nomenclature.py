@@ -126,7 +126,6 @@ def gene_nomenclature(element: GeneElement) -> str:
 
     :param element: a gene element object
     :return: element nomenclature representation
-    :raises ValueError: if unable to retrieve gene ID
     """
     gene_id = element.gene.primaryCoding.id if element.gene.primaryCoding else "unknown"
     return f"{element.gene.name}({gene_id})"
