@@ -264,13 +264,13 @@ def test_generate_nomenclature(
     assert nm == "v::ALK(hgnc:427)"
 
     nm = generate_nomenclature(examples.tpm3_ntrk1, fusor_instance.seqrepo)
-    assert nm == "NM_152263.3(TPM3):e.8(::)NM_002529.3(NTRK1):e.10"
+    assert nm == "NM_152263.3(TPM3):e.8::NM_002529.3(NTRK1):e.10"
 
     nm = generate_nomenclature(examples.tpm3_pdgfrb, fusor_instance.seqrepo)
     assert nm == "NM_152263.3(TPM3):e.1_8::NM_002609.3(PDGFRB):e.11_22"
 
     nm = generate_nomenclature(examples.ewsr1, fusor_instance.seqrepo)
-    assert nm == "EWSR1(hgnc:3508)(::)?"
+    assert nm == "EWSR1(hgnc:3508)::?"
 
     nm = generate_nomenclature(examples.ewsr1_no_assay, fusor_instance.seqrepo)
     assert nm == "EWSR1(hgnc:3508)::?"
@@ -278,7 +278,7 @@ def test_generate_nomenclature(
     nm = generate_nomenclature(
         examples.ewsr1_no_causative_event, fusor_instance.seqrepo
     )
-    assert nm == "EWSR1(hgnc:3508)(::)?"
+    assert nm == "EWSR1(hgnc:3508)::?"
 
     nm = generate_nomenclature(examples.ewsr1_elements_only, fusor_instance.seqrepo)
     assert nm == "EWSR1(hgnc:3508)::?"

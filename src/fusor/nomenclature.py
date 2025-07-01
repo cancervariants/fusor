@@ -6,8 +6,6 @@ from ga4gh.vrs.models import SequenceReference
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
-    AssayedFusion,
-    Evidence,
     Fusion,
     GeneElement,
     LinkerElement,
@@ -172,12 +170,5 @@ def generate_nomenclature(fusion: Fusion, sr: SeqRepo) -> str:
                 parts.append(gene_nomenclature(element))
         else:
             raise ValueError
-    if (
-        isinstance(fusion, AssayedFusion)
-        and fusion.assay
-        and fusion.assay.fusionDetection == Evidence.INFERRED
-    ):
-        divider = "(::)"
-    else:
-        divider = "::"
+    divider = "::"
     return divider.join(parts)
