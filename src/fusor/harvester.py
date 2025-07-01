@@ -73,7 +73,7 @@ class FusionCallerHarvester(ABC):
         self,
         fusion_path: Path,
     ) -> list[FusionCaller]:
-        """Convert rows of fusion caller output to Pydantic classes
+        """Convert rows of fusion caller output to AssayedFusion objects
 
         :param fusion_path: The path to the fusions file
         :raise ValueError: if the file does not exist at the specified path
@@ -277,7 +277,7 @@ class CIVICHarvester(FusionCallerHarvester):
         self.fusions_list = None
 
     async def load_records(self) -> list[CIVIC]:
-        """Extract data from CIVIC fusion objects
+        """Convert CIViC fusions to CategoricalFusion objects
 
         :return A list of CIVIC objects
         """

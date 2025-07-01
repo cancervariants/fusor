@@ -1,4 +1,4 @@
-"""Model for fusion class"""
+"""Model for FUSOR classes"""
 
 import logging
 import pickle
@@ -126,7 +126,7 @@ class StructuralElementType(str, Enum):
 
 
 class BaseStructuralElement(ABC, BaseModel):
-    """Define base structural element class."""
+    """Define BaseStructuralElement class."""
 
     type: StructuralElementType
 
@@ -200,7 +200,7 @@ class SplitReads(BaseStructuralElement):
 
 
 class SpanningReads(BaseStructuralElement):
-    """Define Spanning Reads class.
+    """Define SpanningReads class.
 
     This class models the number of pairs of reads that support the reported fusion
     event
@@ -237,7 +237,7 @@ class ReadData(BaseStructuralElement):
 
 
 class TranscriptSegmentElement(BaseStructuralElement):
-    """Define TranscriptSegment class"""
+    """Define TranscriptSegmentElement class"""
 
     type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = (
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
@@ -337,7 +337,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
 
 class LinkerElement(BaseStructuralElement, extra="forbid"):
-    """Define Linker class (linker sequence)"""
+    """Define LinkerElement class (linker sequence)"""
 
     type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = (
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
@@ -359,7 +359,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
 
 
 class TemplatedSequenceElement(BaseStructuralElement):
-    """Define Templated Sequence Element class.
+    """Define TemplatedSequenceElement class.
 
     A templated sequence is a contiguous genomic sequence found in the gene
     product.
@@ -545,7 +545,7 @@ class FusionType(str, Enum):
 
 
 class AbstractFusion(BaseModel, ABC):
-    """Define Fusion class"""
+    """Define AbstractFusion class"""
 
     type: FusionType
     regulatoryElement: RegulatoryElement | None = None

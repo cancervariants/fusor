@@ -1065,7 +1065,9 @@ def test_model_examples():
 
 
 def test_save_cache(fixture_data_dir):
-    """Test cache saving functionality"""
+    """Test cache saving functionality for AssayedFusion and CategoricalFusion
+    objects
+    """
     assayed_fusion = AssayedFusion(
         **AssayedFusion.model_config["json_schema_extra"]["example"]
     )
