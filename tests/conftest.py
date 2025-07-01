@@ -42,7 +42,7 @@ def fixture_data_dir():
     return FIXTURE_DATA_DIR
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def fusor_instance():
     """Create test fixture for fusor object
 

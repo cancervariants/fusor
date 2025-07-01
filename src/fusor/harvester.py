@@ -21,8 +21,19 @@ from fusor.fusion_caller_models import (
     Genie,
     STARFusion,
 )
+from fusor.fusor import FUSOR
 from fusor.models import AssayedFusion, CategoricalFusion
-from fusor.translator import Translator
+from fusor.translator import (
+    ArribaTranslator,
+    CiceroTranslator,
+    CIVICTranslator,
+    EnFusionTranslator,
+    FusionCatcherTranslator,
+    GenieTranslator,
+    JaffaTranslator,
+    StarFusionTranslator,
+    Translator,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -34,7 +45,6 @@ class FusionCallerHarvester(ABC):
     column_rename: dict
     delimeter: str
     translator: Translator
-    translator_method_name: ClassVar[str]
     coordinate_type: CoordinateType
 
     def __init__(self, translator: Translator, assembly: Assembly) -> None:
@@ -95,10 +105,9 @@ class FusionCallerHarvester(ABC):
             fusions_list.append(self.fusion_caller(**filtered_row))
 
         translated_fusions = []
-        translator_method = getattr(self.translator, self.translator_method_name)
         for fusion in fusions_list:
             try:
-                translated_fusion = await translator_method(
+                translated_fusion = await self.translator.translate(
                     fusion, self.coordinate_type, self.assembly
                 )
             except ValueError as error:
@@ -120,8 +129,14 @@ class JAFFAHarvester(FusionCallerHarvester):
     }
     delimeter = ","
     fusion_caller = JAFFA
-    translator_method_name = "from_jaffa"
     coordinate_type = CoordinateType.RESIDUE
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze JAFFAHarvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=JaffaTranslator(fusor), assembly=assembly)
 
 
 class StarFusionHarvester(FusionCallerHarvester):
@@ -138,7 +153,13 @@ class StarFusionHarvester(FusionCallerHarvester):
     delimeter = "\t"
     fusion_caller = STARFusion
     coordinate_type = CoordinateType.RESIDUE
-    translator_method_name = "from_star_fusion"
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze StarFusionHarvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=StarFusionTranslator(fusor), assembly=assembly)
 
 
 class FusionCatcherHarvester(FusionCallerHarvester):
@@ -156,9 +177,14 @@ class FusionCatcherHarvester(FusionCallerHarvester):
     }
     delimeter = "\t"
     fusion_caller = FusionCatcher
-    translator_method = Translator.from_fusion_catcher
     coordinate_type = CoordinateType.RESIDUE
-    translator_method_name = "from_fusion_catcher"
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze FusionCatcher Harvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=FusionCatcherTranslator(fusor), assembly=assembly)
 
 
 class ArribaHarvester(FusionCallerHarvester):
@@ -174,7 +200,13 @@ class ArribaHarvester(FusionCallerHarvester):
     delimeter = "\t"
     fusion_caller = Arriba
     coordinate_type = CoordinateType.RESIDUE
-    translator_method_name = "from_arriba"
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze ArribaHarvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=ArribaTranslator(fusor), assembly=assembly)
 
 
 class CiceroHarvester(FusionCallerHarvester):
@@ -196,7 +228,13 @@ class CiceroHarvester(FusionCallerHarvester):
     delimeter = "\t"
     fusion_caller = Cicero
     coordinate_type = CoordinateType.RESIDUE
-    translator_method_name = "from_cicero"
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze CiceroHarvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=CiceroTranslator(fusor), assembly=assembly)
 
 
 class EnFusionHarvester(FusionCallerHarvester):
@@ -214,7 +252,13 @@ class EnFusionHarvester(FusionCallerHarvester):
     delimeter = "\t"
     fusion_caller = EnFusion
     coordinate_type = CoordinateType.RESIDUE
-    translator_method_name = "from_enfusion"
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze EnFusionHarvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=EnFusionTranslator(fusor), assembly=assembly)
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
@@ -244,7 +288,13 @@ class GenieHarvester(FusionCallerHarvester):
     delimeter = "\t"
     fusion_caller = Genie
     coordinate_type = CoordinateType.RESIDUE
-    translator_method_name = "from_genie"
+
+    def __init__(self, fusor: FUSOR, assembly: Assembly):
+        """Initialze GenieHarvester
+        :param fusor: A FUSOR object
+        :param assembly: The assembly
+        """
+        super().__init__(translator=GenieTranslator(fusor), assembly=assembly)
 
 
 class CIVICHarvester(FusionCallerHarvester):
@@ -252,14 +302,14 @@ class CIVICHarvester(FusionCallerHarvester):
 
     def __init__(
         self,
-        translator: Translator,
+        fusor: FUSOR,
         update_cache: bool = False,
         update_from_remote: bool = True,
         local_cache_path: str = civic.LOCAL_CACHE_PATH,
     ) -> None:
         """Initialize CivicHarvester class.
 
-        :param translator: A Translator class instance
+        :param fusor: A FUSOR class instance
         :param update_cache: ``True`` if civicpy cache should be updated. Note
             this will take several minutes. ``False`` if to use local cache.
         :param update_from_remote: If set to ``True``, civicpy.update_cache will first
@@ -269,11 +319,12 @@ class CIVICHarvester(FusionCallerHarvester):
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         """
-        super().__init__(translator, Assembly.GRCH37)
+        # super().__init__(translator, Assembly.GRCH37)
         if update_cache:
             civic.update_cache(from_remote_cache=update_from_remote)
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
+        self.translator = CIVICTranslator(fusor=fusor)
         self.fusions_list = None
 
     async def load_records(self) -> list[CIVIC]:
@@ -297,7 +348,7 @@ class CIVICHarvester(FusionCallerHarvester):
                 "?" in fusion.vicc_compliant_name
             ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
                 continue
-            cat_fusion = await self.translator.from_civic(civic=fusion)
+            cat_fusion = await self.translator.translate(civic=fusion)
             translated_fusions.append(cat_fusion)
         self._count_dropped_fusions(processed_fusions, translated_fusions)
 
