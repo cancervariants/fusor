@@ -8,7 +8,6 @@ from cool_seq_tool.app import CoolSeqTool
 
 from fusor.fusion_matching import FusionMatcher
 from fusor.fusor import FUSOR
-from fusor.translator import Translator
 
 FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
 CACHE_DATA_DIR = Path(__file__).resolve().parent.parent / "src" / "fusor" / "data"
@@ -56,12 +55,6 @@ def fusor_instance():
     """
     cst = CoolSeqTool(force_local_files=True)
     return FUSOR(cool_seq_tool=cst)
-
-
-@pytest.fixture()
-def translator_instance():
-    """Create test fixture for translator object"""
-    return Translator(fusor=FUSOR())
 
 
 @pytest.fixture(scope="session")
