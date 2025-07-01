@@ -23,7 +23,7 @@ async def test_get_jaffa_records(fixture_data_dir, translator_instance):
     path = Path(fixture_data_dir / "jaffa_results_test.csv")
     harvester = JAFFAHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
-    assert len(records) == 9
+    assert len(records) == 2
 
     path = Path(fixture_data_dir / "jaffa_resultss_test.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
@@ -32,12 +32,12 @@ async def test_get_jaffa_records(fixture_data_dir, translator_instance):
 
 async def test_get_star_fusion_records(fixture_data_dir, translator_instance):
     """Test that get_star_fusion_records works correctly"""
-    path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
+    path = Path(fixture_data_dir / "star_fusion_test.tsv")
     harvester = StarFusionHarvester(translator_instance, assembly=Assembly.GRCH38.value)
     records = await harvester.load_records(path)
-    assert len(records) == 37
+    assert len(records) == 3
 
-    path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsvs")
+    path = Path(fixture_data_dir / "star_fusion_test.tsvs")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
 
@@ -49,7 +49,7 @@ async def test_get_fusion_catcher_records(fixture_data_dir, translator_instance)
         translator_instance, assembly=Assembly.GRCH38.value
     )
     fusions_list = await harvester.load_records(path)
-    assert len(fusions_list) == 14
+    assert len(fusions_list) == 3
 
     path = Path(fixture_data_dir / "fusionn_catcher.txts")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
