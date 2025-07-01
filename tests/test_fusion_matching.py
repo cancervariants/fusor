@@ -39,7 +39,7 @@ async def test_fusion_matching(
         test_cases = yaml.safe_load(test_cases)["tests"]
 
     # Load STAR-Fusion records
-    path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv")
+    path = Path(fixture_data_dir / "star_fusion_test.tsv")
     harvester = StarFusionHarvester(
         translator=translator_instance, assembly=Assembly.GRCH38.value
     )

@@ -61,5 +61,5 @@ tests:
                 end: 29223528
         score: 5
   - name: "INVALID"
-    input_index: 29
+    input_index: 2
     expected_matches: []
