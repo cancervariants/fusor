@@ -358,7 +358,7 @@ class FUSOR:
         :param sequence_id: Chromosome accession for sequence
         :param strand: Strand
         :param coordinate_type: Determines coordinate base used. Must be one of ``residue``
-            or ``inter-residue``. Set to ``inter_residue`` by default.
+            or ``inter-residue``. Set to ``inter-residue`` by default.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Templated Sequence Element
