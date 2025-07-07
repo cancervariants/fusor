@@ -191,7 +191,7 @@ def fusion_data_example_nonexonic():
 
 @pytest.fixture(scope="module")
 def fusion_data_example_categorical():
-    """Create test fixture for CategoricalFusion object"""
+    """Create test fixture for CategoricalFusion object with BCR::ABL1 fusion"""
 
     def _create_base_fixture(**kwargs):
         params = {

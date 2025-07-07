@@ -1,5 +1,5 @@
-"""Module for translating output from fusion detection methods to FUSOR AssayedFusion
-objects
+"""Module for translating output from fusion detection methods to fusion
+objects (AssayedFusion/CategoricalFusion)
 """
 
 import logging
@@ -60,7 +60,7 @@ class GeneFusionPartners(BaseModel):
 
 class Translator(ABC):
     """Class for translating outputs from different fusion detection algorithms
-    to FUSOR AssayedFusion objects
+    to FUSOR AssayedFusion and CategoricalFusion objects
     """
 
     def __init__(self, fusor: FUSOR) -> None:

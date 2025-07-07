@@ -1,4 +1,4 @@
-"""Module for testing fusion caller classes"""
+"""Module for testing fusion caller harvesters"""
 
 from pathlib import Path
 
