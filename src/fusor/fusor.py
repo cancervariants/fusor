@@ -93,7 +93,7 @@ class FUSOR:
         return False
 
     def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
-        """Construct fusion object.
+        """Construct Fusion object.
 
         Fusion type (assayed vs categorical) can be inferred based on provided kwargs,
         assuming they can sufficiently discriminate the type.
@@ -166,7 +166,7 @@ class FUSOR:
         reading_frame_preserved: bool | None = None,
         civic_molecular_profiles: list[MolecularProfile] | None = None,
     ) -> CategoricalFusion:
-        """Construct a categorical fusion object
+        """Construct a CategoricalFusion object
 
         :param structure: elements constituting the fusion
         :param regulatory_element: affected regulatory element
@@ -198,7 +198,7 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
-        """Construct an assayed fusion object.
+        """Construct an AssayedFusion object.
 
         :param structure: elements constituting the fusion
         :param causative_event: event causing the fusion
@@ -231,7 +231,7 @@ class FUSOR:
         reads: AnchoredReads | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
-        """Create transcript segment element.
+        """Create TranscriptSegmentElement.
 
         :param tx_to_genomic_coords: ``True`` if going from transcript to genomic
             coordinates. ``False`` if going from genomic to transcript exon coordinates.
@@ -331,7 +331,7 @@ class FUSOR:
     ) -> tuple[GeneElement | None, str | None]:
         """Create gene element
 
-        :param str gene: Gene
+        :param str gene: The gene symbol name
         :param bool use_minimal_gene: `True` if minimal gene object
             (`id` and `label`) will be used. `False` if
             gene-normalizer's gene object will be used
@@ -358,7 +358,7 @@ class FUSOR:
         :param sequence_id: Chromosome accession for sequence
         :param strand: Strand
         :param coordinate_type: Determines coordinate base used. Must be one of ``residue``
-            or ``inter-residue``.
+            or ``inter-residue``. Set to ``inter-residue`` by default.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Templated Sequence Element
@@ -381,7 +381,7 @@ class FUSOR:
     ) -> tuple[LinkerElement | None, str | None]:
         """Create linker element
 
-        :param sequence: Sequence
+        :param sequence: A nucleotide sequence
         :return: Tuple containing a complete Linker element and None if
             successful, or a None value and warning message if unsuccessful
         """
@@ -407,9 +407,9 @@ class FUSOR:
 
     @staticmethod
     def unknown_gene_element() -> UnknownGeneElement:
-        """Create unknown gene element
+        """Create UnknownGeneElement
 
-        :return: Unknown Gene element
+        :return: UnknownGeneElement
         """
         return UnknownGeneElement()
 
@@ -425,7 +425,7 @@ class FUSOR:
         use_minimal_gene: bool = True,
         seq_id_target_namespace: str | None = None,
     ) -> tuple[FunctionalDomain | None, str | None]:
-        """Build functional domain instance.
+        """Build FunctionalDomain object.
 
         :param status: Status for domain.  Must be either ``lost`` or ``preserved``
         :param name: Domain name
@@ -521,7 +521,7 @@ class FUSOR:
         sequence_id: str,
         seq_id_target_namespace: str | None = None,
     ) -> SequenceLocation:
-        """Create sequence location
+        """Create SequenceLocation object
 
         :param start: Start position
         :param end: End position
@@ -563,7 +563,7 @@ class FUSOR:
     ) -> tuple[MappableConcept | None, str | None]:
         """Return gene from normalized response.
 
-        :param query: Gene query
+        :param query: A query containing a gene symbol string
         :param use_minimal_gene: bool Use minimal gene representation (id and label only)
         :return: Tuple with gene and None value for warnings if
             successful, and None value with warning string if unsuccessful

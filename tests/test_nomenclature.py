@@ -113,7 +113,7 @@ def reg_location_example():
 
 @pytest.fixture(scope="module")
 def exon_offset_example():
-    """Provide example of tx segment with positive exon end offset"""
+    """Provide example of transcript segment with positive exon end offset"""
     return CategoricalFusion(
         type="CategoricalFusion",
         structure=[
@@ -204,7 +204,7 @@ def tx_seg_example():
 
 @pytest.fixture(scope="module")
 def junction_example():
-    """Provide example of junction element."""
+    """Provide example of fusion junction element."""
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
