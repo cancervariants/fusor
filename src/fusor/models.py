@@ -630,37 +630,6 @@ class AbstractTranscriptStructuralVariant(BaseModel, ABC):
             raise ValueError(msg)
         return values
 
-    @model_validator(mode="after")
-    def structure_ends(cls, values):
-        """Ensure start/end elements are of legal types and have fields required by
-        their position.
-        """
-        elements = values.structure
-        error_messages = []
-        if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exonEnd is None and not values.regulatoryElement:
-                msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
-                error_messages.append(msg)
-        elif isinstance(elements[0], LinkerElement):
-            msg = "First structural element cannot be LinkerSequence"
-            error_messages.append(msg)
-
-        if len(elements) > 2:
-            for element in elements[1:-1]:
-                if isinstance(element, TranscriptSegmentElement) and (
-                    element.exonStart is None or element.exonEnd is None
-                ):
-                    msg = "Connective TranscriptSegmentElement must include both start and end positions"
-                    error_messages.append(msg)
-        if isinstance(elements[-1], TranscriptSegmentElement) and (
-            elements[-1].exonStart is None
-        ):
-            msg = "3' fusion partner junction must include " "starting position"
-            error_messages.append(msg)
-        if error_messages:
-            raise ValueError("\n".join(error_messages))
-        return values
-
 
 class AbstractFusion(AbstractTranscriptStructuralVariant):
     """Define AbstractFusion class"""
@@ -716,6 +685,37 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             num_structure + bool(reg_element)
         ):
             raise ValueError(uq_gene_msg)
+        return values
+
+    @model_validator(mode="after")
+    def structure_ends(cls, values):
+        """Ensure start/end elements are of legal types and have fields required by
+        their position.
+        """
+        elements = values.structure
+        error_messages = []
+        if isinstance(elements[0], TranscriptSegmentElement):
+            if elements[0].exonEnd is None and not values.regulatoryElement:
+                msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
+                error_messages.append(msg)
+        elif isinstance(elements[0], LinkerElement):
+            msg = "First structural element cannot be LinkerSequence"
+            error_messages.append(msg)
+
+        if len(elements) > 2:
+            for element in elements[1:-1]:
+                if isinstance(element, TranscriptSegmentElement) and (
+                    element.exonStart is None or element.exonEnd is None
+                ):
+                    msg = "Connective TranscriptSegmentElement must include both start and end positions"
+                    error_messages.append(msg)
+        if isinstance(elements[-1], TranscriptSegmentElement) and (
+            elements[-1].exonStart is None
+        ):
+            msg = "3' fusion partner junction must include " "starting position"
+            error_messages.append(msg)
+        if error_messages:
+            raise ValueError("\n".join(error_messages))
         return values
 
 

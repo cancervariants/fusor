@@ -24,6 +24,7 @@ from fusor.models import (
     BreakpointCoverage,
     CategoricalFusion,
     ContigSequence,
+    InternalTandemDuplication,
     ReadData,
     SpanningReads,
     SplitReads,
@@ -174,6 +175,81 @@ def fusion_data_example_nonexonic():
             "viccNomenclature": "NM_152263.4(TPM3):e.4+5::NM_002609.4(PDGFRB):e.11-559",
         }
         assayed_fusion = AssayedFusion(**params)
+        return assayed_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
+
+
+@pytest.fixture(scope="module")
+def itd_example():
+    """Create test fixture for ITD events, using a duplication of TPM3, exons 1-8,
+    with an offset of 66
+    """
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "InternalTandemDuplication",
+            "structure": [
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_152263.4",
+                    "strand": -1,
+                    "exonEnd": 8,
+                    "exonEndOffset": -66,
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:12012",
+                            "code": "HGNC:12012",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "TPM3",
+                    },
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                        "type": "SequenceLocation",
+                        "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000001.11",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 154170465,
+                    },
+                },
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_152263.4",
+                    "strand": -1,
+                    "exonEnd": 8,
+                    "exonEndOffset": -66,
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:12012",
+                            "code": "HGNC:12012",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "TPM3",
+                    },
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                        "type": "SequenceLocation",
+                        "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000001.11",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 154170465,
+                    },
+                },
+            ],
+            "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+            "r_frame_preserved": True,
+            "assay": None,
+        }
+        assayed_fusion = InternalTandemDuplication(**params)
         return assayed_fusion.model_copy(update=kwargs)
 
     return _create_base_fixture
@@ -337,6 +413,7 @@ async def test_jaffa(
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
+
     fusion_data_example = fusion_data_example(
         readData=ReadData(
             split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
@@ -960,3 +1037,142 @@ async def test_civic(
         == fusion_data_example_categorical_mpge().viccNomenclature
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
+
+
+@pytest.mark.asyncio()
+async def test_itds(itd_example, translator_instance):
+    """Test ITD example across all fusion callers and sources"""
+    jaffa = JAFFA(
+        fusion_genes="TPM3:TPM3",
+        chrom1="chr1",
+        base1=154170465,
+        chrom2="chr1",
+        base2=154170465,
+        rearrangement=True,
+        classification="HighConfidence",
+        inframe=True,
+        spanning_reads=100,
+        spanning_pairs=80,
+    )
+
+    jaffa_fusor = await translator_instance.from_jaffa(
+        jaffa,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    assert jaffa_fusor.structure == itd_example().structure
+
+    star_fusion = STARFusion(
+        left_gene="TPM3^ENSG00000143549.19",
+        right_gene="TPM3^ENSG00000143549.19",
+        left_breakpoint="chr1:154170465:-",
+        right_breakpoint="chr1:154170465:-",
+        annots='["INTERCHROMOSOMAL]',
+        junction_read_count=100,
+        spanning_frag_count=80,
+    )
+
+    star_fusion_fusor = await translator_instance.from_star_fusion(
+        star_fusion,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    assert star_fusion_fusor.structure == itd_example().structure
+
+    fusion_catcher = FusionCatcher(
+        five_prime_partner="TPM3",
+        three_prime_partner="TPM3",
+        five_prime_fusion_point="1:154170465:-",
+        three_prime_fusion_point="1:154170465:-",
+        predicted_effect="exonic(no-known-CDS)/exonic(no-known-CDS)",
+        spanning_unique_reads=100,
+        spanning_reads=80,
+        fusion_sequence="CTAGATGAC*TACTACTA",
+    )
+
+    fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
+        fusion_catcher,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    assert fusion_catcher_fusor.structure == itd_example().structure
+
+    fusion_map_data = pl.DataFrame(
+        {
+            "KnownGene1": "TPM3",
+            "KnownGene2": "TPM3",
+            "Chromosome1": "1",
+            "Position1": "154170465",
+            "Chromosome2": "1",
+            "Position2": "154170465",
+            "FusionGene": "TPM3->PDGFRB",
+            "SplicePatternClass": "CanonicalPattern[Major]",
+            "FrameShiftClass": "InFrame",
+        }
+    )
+    fusion_map_fusor = await translator_instance.from_fusion_map(
+        fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
+    )
+    assert fusion_map_fusor.structure == itd_example().structure
+
+    cicero = Cicero(
+        gene_5prime="TPM3",
+        gene_3prime="TPM3",
+        chr_5prime="1",
+        chr_3prime="1",
+        pos_5prime=154170465,
+        pos_3prime=154170465,
+        sv_ort=">",
+        event_type="Internal_dup",
+        reads_5prime=100,
+        reads_3prime=90,
+        coverage_5prime=200,
+        coverage_3prime=190,
+        contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
+    )
+
+    cicero_fusor = await translator_instance.from_cicero(
+        cicero,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    itd_example_cicero = itd_example(contig=ContigSequence(contig=cicero.contig))
+    itd_example_cicero.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    itd_example_cicero.structure[0].anchoredReads = AnchoredReads(reads=100)
+    itd_example_cicero.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    itd_example_cicero.structure[1].anchoredReads = AnchoredReads(reads=90)
+    assert cicero_fusor.structure == itd_example_cicero.structure
+
+    enfusion = EnFusion(
+        gene_5prime="TPM3",
+        gene_3prime="TPM3",
+        chr_5prime=1,
+        chr_3prime=1,
+        break_5prime=154170465,
+        break_3prime=154170465,
+    )
+
+    enfusion_fusor = await translator_instance.from_enfusion(
+        enfusion,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    assert enfusion_fusor.structure == itd_example().structure
+
+    genie = Genie(
+        site1_hugo="TPM3",
+        site2_hugo="TPM3",
+        site1_chrom=1,
+        site2_chrom=1,
+        site1_pos=154170465,
+        site2_pos=154170465,
+        annot="TMP3 (NM_152263.4) duplication",
+        reading_frame="In_frame",
+    )
+
+    genie_fusor = await translator_instance.from_genie(
+        genie,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    assert genie_fusor.structure == itd_example().structure
