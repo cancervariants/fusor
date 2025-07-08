@@ -13,6 +13,7 @@ from fusor.models import (
     CategoricalFusion,
     FunctionalDomain,
     GeneElement,
+    InternalTandemDuplication,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
@@ -461,6 +462,25 @@ def test_fusion(
         )
     msg = "Input should be a valid boolean\nInput should be a valid dictionary or instance of CausativeEvent"
     assert msg in str(excinfo.value)
+
+
+def test_itd(
+    fusor_instance,
+    transcript_segment_element,
+    functional_domain,
+):
+    """Test that ITD construction works successfully"""
+    itd = fusor_instance.internal_tandem_duplication(
+        structure=[transcript_segment_element, transcript_segment_element],
+        critical_functional_domains=[functional_domain],
+    )
+    assert isinstance(itd, InternalTandemDuplication)
+
+    itd = fusor_instance.internal_tandem_duplication(
+        structure=[transcript_segment_element, UnknownGeneElement()],
+        critical_functional_domains=[functional_domain],
+    )
+    assert isinstance(itd, InternalTandemDuplication)
 
 
 @pytest.mark.asyncio()
