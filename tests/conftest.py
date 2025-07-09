@@ -41,7 +41,7 @@ def fixture_data_dir():
     return FIXTURE_DATA_DIR
 
 
-@pytest.fixture()
+@pytest.fixture
 def fusor_instance():
     """Create test fixture for fusor object
 
@@ -763,7 +763,7 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def fusion_example():
     """Create test fixture for a fake fusion without additional property expansion."""
     return {

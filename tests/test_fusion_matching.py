@@ -28,7 +28,7 @@ def _assert_subset(actual: dict, expected: dict) -> None:
                 assert actual_value == expected_value
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_fusion_matching(
     fixture_data_dir, fusion_matching_instance, fusor_instance
 ):
