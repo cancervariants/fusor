@@ -37,7 +37,10 @@ dynamic=["version"]
 
 [project.optional-dependencies]
 tests = ["pytest", "pytest-cov", "pytest-asyncio"]
-dev = ["pre-commit>=3.7.1", "pytest", "pytest-cov", "pytest-asyncio", "ruff==0.5.0"]
+dev = [
+    "pre-commit>=4.2.0",
+    "ruff==0.12.1",
+]
 docs = [
     "sphinx>=7.2, <8.2.0",
     "sphinx-autodoc-typehints==1.22.0",
@@ -78,7 +81,7 @@ branch = true
 
 [tool.ruff]
 src = ["src"]
-exclude = ["docs/source/conf.py"]
+exclude = ["docs/source/conf.py", "notebooks/"]
 
 [tool.ruff.lint]
 select = [
@@ -107,10 +110,14 @@ select = [
     "RSE",  # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
     "RET",  # https://docs.astral.sh/ruff/rules/#flake8-return-ret
     "SLF",  # https://docs.astral.sh/ruff/rules/#flake8-self-slf
+    "SLOT",  # https://docs.astral.sh/ruff/rules/#flake8-slots-slot
     "SIM",  # https://docs.astral.sh/ruff/rules/#flake8-simplify-sim
     "ARG",  # https://docs.astral.sh/ruff/rules/#flake8-unused-arguments-arg
     "PTH",  # https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
     "PGH",  # https://docs.astral.sh/ruff/rules/#pygrep-hooks-pgh
+    "PLC",  # https://docs.astral.sh/ruff/rules/#convention-c
+    "PLE",  # https://docs.astral.sh/ruff/rules/#error-e_1
+    "TRY",  # https://docs.astral.sh/ruff/rules/#tryceratops-try
     "PERF",  # https://docs.astral.sh/ruff/rules/#perflint-perf
     "FURB",  # https://docs.astral.sh/ruff/rules/#refurb-furb
     "RUF",  # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
@@ -129,13 +136,14 @@ fixable = [
     "PT",
     "RSE",
     "SIM",
+    "PLC",
+    "PLE",
+    "TRY",
     "PERF",
     "FURB",
-    "RUF",
+    "RUF"
 ]
 # ANN003 - missing-type-kwargs
-# ANN101 - missing-type-self
-# ANN102 - missing-type-cls
 # D203 - one-blank-line-before-class
 # D205 - blank-line-after-summary
 # D206 - indent-with-spaces*
@@ -149,22 +157,24 @@ fixable = [
 # E501 - line-too-long*
 # W191 - tab-indentation*
 # S321 - suspicious-ftp-lib-usage
+# PLC0206 - dict-index-missing-items
 # *ignored for compatibility with formatter
 ignore = [
-    "ANN003", "ANN101", "ANN102",
+    "ANN003",
     "D203", "D205", "D206", "D213", "D300", "D400", "D415",
     "E111", "E114", "E117", "E501",
     "W191",
     "S321",
+    "PLC0206",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 # ANN001 - missing-type-function-argument
-# ANN102 - missing-type-cls
 # ANN2 - missing-return-type
 # ANN201 - missing-return-type-undocumented-public-function
 # D100 - undocumented-public-module
 # D102 - undocumented-public-class
+# D103 - undocumented-public-function
 # S101 - assert
 # B011 - assert-false
 # N803 - invalid-argument-name
@@ -175,13 +185,13 @@ ignore = [
 "tests/*" = [
     "ANN001",
     "ANN2",
-    "ANN102",
     "D100",
     "D102",
+    "D103",
     "S101",
     "B011",
     "INP001",
-    "SLF001"
+    "SLF001",
 ]
 "src/fusor/models.py" = ["ANN201", "N803", "N805", "N815", "ANN001", "ANN2", "ANN102"]
 "scripts/*" = ["INP001"]

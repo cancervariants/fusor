@@ -252,7 +252,7 @@ def test_generate_nomenclature(
     )
     assert nm == fixture_nomenclature
 
-    from fusor import examples
+    from fusor import examples  # noqa: PLC0415
 
     nm = generate_nomenclature(examples.bcr_abl1, fusor_instance.seqrepo)
     assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"

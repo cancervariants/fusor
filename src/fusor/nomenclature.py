@@ -169,6 +169,6 @@ def generate_nomenclature(fusion: Fusion, sr: SeqRepo) -> str:
             ):
                 parts.append(gene_nomenclature(element))
         else:
-            raise ValueError
+            raise ValueError  # noqa: TRY004
     divider = "::"
     return divider.join(parts)

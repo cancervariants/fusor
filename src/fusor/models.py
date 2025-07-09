@@ -581,7 +581,7 @@ class AbstractFusion(BaseModel, ABC):
             return obj.get(attr_name)
         else:
             msg = "Unrecognized type, should only pass entities with properties"
-            raise ValueError(msg)
+            raise ValueError(msg)  # noqa: TRY004
 
     @classmethod
     def _fetch_gene_id_or_name(
@@ -685,7 +685,7 @@ class AbstractFusion(BaseModel, ABC):
         if isinstance(elements[-1], TranscriptSegmentElement) and (
             elements[-1].exonStart is None
         ):
-            msg = "3' fusion partner junction must include " "starting position"
+            msg = "3' fusion partner junction must include starting position"
             error_messages.append(msg)
         if error_messages:
             raise ValueError("\n".join(error_messages))

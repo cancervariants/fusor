@@ -86,8 +86,10 @@ async def check_data_resources(
                 _logger.error("Health check failed: gene DB is incompletely populated")
             else:
                 gene_status = True
-    except Exception as e:
-        _logger.error("Encountered error while creating gene DB: %s", e)
+    except Exception:
+        _logger.exception(
+            "Encountered error while creating gene DB during resource check"
+        )
     return FusorDataResourceStatus(
         cool_seq_tool=all(cst_status), gene_normalizer=gene_status
     )
