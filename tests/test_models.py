@@ -1079,7 +1079,7 @@ def test_abstraction_validator(transcript_segments, linkers):
 def test_file_examples():
     """Test example JSON files."""
     # if this loads, then Pydantic validation was successful
-    import fusor.examples as _  # noqa: F401
+    import fusor.examples as _  # noqa: F401 PLC0415
 
 
 def test_model_examples():

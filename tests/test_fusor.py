@@ -270,7 +270,7 @@ def mane_transcript_segment_element():
     return TranscriptSegmentElement(**params)
 
 
-@pytest.fixture()
+@pytest.fixture
 def fusion_ensg_sequence_id(templated_sequence_element_ensg):
     """Create fixture using Ensemble gene ID."""
     params = {
@@ -296,9 +296,9 @@ def compare_gene_obj(actual: dict, expected: dict):
         assert actual.get("xrefs") == expected.get("xrefs")
     assert "extensions" in actual
     if expected["extensions"]:
-        assert len(actual["extensions"]) == len(
-            expected["extensions"]
-        ), "len of extensions"
+        assert len(actual["extensions"]) == len(expected["extensions"]), (
+            "len of extensions"
+        )
         n_ext_correct = 0
         for expected_ext in expected["extensions"]:
             for actual_ext in actual["extensions"]:
@@ -307,16 +307,16 @@ def compare_gene_obj(actual: dict, expected: dict):
                     if isinstance(expected_ext["value"], list) and not isinstance(
                         expected_ext["value"][0], dict
                     ):
-                        assert set(actual_ext["value"]) == set(
-                            expected_ext["value"]
-                        ), f"{expected_ext['value']} value"
+                        assert set(actual_ext["value"]) == set(expected_ext["value"]), (
+                            f"{expected_ext['value']} value"
+                        )
                     else:
                         assert actual_ext["value"] == expected_ext["value"]
                     assert actual_ext.get("type") == expected_ext.get("type")
                     n_ext_correct += 1
-        assert n_ext_correct == len(
-            expected["extensions"]
-        ), "number of correct extensions"
+        assert n_ext_correct == len(expected["extensions"]), (
+            "number of correct extensions"
+        )
 
 
 def test__normalized_gene(fusor_instance):
@@ -447,7 +447,7 @@ def test_fusion(
         )
     msg = "First structural element cannot be LinkerSequence"
     assert msg in str(excinfo.value)
-    msg = "3' fusion partner junction must include " "starting position"
+    msg = "3' fusion partner junction must include starting position"
     assert msg in str(excinfo.value)
 
     # catch multiple errors from different validators
@@ -483,7 +483,7 @@ def test_itd(
     assert isinstance(itd, InternalTandemDuplication)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_transcript_segment_element(
     fusor_instance, transcript_segment_element, mane_transcript_segment_element
 ):
@@ -839,8 +839,7 @@ def test_functional_domain(
     )
     assert cd[0] is None
     assert (
-        "End inter-residue coordinate (712000) is out of index on "
-        "NP_004324.2" in cd[1]
+        "End inter-residue coordinate (712000) is out of index on NP_004324.2" in cd[1]
     )
 
 

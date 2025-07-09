@@ -4,7 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from fusor.fusor import FUSOR
 
-__all__ = ["__version__", "FUSOR"]
+__all__ = ["FUSOR", "__version__"]
 
 
 try:

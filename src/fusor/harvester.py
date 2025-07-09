@@ -101,8 +101,10 @@ class FusionCallerHarvester(ABC):
                 translated_fusion = await translator_method(
                     fusion, self.coordinate_type, self.assembly
                 )
-            except ValueError as error:
-                _logger.exception(error)
+            except ValueError:
+                _logger.exception(
+                    "ValueError encountered while loading records from %s", fusion_path
+                )
             else:
                 translated_fusions.append(translated_fusion)
         self._count_dropped_fusions(fusions_list, translated_fusions)
