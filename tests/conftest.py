@@ -58,7 +58,7 @@ def fusor_instance():
     return FUSOR(cool_seq_tool=cst)
 
 
-@pytest.fixture()
+@pytest.fixture
 def translator_instance():
     """Create test fixture for translator object"""
     return Translator(fusor=FUSOR())
@@ -770,7 +770,7 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def fusion_example():
     """Create test fixture for a fake fusion without additional property expansion."""
     return {
