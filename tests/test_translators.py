@@ -947,7 +947,7 @@ async def test_civic(
     )
     assert len(civic_fusor.civicMolecularProfiles) == 64
 
-    # Test case where one parter is a MultiplePossibleGenesElement object
+    # Test case where one partner is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
         vicc_compliant_name=fusions_list[1].vicc_compliant_name,
         five_prime_end_exon_coords=fusions_list[1].five_prime_end_exon_coordinates,

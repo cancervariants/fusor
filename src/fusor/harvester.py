@@ -351,7 +351,8 @@ class CIVICHarvester(FusionCallerHarvester):
             ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
                 continue
             cat_fusion = await self.translator.translate(civic=fusion)
-            translated_fusions.append(cat_fusion)
+            if cat_fusion:
+                translated_fusions.append(cat_fusion)
         self._count_dropped_fusions(processed_fusions, translated_fusions)
 
         return translated_fusions
