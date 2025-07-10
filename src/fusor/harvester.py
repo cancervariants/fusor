@@ -33,6 +33,7 @@ from fusor.translator import (
     FusionCatcherTranslator,
     GenieTranslator,
     JaffaTranslator,
+    MOATranslator,
     StarFusionTranslator,
     Translator,
 )
@@ -323,15 +324,19 @@ class CIVICHarvester(FusionCallerHarvester):
 class MOAHarvester(FusionCallerHarvester):
     """Class for harvesting Molecular Oncology Almanac (MOA) fusion data"""
 
-    def __init__(self, fusor: FUSOR, cache_name: str) -> None:
+    translator_class: MOATranslator
+
+    def __init__(
+        self, fusor: FUSOR, cache_name: str | None = "moa_assertions.json"
+    ) -> None:
         """Initialize MOAHarvester class
 
         :param fusor: A FUSOR object
-        :param cache_dir: A path to store unprocessed MOA assertions
-        :param cache_name: A filename for storing unprocessed MOA assertions
+        :param cache_name: A filename for storing unprocessed MOA assertions. Set by
+            default to moa_assertions.json
         :raises RuntimeError if the data cannot be loaded from the MOA API
         """
-        self.fusor = fusor
+        self.translator = MOATranslator(fusor)
         cache_dir = Path(__file__).resolve().parent / "data"
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_file = cache_dir / cache_name
@@ -345,7 +350,7 @@ class MOAHarvester(FusionCallerHarvester):
                     with moa_file.open("w") as f:
                         json.dump(data, f, indent=4)
             except requests.RequestException as e:
-                msg = "Failed to retrieve MOAlmanac data from API."
+                msg = "Failed to retrieve MOAlmanac data from API"
                 raise RuntimeError(msg) from e
         else:
             self._load_moa_data(moa_file)
@@ -358,13 +363,13 @@ class MOAHarvester(FusionCallerHarvester):
         with moa_file.open("rb") as f:
             self.moa_objects = json.load(f)
 
-    def load_records(self) -> list[dict]:
+    def load_records(self) -> list[CategoricalFusion]:
         """Convert MOA records to CategoricalFusion objects
 
         :return A list of CategoricalFusion objects
         """
         # Filter assertion dicts to only include fusion events
-        return [
+        moa_fusions = [
             assertion
             for assertion in self.moa_objects
             if any(
@@ -374,3 +379,12 @@ class MOAHarvester(FusionCallerHarvester):
                 for attr in feature.get("attributes", [])
             )
         ]
+        translated_fusions = []
+
+        for fusion in moa_fusions:
+            moa_fusion = self.translator.translate(fusion)
+            if moa_fusion:
+                translated_fusions.append(moa_fusion)
+        self._count_dropped_fusions(moa_fusions, translated_fusions)
+
+        return translated_fusions
