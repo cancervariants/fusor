@@ -5,7 +5,7 @@ import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import ClassVar, TextIO
+from typing import ClassVar, Generic, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
@@ -37,23 +37,25 @@ from fusor.translator import (
 
 _logger = logging.getLogger(__name__)
 
+T = TypeVar("T", bound=Translator)
 
-class FusionCallerHarvester(ABC):
+
+class FusionCallerHarvester(ABC, Generic[T]):
     """ABC for fusion caller harvesters"""
 
     fusion_caller: FusionCaller
     column_rename: dict
-    delimeter: str
-    translator: Translator
+    delimiter: str
+    translator_class: type[T]
     coordinate_type: CoordinateType
 
-    def __init__(self, translator: Translator, assembly: Assembly) -> None:
+    def __init__(self, fusor: FUSOR, assembly: Assembly) -> None:
         """Initialize FusionCallerHarvester
 
         :param translator: A Translator object
         :param assembly: The assembly that the coordinates are described on
         """
-        self.translator = translator
+        self.translator = self.translator_class(fusor)
         self.assembly = assembly
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
@@ -62,7 +64,7 @@ class FusionCallerHarvester(ABC):
         :param fusion_file: The open fusions file
         :return A csv.DictReader object containing the detected fusions
         """
-        return csv.DictReader(fusions_file, delimiter=self.delimeter)
+        return csv.DictReader(fusions_file, delimiter=self.delimiter)
 
     @staticmethod
     def _count_dropped_fusions(
@@ -129,16 +131,10 @@ class JAFFAHarvester(FusionCallerHarvester):
         "spanning reads": "spanning_reads",
         "spanning pairs": "spanning_pairs",
     }
-    delimeter = ","
+    delimiter = ","
     fusion_caller = JAFFA
+    translator_class = JaffaTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze JAFFAHarvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=JaffaTranslator(fusor), assembly=assembly)
 
 
 class StarFusionHarvester(FusionCallerHarvester):
@@ -152,16 +148,10 @@ class StarFusionHarvester(FusionCallerHarvester):
         "JunctionReadCount": "junction_read_count",
         "SpanningFragCount": "spanning_frag_count",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = STARFusion
+    translator_class = StarFusionTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze StarFusionHarvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=StarFusionTranslator(fusor), assembly=assembly)
 
 
 class FusionCatcherHarvester(FusionCallerHarvester):
@@ -177,16 +167,10 @@ class FusionCatcherHarvester(FusionCallerHarvester):
         "Spanning_pairs": "spanning_reads",
         "Fusion_sequence": "fusion_sequence",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = FusionCatcher
+    translator_class = FusionCatcherTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze FusionCatcher Harvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=FusionCatcherTranslator(fusor), assembly=assembly)
 
 
 class ArribaHarvester(FusionCallerHarvester):
@@ -199,16 +183,10 @@ class ArribaHarvester(FusionCallerHarvester):
         "type": "event_type",
         "reading_frame": "rf",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = Arriba
+    translator_class = ArribaTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze ArribaHarvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=ArribaTranslator(fusor), assembly=assembly)
 
 
 class CiceroHarvester(FusionCallerHarvester):
@@ -227,16 +205,10 @@ class CiceroHarvester(FusionCallerHarvester):
         "coverageA": "coverage_5prime",
         "coverageB": "coverage_3prime",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = Cicero
+    translator_class = CiceroTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze CiceroHarvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=CiceroTranslator(fusor), assembly=assembly)
 
 
 class EnFusionHarvester(FusionCallerHarvester):
@@ -251,16 +223,10 @@ class EnFusionHarvester(FusionCallerHarvester):
         "Break2": "break_3prime",
         "FusionJunctionSequence": "fusion_junction_sequence",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = EnFusion
+    translator_class = EnFusionTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze EnFusionHarvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=EnFusionTranslator(fusor), assembly=assembly)
 
     def _get_records(self, fusions_file: TextIO) -> csv.DictReader:
         """Read in all records from a fusions file
@@ -271,7 +237,7 @@ class EnFusionHarvester(FusionCallerHarvester):
         fusion_lines = dropwhile(
             lambda line: not line.startswith("UnorderedFusion"), fusions_file
         )
-        return csv.DictReader(fusion_lines, delimiter=self.delimeter)
+        return csv.DictReader(fusion_lines, delimiter=self.delimiter)
 
 
 class GenieHarvester(FusionCallerHarvester):
@@ -287,16 +253,10 @@ class GenieHarvester(FusionCallerHarvester):
         "Site2_Effect_On_Frame": "reading_frame",
         "Annotation": "annot",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = Genie
+    translator_class = GenieTranslator
     coordinate_type = CoordinateType.RESIDUE
-
-    def __init__(self, fusor: FUSOR, assembly: Assembly):
-        """Initialze GenieHarvester
-        :param fusor: A FUSOR object
-        :param assembly: The assembly
-        """
-        super().__init__(translator=GenieTranslator(fusor), assembly=assembly)
 
 
 class CIVICHarvester(FusionCallerHarvester):
