@@ -30,8 +30,8 @@ from fusor.translator import (
     EnFusionTranslator,
     FusionCatcherTranslator,
     GenieTranslator,
-    JaffaTranslator,
-    StarFusionTranslator,
+    JAFFATranslator,
+    STARFusionTranslator,
     Translator,
 )
 
@@ -52,7 +52,7 @@ class FusionCallerHarvester(ABC, Generic[T]):
     def __init__(self, fusor: FUSOR, assembly: Assembly) -> None:
         """Initialize FusionCallerHarvester
 
-        :param translator: A Translator object
+        :param fusor: A FUSOR object
         :param assembly: The assembly that the coordinates are described on
         """
         self.translator = self.translator_class(fusor)
@@ -133,7 +133,7 @@ class JAFFAHarvester(FusionCallerHarvester):
     }
     delimiter = ","
     fusion_caller = JAFFA
-    translator_class = JaffaTranslator
+    translator_class = JAFFATranslator
     coordinate_type = CoordinateType.RESIDUE
 
 
@@ -150,7 +150,7 @@ class StarFusionHarvester(FusionCallerHarvester):
     }
     delimiter = "\t"
     fusion_caller = STARFusion
-    translator_class = StarFusionTranslator
+    translator_class = STARFusionTranslator
     coordinate_type = CoordinateType.RESIDUE
 
 
@@ -281,12 +281,12 @@ class CIVICHarvester(FusionCallerHarvester):
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         """
-        # super().__init__(translator, Assembly.GRCH37)
         if update_cache:
             civic.update_cache(from_remote_cache=update_from_remote)
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
         self.translator = CIVICTranslator(fusor=fusor)
+        self.assembly = Assembly.GRCH37
         self.fusions_list = None
 
     async def load_records(self) -> list[CIVIC]:
