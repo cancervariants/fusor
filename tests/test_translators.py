@@ -37,6 +37,7 @@ from fusor.translator import (
     FusionMapTranslator,
     GenieTranslator,
     JaffaTranslator,
+    MOATranslator,
     StarFusionTranslator,
 )
 
@@ -963,3 +964,65 @@ async def test_civic(
         == fusion_data_example_categorical_mpge().viccNomenclature
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
+
+
+def test_moa(fusor_instance):
+    """Test MOATranslator"""
+    translator = MOATranslator(fusor=fusor_instance)
+
+    # Test BCR::ABL1 example
+    moa_assertion_example = {
+        "assertion_id": 1,
+        "context": "Chronic, accelerated, or blast phase",
+        "created_on": "06/13/25",
+        "deprecated": False,
+        "description": "The U.S. Food and Drug Administration (FDA) granted approval for bosutinib for adult patients with chronic, accelerated, or blast phase Philidelphia chromosome-positive (Ph+) CML with resistance or intolernace to prior therapy.",
+        "disease": "Chronic Myelogenous Leukemia",
+        "favorable_prognosis": "",
+        "features": [
+            {
+                "attributes": [
+                    {
+                        "feature_type": "rearrangement",
+                        "gene1": "BCR",
+                        "gene2": "ABL1",
+                        "locus": None,
+                        "rearrangement_type": "Fusion",
+                    }
+                ],
+                "feature_id": 1,
+                "feature_type": "rearrangement",
+            }
+        ],
+        "last_updated": "2021-09-16",
+        "oncotree_code": "CML",
+        "oncotree_term": "Chronic Myelogenous Leukemia",
+        "predictive_implication": "FDA-Approved",
+        "sources": [
+            {
+                "citation": "Pfizer Inc. Bosulif (bosutinib) [package insert]. U.S. Food and Drug Administration website. https://www.accessdata.fda.gov/drugsatfda_docs/label/2021/203341s020lbl.pdf. Revised May 2021. Accessed September 16, 2021.",
+                "doi": "",
+                "nct": "",
+                "pmid": "",
+                "source_id": 1,
+                "source_type": "FDA",
+                "url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2021/203341s020lbl.pdf",
+            }
+        ],
+        "submitted_by": "breardon@broadinstitute.org",
+        "therapy_name": "Bosutinib",
+        "therapy_resistance": "",
+        "therapy_sensitivity": 1,
+        "therapy_strategy": "targets BCR-ABL",
+        "therapy_type": "Targeted therapy",
+        "validated": True,
+    }
+    moa_fusion = translator.translate(moa_assertion_example)
+    assert moa_fusion.structure[0] == fusor_instance.gene_element("BCR")[0]
+    assert moa_fusion.structure[1] == fusor_instance.gene_element("ABL1")[0]
+    assert moa_fusion.moaAssertion == moa_assertion_example
+
+    # Test case where only BCR is provided
+    moa_assertion_example["features"][0]["attributes"][0]["gene2"] = None
+    moa_fusion = translator.translate(moa_assertion_example)
+    assert not moa_fusion

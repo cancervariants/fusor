@@ -1,12 +1,14 @@
 """Harvester methods for output from different fusion callers"""
 
 import csv
+import json
 import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
 from typing import ClassVar, Generic, TextIO, TypeVar
 
+import requests
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
@@ -84,12 +86,12 @@ class FusionCallerHarvester(ABC, Generic[T]):
     async def load_records(
         self,
         fusion_path: Path,
-    ) -> list[FusionCaller]:
+    ) -> list[AssayedFusion]:
         """Convert rows of fusion caller output to AssayedFusion objects
 
         :param fusion_path: The path to the fusions file
         :raise ValueError: if the file does not exist at the specified path
-        :return: A list of translated fusions, represented as Pydantic objects
+        :return: A list of translated fusions, represented as AssayedFusion objects
         """
         if not fusion_path.exists():
             statement = f"{fusion_path!s} does not exist"
@@ -289,10 +291,10 @@ class CIVICHarvester(FusionCallerHarvester):
         self.translator = CIVICTranslator(fusor=fusor)
         self.fusions_list = None
 
-    async def load_records(self) -> list[CIVIC]:
+    async def load_records(self) -> list[CategoricalFusion]:
         """Convert CIViC fusions to CategoricalFusion objects
 
-        :return A list of CIVIC objects
+        :return A list of CategoricalFusion objects
         """
         processed_fusions = []
         for fusion in self.fusions_list:
@@ -316,3 +318,59 @@ class CIVICHarvester(FusionCallerHarvester):
         self._count_dropped_fusions(processed_fusions, translated_fusions)
 
         return translated_fusions
+
+
+class MOAHarvester(FusionCallerHarvester):
+    """Class for harvesting Molecular Oncology Almanac (MOA) fusion data"""
+
+    def __init__(self, fusor: FUSOR, cache_name: str) -> None:
+        """Initialize MOAHarvester class
+
+        :param fusor: A FUSOR object
+        :param cache_dir: A path to store unprocessed MOA assertions
+        :param cache_name: A filename for storing unprocessed MOA assertions
+        :raises RuntimeError if the data cannot be loaded from the MOA API
+        """
+        self.fusor = fusor
+        cache_dir = Path(__file__).resolve().parent / "data"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        moa_file = cache_dir / cache_name
+        if not moa_file.exists():  # Save MOA data if it does not already exist
+            try:
+                response = requests.get(
+                    "https://moalmanac.org/api/assertions", timeout=30
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    with moa_file.open("w") as f:
+                        json.dump(data, f, indent=4)
+            except requests.RequestException as e:
+                msg = "Failed to retrieve MOAlmanac data from API."
+                raise RuntimeError(msg) from e
+        else:
+            self._load_moa_data(moa_file)
+
+    def _load_moa_data(self, moa_file: Path) -> None:
+        """Load in MOA data
+
+        :param moa_file: The path to the MOA data
+        """
+        with moa_file.open("rb") as f:
+            self.moa_objects = json.load(f)
+
+    def load_records(self) -> list[dict]:
+        """Convert MOA records to CategoricalFusion objects
+
+        :return A list of CategoricalFusion objects
+        """
+        # Filter assertion dicts to only include fusion events
+        return [
+            assertion
+            for assertion in self.moa_objects
+            if any(
+                attr.get("feature_type") == "rearrangement"
+                and attr.get("rearrangement_type") == "Fusion"
+                for feature in assertion.get("features", [])
+                for attr in feature.get("attributes", [])
+            )
+        ]
