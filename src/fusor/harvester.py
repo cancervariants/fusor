@@ -45,7 +45,7 @@ class FusionCallerHarvester(ABC, Generic[T]):
 
     fusion_caller: FusionCaller
     column_rename: dict
-    delimeter: str
+    delimiter: str
     translator_class: type[T]
     coordinate_type: CoordinateType
 
@@ -64,7 +64,7 @@ class FusionCallerHarvester(ABC, Generic[T]):
         :param fusion_file: The open fusions file
         :return A csv.DictReader object containing the detected fusions
         """
-        return csv.DictReader(fusions_file, delimiter=self.delimeter)
+        return csv.DictReader(fusions_file, delimiter=self.delimiter)
 
     @staticmethod
     def _count_dropped_fusions(
@@ -131,7 +131,7 @@ class JAFFAHarvester(FusionCallerHarvester):
         "spanning reads": "spanning_reads",
         "spanning pairs": "spanning_pairs",
     }
-    delimeter = ","
+    delimiter = ","
     fusion_caller = JAFFA
     translator_class = JaffaTranslator
     coordinate_type = CoordinateType.RESIDUE
@@ -148,7 +148,7 @@ class StarFusionHarvester(FusionCallerHarvester):
         "JunctionReadCount": "junction_read_count",
         "SpanningFragCount": "spanning_frag_count",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = STARFusion
     translator_class = StarFusionTranslator
     coordinate_type = CoordinateType.RESIDUE
@@ -167,7 +167,7 @@ class FusionCatcherHarvester(FusionCallerHarvester):
         "Spanning_pairs": "spanning_reads",
         "Fusion_sequence": "fusion_sequence",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = FusionCatcher
     translator_class = FusionCatcherTranslator
     coordinate_type = CoordinateType.RESIDUE
@@ -183,7 +183,7 @@ class ArribaHarvester(FusionCallerHarvester):
         "type": "event_type",
         "reading_frame": "rf",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = Arriba
     translator_class = ArribaTranslator
     coordinate_type = CoordinateType.RESIDUE
@@ -205,7 +205,7 @@ class CiceroHarvester(FusionCallerHarvester):
         "coverageA": "coverage_5prime",
         "coverageB": "coverage_3prime",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = Cicero
     translator_class = CiceroTranslator
     coordinate_type = CoordinateType.RESIDUE
@@ -223,7 +223,7 @@ class EnFusionHarvester(FusionCallerHarvester):
         "Break2": "break_3prime",
         "FusionJunctionSequence": "fusion_junction_sequence",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = EnFusion
     translator_class = EnFusionTranslator
     coordinate_type = CoordinateType.RESIDUE
@@ -237,7 +237,7 @@ class EnFusionHarvester(FusionCallerHarvester):
         fusion_lines = dropwhile(
             lambda line: not line.startswith("UnorderedFusion"), fusions_file
         )
-        return csv.DictReader(fusion_lines, delimiter=self.delimeter)
+        return csv.DictReader(fusion_lines, delimiter=self.delimiter)
 
 
 class GenieHarvester(FusionCallerHarvester):
@@ -253,7 +253,7 @@ class GenieHarvester(FusionCallerHarvester):
         "Site2_Effect_On_Frame": "reading_frame",
         "Annotation": "annot",
     }
-    delimeter = "\t"
+    delimiter = "\t"
     fusion_caller = Genie
     translator_class = GenieTranslator
     coordinate_type = CoordinateType.RESIDUE
