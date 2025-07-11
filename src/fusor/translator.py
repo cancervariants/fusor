@@ -288,8 +288,8 @@ class Translator(ABC):
     ##### Fusion Caller -> FUSOR AssayedFusion object ###################
 
 
-class JaffaTranslator(Translator):
-    """Initialize JaffaTranslator class"""
+class JAFFATranslator(Translator):
+    """Initialize JAFFATranslator class"""
 
     async def translate(
         self,
@@ -363,8 +363,8 @@ class JaffaTranslator(Translator):
         )
 
 
-class StarFusionTranslator(Translator):
-    """Initialize StarFusionTranslator class"""
+class STARFusionTranslator(Translator):
+    """Initialize STARFusionTranslator class"""
 
     async def translate(
         self,

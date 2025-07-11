@@ -36,9 +36,9 @@ from fusor.translator import (
     FusionCatcherTranslator,
     FusionMapTranslator,
     GenieTranslator,
-    JaffaTranslator,
+    JAFFATranslator,
     MOATranslator,
-    StarFusionTranslator,
+    STARFusionTranslator,
 )
 
 
@@ -313,7 +313,7 @@ async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test JAFFA translator"""
-    translator = JaffaTranslator(fusor=fusor_instance)
+    translator = JAFFATranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     jaffa = JAFFA(
         fusion_genes="TPM3:PDGFRB",
@@ -383,7 +383,7 @@ async def test_star_fusion(
     fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test STAR-Fusion translator"""
-    translator = StarFusionTranslator(fusor=fusor_instance)
+    translator = STARFusionTranslator(fusor=fusor_instance)
     # Test exonic breakpoints
     star_fusion = STARFusion(
         left_gene="TPM3^ENSG00000143549.19",

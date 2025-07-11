@@ -32,9 +32,9 @@ from fusor.translator import (
     EnFusionTranslator,
     FusionCatcherTranslator,
     GenieTranslator,
-    JaffaTranslator,
+    JAFFATranslator,
     MOATranslator,
-    StarFusionTranslator,
+    STARFusionTranslator,
     Translator,
 )
 
@@ -55,7 +55,7 @@ class FusionCallerHarvester(ABC, Generic[T]):
     def __init__(self, fusor: FUSOR, assembly: Assembly) -> None:
         """Initialize FusionCallerHarvester
 
-        :param translator: A Translator object
+        :param fusor: A FUSOR object
         :param assembly: The assembly that the coordinates are described on
         """
         self.translator = self.translator_class(fusor)
@@ -136,7 +136,7 @@ class JAFFAHarvester(FusionCallerHarvester):
     }
     delimiter = ","
     fusion_caller = JAFFA
-    translator_class = JaffaTranslator
+    translator_class = JAFFATranslator
     coordinate_type = CoordinateType.RESIDUE
 
 
@@ -153,7 +153,7 @@ class StarFusionHarvester(FusionCallerHarvester):
     }
     delimiter = "\t"
     fusion_caller = STARFusion
-    translator_class = StarFusionTranslator
+    translator_class = STARFusionTranslator
     coordinate_type = CoordinateType.RESIDUE
 
 
@@ -265,6 +265,8 @@ class GenieHarvester(FusionCallerHarvester):
 class CIVICHarvester(FusionCallerHarvester):
     """Class for harvesting CIViC Fusion objects"""
 
+    translator_class = CIVICTranslator
+
     def __init__(
         self,
         fusor: FUSOR,
@@ -352,8 +354,7 @@ class MOAHarvester(FusionCallerHarvester):
             except requests.RequestException as e:
                 msg = "Failed to retrieve MOAlmanac data from API"
                 raise RuntimeError(msg) from e
-        else:
-            self._load_moa_data(moa_file)
+        self._load_moa_data(moa_file)
 
     def _load_moa_data(self, moa_file: Path) -> None:
         """Load in MOA data
