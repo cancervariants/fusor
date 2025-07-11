@@ -286,12 +286,11 @@ class CIVICHarvester(FusionCallerHarvester):
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         """
-        # super().__init__(translator, Assembly.GRCH37)
+        super().__init__(fusor, Assembly.GRCH37)
         if update_cache:
             civic.update_cache(from_remote_cache=update_from_remote)
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
-        self.translator = CIVICTranslator(fusor=fusor)
         self.fusions_list = None
 
     async def load_records(self) -> list[CategoricalFusion]:
