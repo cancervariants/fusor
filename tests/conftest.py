@@ -62,7 +62,7 @@ def fusion_matching_instance():
     """Create test fixture for fusion matching object"""
     return FusionMatcher(
         cache_dir=CACHE_DATA_DIR,
-        cache_files=["civic_translated_fusions.pkl"],
+        cache_files=["civic_translated_fusions.pkl", "moa_translated_fusions.pkl"],
     )
 
 
