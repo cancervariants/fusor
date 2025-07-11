@@ -288,7 +288,6 @@ class CIVICHarvester(FusionCallerHarvester):
             civic.update_cache(from_remote_cache=update_from_remote)
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
-        self.translator = CIVICTranslator(fusor=fusor)
         self.fusions_list = None
 
     async def load_records(self) -> list[CIVIC]:
