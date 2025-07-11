@@ -4,6 +4,7 @@ objects (AssayedFusion/CategoricalFusion)
 
 import logging
 import re
+from abc import ABC, abstractmethod
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -58,7 +59,7 @@ class GeneFusionPartners(BaseModel):
     gene_3prime: str | None = None
 
 
-class Translator:
+class Translator(ABC):
     """Class for translating outputs from different fusion detection algorithms
     to FUSOR AssayedFusion and CategoricalFusion objects
     """
@@ -249,9 +250,37 @@ class Translator:
         }
         return GeneFusionPartners(**params)
 
+    def _process_vicc_nomenclature(self, gene_symbol: str) -> str:
+        """Extract fusion partner from VICC nomenclature
+
+        :param gene_symbol: The unprocessed gene symbol
+        :return The processed gene symbol
+        """
+        if "entrez" in gene_symbol:
+            return gene_symbol.split("(")[0]
+        start = gene_symbol.find("(")
+        stop = gene_symbol.find(")")
+        return gene_symbol[start + 1 : stop]
+
+    @abstractmethod
+    async def translate(
+        self, fusion_data: BaseModel, coordinate_type: CoordinateType, rb: Assembly
+    ) -> AssayedFusion | CategoricalFusion:
+        """Define abstract translate method
+
+        :param fusion_data: The fusion data from a fusion caller
+        :param coordinate_type: If the coordinate is inter-residue or residue
+        :param rb: The reference build used to call the fusion
+        :return: An AssayedFusion or CategoricalFusion object, if construction is successful
+        """
+
     ##### Fusion Caller -> FUSOR AssayedFusion object ###################
 
-    async def from_jaffa(
+
+class JAFFATranslator(Translator):
+    """Initialize JAFFATranslator class"""
+
+    async def translate(
         self,
         jaffa: JAFFA,
         coordinate_type: CoordinateType,
@@ -330,7 +359,11 @@ class Translator:
             reads=read_data,
         )
 
-    async def from_star_fusion(
+
+class STARFusionTranslator(Translator):
+    """Initialize STARFusionTranslator class"""
+
+    async def translate(
         self,
         star_fusion: STARFusion,
         coordinate_type: CoordinateType,
@@ -405,7 +438,11 @@ class Translator:
             reads=read_data,
         )
 
-    async def from_fusion_catcher(
+
+class FusionCatcherTranslator(Translator):
+    """Initialize FusionCatcherTranslator class"""
+
+    async def translate(
         self,
         fusion_catcher: FusionCatcher,
         coordinate_type: CoordinateType,
@@ -483,7 +520,11 @@ class Translator:
             reads=read_data,
         )
 
-    async def from_fusion_map(
+
+class FusionMapTranslator(Translator):
+    """Initialize FusionMapTranslator class"""
+
+    async def translate(
         self, fmap_row: pl.DataFrame, coordinate_type: CoordinateType, rb: Assembly
     ) -> AssayedFusion:
         """Parse FusionMap output to create FUSOR AssayedFusion object
@@ -551,7 +592,11 @@ class Translator:
             variant_type, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
 
-    async def from_arriba(
+
+class ArribaTranslator(Translator):
+    """Initialize ArribaTranslator class"""
+
+    async def translate(
         self,
         arriba: Arriba,
         coordinate_type: CoordinateType,
@@ -665,7 +710,11 @@ class Translator:
             linker_sequence=linker_sequence,
         )
 
-    async def from_cicero(
+
+class CiceroTranslator(Translator):
+    """Initialize CiceroTranslator class"""
+
+    async def translate(
         self,
         cicero: Cicero,
         coordinate_type: CoordinateType,
@@ -761,7 +810,11 @@ class Translator:
             contig=contig,
         )
 
-    async def from_mapsplice(
+
+class MapSpliceTranslator(Translator):
+    """Initialize MapSpliceTranslator class"""
+
+    async def translate(
         self, mapsplice_row: pl.DataFrame, coordinate_type: CoordinateType, rb: Assembly
     ) -> AssayedFusion:
         """Parse MapSplice output to create AssayedFusion object
@@ -816,7 +869,11 @@ class Translator:
             variant_type, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce
         )
 
-    async def from_enfusion(
+
+class EnFusionTranslator(Translator):
+    """Initialize EnFusionTranslator class"""
+
+    async def translate(
         self,
         enfusion: EnFusion,
         coordinate_type: CoordinateType,
@@ -883,7 +940,11 @@ class Translator:
             ce,
         )
 
-    async def from_genie(
+
+class GenieTranslator(Translator):
+    """Initialize GenieTranslator class"""
+
+    async def translate(
         self,
         genie: Genie,
         coordinate_type: CoordinateType,
@@ -954,19 +1015,12 @@ class Translator:
         )
 
     ######### Knowledgebase -> FUSOR CategoricalFusion object #############
-    def __process_vicc_nomenclature(self, gene_symbol: str) -> str:
-        """Extract fusion partner from VICC nomenclature
 
-        :param gene_symbol: The unprocessed gene symbol
-        :return The processed gene symbol
-        """
-        if "entrez" in gene_symbol:
-            return gene_symbol.split("(")[0]
-        start = gene_symbol.find("(")
-        stop = gene_symbol.find(")")
-        return gene_symbol[start + 1 : stop]
 
-    async def from_civic(self, civic: CIVIC) -> CategoricalFusion:
+class CIVICTranslator(Translator):
+    """Initialize CIVICTranslator"""
+
+    async def translate(self, civic: CIVIC) -> CategoricalFusion:
         """Convert CIViC record to Categorical Fusion
 
         :param civic A CIVIC object
@@ -975,19 +1029,19 @@ class Translator:
         fusion_partners = civic.vicc_compliant_name
         if fusion_partners.startswith("v::"):
             gene_5prime = "v"
-            gene_3prime = self.__process_vicc_nomenclature(
+            gene_3prime = self._process_vicc_nomenclature(
                 fusion_partners.split("::")[1]
             )
         elif fusion_partners.endswith("::v"):
-            gene_5prime = self.__process_vicc_nomenclature(
+            gene_5prime = self._process_vicc_nomenclature(
                 fusion_partners.split("::")[0]
             )
             gene_3prime = "v"
         else:
-            gene_5prime = self.__process_vicc_nomenclature(
+            gene_5prime = self._process_vicc_nomenclature(
                 fusion_partners.split("::")[0]
             )
-            gene_3prime = self.__process_vicc_nomenclature(
+            gene_3prime = self._process_vicc_nomenclature(
                 fusion_partners.split("::")[1]
             )
 

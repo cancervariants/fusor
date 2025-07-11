@@ -11,7 +11,6 @@ from fusor.fusion_caller_models import (
     CIVIC,
     JAFFA,
     Arriba,
-    Caller,
     Cicero,
     EnFusion,
     FusionCatcher,
@@ -29,6 +28,17 @@ from fusor.models import (
     SpanningReads,
     SplitReads,
     UnknownGeneElement,
+)
+from fusor.translator import (
+    ArribaTranslator,
+    CiceroTranslator,
+    CIVICTranslator,
+    EnFusionTranslator,
+    FusionCatcherTranslator,
+    FusionMapTranslator,
+    GenieTranslator,
+    JAFFATranslator,
+    STARFusionTranslator,
 )
 
 
@@ -373,27 +383,12 @@ def fusion_data_example_categorical_mpge():
     return _create_base_fixture
 
 
-def test_gene_element_arriba(translator_instance):
-    """Test gene selection for Arriba"""
-    genes = "RP1-222H5.1(151985),MIR3672(13973)"
-    gene = translator_instance._get_gene_element(genes=genes, caller=Caller.ARRIBA)
-    assert gene.gene.name == "MIR3672"
-
-
-def test_valid_fusion_partners(translator_instance):
-    """Test that the fusion partners supplied to the translator are different"""
-    partners_check = translator_instance._are_fusion_partners_different("BCR", "ABL1")
-    assert partners_check
-
-    partners_check = translator_instance._are_fusion_partners_different("BCR", "BCR")
-    assert not partners_check
-
-
 @pytest.mark.asyncio
 async def test_jaffa(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test JAFFA translator"""
+    translator = JAFFATranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     jaffa = JAFFA(
         fusion_genes="TPM3:PDGFRB",
@@ -408,7 +403,7 @@ async def test_jaffa(
         spanning_pairs=80,
     )
 
-    jaffa_fusor = await translator_instance.from_jaffa(
+    jaffa_fusor = await translator.translate(
         jaffa,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -427,7 +422,7 @@ async def test_jaffa(
     jaffa.base1 = 154173079
     jaffa.base2 = 150127173
 
-    jaffa_fusor_nonexonic = await translator_instance.from_jaffa(
+    jaffa_fusor_nonexonic = await translator.translate(
         jaffa,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -446,13 +441,13 @@ async def test_jaffa(
 
     # Test unknown partner
     jaffa.fusion_genes = "NA:PDGFRB"
-    jaffa_fusor_unknown = await translator_instance.from_jaffa(
+    jaffa_fusor_unknown = await translator.translate(
         jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert jaffa_fusor_unknown.structure[0] == UnknownGeneElement()
     assert jaffa_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     jaffa.fusion_genes = "TPM3:NA"
-    jaffa_fusor_unknown = await translator_instance.from_jaffa(
+    jaffa_fusor_unknown = await translator.translate(
         jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert jaffa_fusor_unknown.structure[1] == UnknownGeneElement()
@@ -461,9 +456,10 @@ async def test_jaffa(
 
 @pytest.mark.asyncio
 async def test_star_fusion(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test STAR-Fusion translator"""
+    translator = STARFusionTranslator(fusor=fusor_instance)
     # Test exonic breakpoints
     star_fusion = STARFusion(
         left_gene="TPM3^ENSG00000143549.19",
@@ -475,7 +471,7 @@ async def test_star_fusion(
         spanning_frag_count=80,
     )
 
-    star_fusion_fusor = await translator_instance.from_star_fusion(
+    star_fusion_fusor = await translator.translate(
         star_fusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -493,7 +489,7 @@ async def test_star_fusion(
     star_fusion.left_breakpoint = "chr1:154173079:-"
     star_fusion.right_breakpoint = "chr5:150127173:-"
 
-    star_fusion_fusor_nonexonic = await translator_instance.from_star_fusion(
+    star_fusion_fusor_nonexonic = await translator.translate(
         star_fusion,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -516,7 +512,7 @@ async def test_star_fusion(
 
     # Test unknown partners
     star_fusion.left_gene = "NA"
-    star_fusion_fusor_unknown = await translator_instance.from_star_fusion(
+    star_fusion_fusor_unknown = await translator.translate(
         star_fusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -527,7 +523,7 @@ async def test_star_fusion(
     )
     star_fusion.left_gene = "TPM3"
     star_fusion.right_gene = "NA"
-    star_fusion_fusor_unknown = await translator_instance.from_star_fusion(
+    star_fusion_fusor_unknown = await translator.translate(
         star_fusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -538,9 +534,10 @@ async def test_star_fusion(
 
 @pytest.mark.asyncio
 async def test_fusion_catcher(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test Fusion Catcher translator"""
+    translator = FusionCatcherTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     fusion_catcher = FusionCatcher(
         five_prime_partner="TPM3",
@@ -553,7 +550,7 @@ async def test_fusion_catcher(
         fusion_sequence="CTAGATGAC*TACTACTA",
     )
 
-    fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
+    fusion_catcher_fusor = await translator.translate(
         fusion_catcher,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -575,7 +572,7 @@ async def test_fusion_catcher(
     fusion_catcher.five_prime_fusion_point = "1:154173079:-"
     fusion_catcher.three_prime_fusion_point = "5:150127173:-"
 
-    fusion_catcher_fusor_nonexonic = await translator_instance.from_fusion_catcher(
+    fusion_catcher_fusor_nonexonic = await translator.translate(
         fusion_catcher,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -602,7 +599,7 @@ async def test_fusion_catcher(
 
     # Test unknown partners
     fusion_catcher.five_prime_partner = "NA"
-    fusion_catcher_fusor_unknown = await translator_instance.from_fusion_catcher(
+    fusion_catcher_fusor_unknown = await translator.translate(
         fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert fusion_catcher_fusor_unknown.structure[0] == UnknownGeneElement()
@@ -612,7 +609,7 @@ async def test_fusion_catcher(
     )
     fusion_catcher.five_prime_partner = "TPM3"
     fusion_catcher.three_prime_partner = "NA"
-    fusion_catcher_fusor_unknown = await translator_instance.from_fusion_catcher(
+    fusion_catcher_fusor_unknown = await translator.translate(
         fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
@@ -621,9 +618,10 @@ async def test_fusion_catcher(
 
 @pytest.mark.asyncio
 async def test_fusion_map(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test Fusion Map translator"""
+    translator = FusionMapTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     fusion_map_data = pl.DataFrame(
         {
@@ -638,7 +636,7 @@ async def test_fusion_map(
             "FrameShiftClass": "InFrame",
         }
     )
-    fusion_map_fusor = await translator_instance.from_fusion_map(
+    fusion_map_fusor = await translator.translate(
         fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
     )
     assert fusion_map_fusor.structure == fusion_data_example().structure
@@ -657,7 +655,7 @@ async def test_fusion_map(
             "FrameShiftClass": "InFrame",
         }
     )
-    fusion_map_fusor_nonexonic = await translator_instance.from_fusion_map(
+    fusion_map_fusor_nonexonic = await translator.translate(
         fusion_map_data_nonexonic, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert (
@@ -668,9 +666,10 @@ async def test_fusion_map(
 
 @pytest.mark.asyncio
 async def test_arriba(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test Arriba translator"""
+    translator = ArribaTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     arriba = Arriba(
         gene1="TPM3",
@@ -692,7 +691,7 @@ async def test_arriba(
         fusion_transcript="CTAGATGAC_TACTACTA|GTACTACT",
     )
 
-    arriba_fusor = await translator_instance.from_arriba(
+    arriba_fusor = await translator.translate(
         arriba,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -714,7 +713,7 @@ async def test_arriba(
     arriba.breakpoint1 = "1:154173079"
     arriba.breakpoint2 = "5:150127173"
 
-    arriba_fusor_nonexonic = await translator_instance.from_arriba(
+    arriba_fusor_nonexonic = await translator.translate(
         arriba,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -742,7 +741,7 @@ async def test_arriba(
     # Test Linker Sequence
     arriba_linker = arriba.model_copy(deep=True)
     arriba_linker.fusion_transcript = "ATAGAT|atatacgat|TATGAT"
-    arriba_fusor_linker = await translator_instance.from_arriba(
+    arriba_fusor_linker = await translator.translate(
         arriba_linker, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     linker_element = arriba_fusor_linker.structure[1]
@@ -755,14 +754,14 @@ async def test_arriba(
 
     # Test unknown partners
     arriba.gene1 = "NA"
-    arriba_fusor_unknown = await translator_instance.from_arriba(
+    arriba_fusor_unknown = await translator.translate(
         arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert arriba_fusor_unknown.structure[0] == UnknownGeneElement()
     assert arriba_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     arriba.gene1 = "TPM3"
     arriba.gene2 = "NA"
-    arriba_fusor_unknown = await translator_instance.from_arriba(
+    arriba_fusor_unknown = await translator.translate(
         arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert arriba_fusor_unknown.structure[1] == UnknownGeneElement()
@@ -771,9 +770,10 @@ async def test_arriba(
 
 @pytest.mark.asyncio
 async def test_cicero(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test CICERO translator"""
+    translator = CiceroTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     cicero = Cicero(
         gene_5prime="TPM3",
@@ -791,7 +791,7 @@ async def test_cicero(
         contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
     )
 
-    cicero_fusor = await translator_instance.from_cicero(
+    cicero_fusor = await translator.translate(
         cicero,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -812,7 +812,7 @@ async def test_cicero(
     cicero.pos_5prime = 154173079
     cicero.pos_3prime = 150127173
 
-    cicero_fusor_nonexonic = await translator_instance.from_cicero(
+    cicero_fusor_nonexonic = await translator.translate(
         cicero,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -839,7 +839,7 @@ async def test_cicero(
     # Test case where the called fusion does not have confident biological meaning
     cicero.sv_ort = "?"
 
-    non_confident_bio = await translator_instance.from_cicero(
+    non_confident_bio = await translator.translate(
         cicero,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -852,7 +852,7 @@ async def test_cicero(
     # Test case where multiple gene symbols are reported for a fusion partner
     cicero.gene_3prime = "PDGFRB,PDGFRB-FGFR4,FGFR4"
 
-    multiple_genes_fusion_partner = await translator_instance.from_cicero(
+    multiple_genes_fusion_partner = await translator.translate(
         cicero,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -866,14 +866,14 @@ async def test_cicero(
     cicero.sv_ort = ">"
     cicero.gene_5prime = "NA"
     cicero.gene_3prime = "PDGFRB"
-    cicero_fusor_unknown = await translator_instance.from_cicero(
+    cicero_fusor_unknown = await translator.translate(
         cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert cicero_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     assert cicero_fusor_unknown.structure[0] == UnknownGeneElement()
     cicero.gene_5prime = "TPM3"
     cicero.gene_3prime = "NA"
-    cicero_fusor_unknown = await translator_instance.from_cicero(
+    cicero_fusor_unknown = await translator.translate(
         cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert cicero_fusor_unknown.structure[1] == UnknownGeneElement()
@@ -882,9 +882,10 @@ async def test_cicero(
 
 @pytest.mark.asyncio
 async def test_enfusion(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test EnFusion translator"""
+    translator = EnFusionTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     enfusion = EnFusion(
         gene_5prime="TPM3",
@@ -895,7 +896,7 @@ async def test_enfusion(
         break_3prime=150126612,
     )
 
-    enfusion_fusor = await translator_instance.from_enfusion(
+    enfusion_fusor = await translator.translate(
         enfusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -907,7 +908,7 @@ async def test_enfusion(
     enfusion.break_5prime = 154173079
     enfusion.break_3prime = 150127173
 
-    enfusion_fusor_nonexonic = await translator_instance.from_enfusion(
+    enfusion_fusor_nonexonic = await translator.translate(
         enfusion,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -922,14 +923,14 @@ async def test_enfusion(
 
     # Test unknown partner
     enfusion.gene_5prime = "NA"
-    enfusion_fusor_unknown = await translator_instance.from_enfusion(
+    enfusion_fusor_unknown = await translator.translate(
         enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert enfusion_fusor_unknown.structure[0] == UnknownGeneElement()
     assert enfusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     enfusion.gene_5prime = "TPM3"
     enfusion.gene_3prime = "NA"
-    enfusion_fusor_unknown = await translator_instance.from_enfusion(
+    enfusion_fusor_unknown = await translator.translate(
         enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert enfusion_fusor_unknown.structure[1] == UnknownGeneElement()
@@ -938,9 +939,10 @@ async def test_enfusion(
 
 @pytest.mark.asyncio
 async def test_genie(
-    fusion_data_example, fusion_data_example_nonexonic, translator_instance
+    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
     """Test GENIE Translator"""
+    translator = GenieTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
     genie = Genie(
         site1_hugo="TPM3",
@@ -953,7 +955,7 @@ async def test_genie(
         reading_frame="In_frame",
     )
 
-    genie_fusor = await translator_instance.from_genie(
+    genie_fusor = await translator.translate(
         genie,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
@@ -965,7 +967,7 @@ async def test_genie(
     genie.site1_pos = 154173079
     genie.site2_pos = 150127173
 
-    genie_fusor_nonexonic = await translator_instance.from_genie(
+    genie_fusor_nonexonic = await translator.translate(
         genie,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
@@ -978,14 +980,14 @@ async def test_genie(
 
     # Test unknown partner
     genie.site1_hugo = "NA"
-    genie_fusor_unknown = await translator_instance.from_genie(
+    genie_fusor_unknown = await translator.translate(
         genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert genie_fusor_unknown.structure[0] == UnknownGeneElement()
     assert genie_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     genie.site1_hugo = "TPM3"
     genie.site2_hugo = "NA"
-    genie_fusor_unknown = await translator_instance.from_genie(
+    genie_fusor_unknown = await translator.translate(
         genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert genie_fusor_unknown.structure[1] == UnknownGeneElement()
@@ -996,10 +998,11 @@ async def test_genie(
 async def test_civic(
     fusion_data_example_categorical,
     fusion_data_example_categorical_mpge,
-    translator_instance,
+    fusor_instance,
     fixture_data_dir,
 ):
     """Test CIVIC translator"""
+    translator = CIVICTranslator(fusor=fusor_instance)
     path = fixture_data_dir / "test_civic_cache.pkl"
     with Path.open(path, "rb") as cache_file:
         fusions_list = pickle.load(cache_file)  # noqa: S301
@@ -1013,7 +1016,7 @@ async def test_civic(
         ].three_prime_start_exon_coordinates,
         molecular_profiles=fusions_list[0].molecular_profiles,
     )
-    civic_fusor = await translator_instance.from_civic(test_fusion)
+    civic_fusor = await translator.translate(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical().structure
     assert (
         civic_fusor.viccNomenclature
@@ -1030,7 +1033,7 @@ async def test_civic(
         ].three_prime_start_exon_coordinates,
         molecular_profiles=fusions_list[1].molecular_profiles,
     )
-    civic_fusor = await translator_instance.from_civic(test_fusion)
+    civic_fusor = await translator.translate(test_fusion)
     assert civic_fusor.structure == fusion_data_example_categorical_mpge().structure
     assert (
         civic_fusor.viccNomenclature
