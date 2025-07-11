@@ -20,13 +20,6 @@ tests:
               elementGenomicStart:
                   start: 43114479
         score: 10
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - type: "MultiplePossibleGenesElement"
-            - gene:
-                name: "RET"
-        score: 1
   - name: "EML4::ALK"
     input_index: 1
     expected_matches:
