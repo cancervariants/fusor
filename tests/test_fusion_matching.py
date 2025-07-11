@@ -30,7 +30,7 @@ def _assert_subset(actual: dict, expected: dict) -> None:
 
 @pytest.mark.asyncio
 async def test_fusion_matching(
-    fixture_data_dir, fusion_matching_instance, translator_instance
+    fixture_data_dir, fusion_matching_instance, fusor_instance
 ):
     """Test fusion matching worklow using example output from STAR-Fusion"""
     with Path.open(
@@ -41,7 +41,7 @@ async def test_fusion_matching(
     # Load STAR-Fusion records
     path = Path(fixture_data_dir / "star_fusion_test.tsv")
     harvester = StarFusionHarvester(
-        translator=translator_instance, assembly=Assembly.GRCH38.value
+        fusor=fusor_instance, assembly=Assembly.GRCH38.value
     )
     fusions_list = await harvester.load_records(path)
 
