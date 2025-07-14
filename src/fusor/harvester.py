@@ -348,19 +348,13 @@ class MOAHarvester(FusionCallerHarvester):
                 )
                 if response.status_code == 200:
                     data = response.json()
-                    with moa_file.open("w") as f:
+                    self.moa_objects = data
+                    with moa_file.open("w") as f:  # Save MOA data to file
                         json.dump(data, f, indent=4)
             except requests.RequestException as e:
                 msg = "Failed to retrieve MOAlmanac data from API"
                 raise RuntimeError(msg) from e
-        self._load_moa_data(moa_file)
-
-    def _load_moa_data(self, moa_file: Path) -> None:
-        """Load in MOA data
-
-        :param moa_file: The path to the MOA data
-        """
-        with moa_file.open("rb") as f:
+        with moa_file.open("rb") as f:  # Load MOA data if file already exists
             self.moa_objects = json.load(f)
 
     def load_records(self) -> list[CategoricalFusion]:
