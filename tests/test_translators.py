@@ -308,6 +308,53 @@ def fusion_data_example_categorical_mpge():
     return _create_base_fixture
 
 
+@pytest.fixture(scope="module")
+def fusion_data_example_categorical_nonzerooffset():
+    """Create test fixture for CategoricalFusion where the offset is non-zero"""
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "CategoricalFusion",
+            "structure": [
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_005252.4",
+                    "strand": 1,
+                    "exonEnd": 4,
+                    "exonEndOffset": -1122,
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:3796",
+                            "code": "HGNC:3796",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "FOS",
+                    },
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.dWC0LMlSNxmqC1J0_-GTQtXFhH7vjnoG",
+                        "type": "SequenceLocation",
+                        "digest": "dWC0LMlSNxmqC1J0_-GTQtXFhH7vjnoG",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000014.9",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.eK4D2MosgK_ivBkgi6FVPg5UXs1bYESm",
+                        },
+                        "end": 75281108,
+                    },
+                },
+                {
+                    "type": "MultiplePossibleGenesElement",
+                },
+            ],
+            "viccNomenclature": "NM_005252.4(FOS):e.4-1122::v",
+        }
+        categorical_fusion = CategoricalFusion(**params)
+        return categorical_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
+
+
 @pytest.mark.asyncio
 async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, fusor_instance
@@ -922,6 +969,7 @@ async def test_genie(
 async def test_civic(
     fusion_data_example_categorical,
     fusion_data_example_categorical_mpge,
+    fusion_data_example_categorical_nonzerooffset,
     fusor_instance,
     fixture_data_dir,
 ):
@@ -962,6 +1010,26 @@ async def test_civic(
     assert (
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical_mpge().viccNomenclature
+    )
+    assert len(civic_fusor.civicMolecularProfiles) == 1
+
+    # Test case where there is a non-zero offset
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[2].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[2].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            2
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[2].molecular_profiles,
+    )
+    civic_fusor = await translator.translate(test_fusion)
+    assert (
+        civic_fusor.structure
+        == fusion_data_example_categorical_nonzerooffset().structure
+    )
+    assert (
+        civic_fusor.viccNomenclature
+        == fusion_data_example_categorical_nonzerooffset().viccNomenclature
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
 

@@ -969,7 +969,6 @@ def save_fusions_cache(
     cache_dir.mkdir(parents=True, exist_ok=True)
     output_file = cache_dir / cache_name
     if output_file.exists():
-        _logger.warning("Cached fusions file already exists")
-        return
+        _logger.warning("Cached fusions file already exists. Overwriting with new file")
     with output_file.open("wb") as f:
         pickle.dump(fusions_list, f)
