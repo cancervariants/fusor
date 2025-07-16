@@ -5,6 +5,7 @@ objects (AssayedFusion/CategoricalFusion)
 import logging
 import re
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -955,6 +956,12 @@ class GenieTranslator(Translator):
 class CIVICTranslator(Translator):
     """Initialize CIVICTranslator"""
 
+    class Direction(Enum):
+        """Define CIViC-specific enum for transcript direction"""
+
+        POSITIVE = "POSITIVE"
+        NEGATIVE = "NEGATIVE"
+
     def _get_breakpoint(
         self, coordinate_data: ExonCoordinate, is_5prime: bool = True
     ) -> int:
@@ -968,18 +975,18 @@ class CIVICTranslator(Translator):
         if is_5prime:
             coord_to_use = (
                 coordinate_data.stop
-                if coordinate_data.strand == "POSITIVE"
+                if coordinate_data.strand == self.Direction.POSITIVE.value
                 else coordinate_data.start
             )
         else:
             coord_to_use = (
                 coordinate_data.start
-                if coordinate_data.strand == "POSITIVE"
+                if coordinate_data.strand == self.Direction.POSITIVE.value
                 else coordinate_data.stop
             )
-        if coordinate_data.exon_offset_direction == "POSITIVE":
+        if coordinate_data.exon_offset_direction == self.Direction.POSITIVE.value:
             return coord_to_use + coordinate_data.exon_offset
-        if coordinate_data.exon_offset_direction == "NEGATIVE":
+        if coordinate_data.exon_offset_direction == self.Direction.NEGATIVE.value:
             return coord_to_use - coordinate_data.exon_offset
         return coord_to_use  # Return current position if exon_offset is 0
 
