@@ -5,6 +5,7 @@ objects (AssayedFusion/CategoricalFusion)
 import logging
 import re
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -955,12 +956,65 @@ class GenieTranslator(Translator):
 class CIVICTranslator(Translator):
     """Initialize CIVICTranslator"""
 
-    async def translate(self, civic: CIVIC) -> CategoricalFusion:
+    class Direction(Enum):
+        """Define CIViC-specific enum for transcript direction"""
+
+        POSITIVE = "POSITIVE"
+        NEGATIVE = "NEGATIVE"
+
+    def _get_breakpoint(
+        self, coordinate_data: ExonCoordinate, is_5prime: bool = True
+    ) -> int:
+        """Extract correct breakpoint for downstream processing
+
+        :param coordinate_data: An ExonCoordinate object
+        :param is_5prime: A boolean indicating if 5'partner is being processed
+        :return: The modified genomic breakpoint, taking strand, offset, and
+            offset direction into account
+        """
+        if is_5prime:
+            coord_to_use = (
+                coordinate_data.stop
+                if coordinate_data.strand == self.Direction.POSITIVE.value
+                else coordinate_data.start
+            )
+        else:
+            coord_to_use = (
+                coordinate_data.start
+                if coordinate_data.strand == self.Direction.POSITIVE.value
+                else coordinate_data.stop
+            )
+        if coordinate_data.exon_offset_direction == self.Direction.POSITIVE.value:
+            return coord_to_use + coordinate_data.exon_offset
+        if coordinate_data.exon_offset_direction == self.Direction.NEGATIVE.value:
+            return coord_to_use - coordinate_data.exon_offset
+        return coord_to_use  # Return current position if exon_offset is 0
+
+    def _valid_exon_coords(self, coord: ExonCoordinate | None) -> bool:
+        """Validate exon coordinates
+
+        :param coord: A ExonCoordinate object or None
+        :return ``True`` If a start or stop coordinate is associated with the 5'
+            end exon or 3` start exon, or ``False``. We cannot peform accurate
+            translation with only an Ensembl transcript accession and exon number
+        """
+        return not (
+            isinstance(coord, ExonCoordinate)
+            and coord.exon
+            and not (coord.start and coord.stop)
+        )
+
+    async def translate(self, civic: CIVIC) -> CategoricalFusion | None:
         """Convert CIViC record to Categorical Fusion
 
         :param civic A CIVIC object
         :return A CategoricalFusion object, if construction is successful
         """
+        if not (
+            self._valid_exon_coords(civic.five_prime_end_exon_coords)
+            and self._valid_exon_coords(civic.three_prime_start_exon_coords)
+        ):
+            return None
         fusion_partners = civic.vicc_compliant_name
         if fusion_partners.startswith("v::"):
             gene_5prime = "v"
@@ -992,23 +1046,20 @@ class CIVICTranslator(Translator):
         if (
             isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
             and civic.five_prime_end_exon_coords.chromosome
-        ):
+        ):  # Process for cases where exon data is available for 5' transcript
             rb = (
                 Assembly.GRCH37.value
                 if civic.five_prime_end_exon_coords.reference_build == "GRCH37"
                 else Assembly.GRCH38.value
             )
-            strand = (
-                civic.five_prime_end_exon_coords.strand
-            )  # Choose strand for 5' end exon
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
                     civic.five_prime_end_exon_coords.chromosome, rb
                 ),
-                seg_end_genomic=civic.five_prime_end_exon_coords.stop
-                if strand == "POSITIVE"
-                else civic.five_prime_end_exon_coords.start,
+                seg_end_genomic=self._get_breakpoint(
+                    civic.five_prime_end_exon_coords, True
+                ),
                 gene=fusion_partners.gene_5prime,
                 coordinate_type=CoordinateType.RESIDUE,
                 starting_assembly=rb,
@@ -1019,23 +1070,20 @@ class CIVICTranslator(Translator):
         if (
             isinstance(civic.three_prime_start_exon_coords, ExonCoordinate)
             and civic.three_prime_start_exon_coords.chromosome
-        ):
+        ):  # Process for case where exon data is available for 3' transcript
             rb = (
                 Assembly.GRCH37.value
                 if civic.three_prime_start_exon_coords.reference_build == "GRCH37"
                 else Assembly.GRCH38.value
             )
-            strand = (
-                civic.three_prime_start_exon_coords.strand
-            )  # Choose strand for 3' start exon
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
                     civic.three_prime_start_exon_coords.chromosome, rb
                 ),
-                seg_start_genomic=civic.three_prime_start_exon_coords.start
-                if strand == "POSITIVE"
-                else civic.three_prime_start_exon_coords.stop,
+                seg_start_genomic=self._get_breakpoint(
+                    civic.three_prime_start_exon_coords, False
+                ),
                 gene=fusion_partners.gene_3prime,
                 coordinate_type=CoordinateType.RESIDUE,
                 starting_assembly=rb,

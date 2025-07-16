@@ -288,6 +288,7 @@ class CIVICHarvester(FusionCallerHarvester):
             civic.update_cache(from_remote_cache=update_from_remote)
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
+        self.translator = CIVICTranslator(fusor=fusor)
         self.fusions_list = None
 
     async def load_records(self) -> list[CIVIC]:
@@ -312,7 +313,8 @@ class CIVICHarvester(FusionCallerHarvester):
             ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
                 continue
             cat_fusion = await self.translator.translate(civic=fusion)
-            translated_fusions.append(cat_fusion)
+            if cat_fusion:
+                translated_fusions.append(cat_fusion)
         self._count_dropped_fusions(processed_fusions, translated_fusions)
 
         return translated_fusions
