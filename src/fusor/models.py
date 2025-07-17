@@ -161,7 +161,7 @@ class ContigSequence(BaseStructuralElement):
         StringConstraints(
             strip_whitespace=True,
             to_upper=True,
-            pattern=r"^(?:[^A-Za-z0-9]|[ACTGactg])*$",
+            pattern=r"^(?:[^A-Za-z0-9]|[ACTGNactgn])*$",
         ),
     ]
 

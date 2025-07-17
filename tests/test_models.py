@@ -703,6 +703,9 @@ def test_contig():
     test_contig = ContigSequence(contig="GTATACTATGATCAGT|ATGATCATGAT")
     assert test_contig.contig == "GTATACTATGATCAGT|ATGATCATGAT"
 
+    test_contig = ContigSequence(contig="TGTGT*NNNNNATATG")
+    assert test_contig.contig == "TGTGT*NNNNNATATG"
+
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert ContigSequence(type="contig")
@@ -712,7 +715,7 @@ def test_contig():
     # test invalid input
     with pytest.raises(ValidationError) as exc_info:
         ContigSequence(contig="1212341|ATGATCATGAT")
-    msg = "String should match pattern '^(?:[^A-Za-z0-9]|[ACTGactg])*$'"
+    msg = "String should match pattern '^(?:[^A-Za-z0-9]|[ACTGNactgn])*$'"
     check_validation_error(exc_info, msg)
 
 
