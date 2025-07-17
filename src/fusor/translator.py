@@ -7,7 +7,6 @@ import re
 from abc import ABC, abstractmethod
 from enum import Enum
 
-import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
 from cool_seq_tool.schemas import Assembly, CoordinateType
 from ga4gh.core.models import MappableConcept
@@ -500,70 +499,6 @@ class FusionCatcherTranslator(Translator):
         )
 
 
-class FusionMapTranslator(Translator):
-    """Initialize FusionMapTranslator class"""
-
-    async def translate(
-        self, fmap_row: pl.DataFrame, coordinate_type: CoordinateType, rb: Assembly
-    ) -> AssayedFusion:
-        """Parse FusionMap output to create FUSOR AssayedFusion object
-
-        :param fmap_row: A row of FusionMap output
-        :param rb: The reference build used to call the fusion
-        :param coordinate_type: If the coordinate is inter-residue or residue
-        :return: An AssayedFusion object, if construction is successful
-        """
-        gene1 = fmap_row.get_column("KnownGene1").item()
-        gene2 = fmap_row.get_column("KnownGene2").item()
-        gene_5prime = self._get_gene_element(gene1, "fusion_map").gene.name
-        gene_3prime = self._get_gene_element(gene2, "fusion_map").gene.name
-
-        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
-            return None
-
-        tr_5prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(
-                fmap_row.get_column("Chromosome1").item(), rb
-            ),
-            seg_end_genomic=int(fmap_row.get_column("Position1").item()),
-            gene=gene_5prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
-        tr_5prime = tr_5prime[0]
-
-        tr_3prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(
-                fmap_row.get_column("Chromosome2").item(), rb
-            ),
-            seg_start_genomic=int(fmap_row.get_column("Position2").item()),
-            gene=gene_3prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
-        tr_3prime = tr_3prime[0]
-
-        # Combine columns to create fusion annotation string"
-        descr = (
-            fmap_row.get_column("FusionGene").item()
-            + ","
-            + fmap_row.get_column("SplicePatternClass").item()
-            + ","
-            + fmap_row.get_column("FrameShiftClass").item()
-        )
-        ce = self._get_causative_event(
-            fmap_row.get_column("Chromosome1").item(),
-            fmap_row.get_column("Chromosome2").item(),
-            descr,
-        )
-        rf = bool(fmap_row.get_column("FrameShiftClass").item() == "InFrame")
-        return self._format_fusion(
-            AssayedFusion, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
-        )
-
-
 class ArribaTranslator(Translator):
     """Initialize ArribaTranslator class"""
 
@@ -768,57 +703,6 @@ class CiceroTranslator(Translator):
             else None,
             ce,
             contig=contig,
-        )
-
-
-class MapSpliceTranslator(Translator):
-    """Initialize MapSpliceTranslator class"""
-
-    async def translate(
-        self, mapsplice_row: pl.DataFrame, coordinate_type: CoordinateType, rb: Assembly
-    ) -> AssayedFusion:
-        """Parse MapSplice output to create AssayedFusion object
-
-        :param mapsplice_row: A row of MapSplice output
-        :param rb: The reference build used to call the fusion
-        :param coordinate_type: If the coordinate is inter-residue or residue
-        :retun: An AssayedFusion object, if construction is successful
-        """
-        gene1 = mapsplice_row[60].strip(",")
-        gene2 = mapsplice_row[61].strip(",")
-        gene_5prime_element = self._get_gene_element(gene1, "mapsplice")
-        gene_3prime_element = self._get_gene_element(gene2, "mapsplice")
-        gene_5prime = gene_5prime_element.gene.name
-        gene_3prime = gene_3prime_element.gene.name
-
-        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
-            return None
-
-        tr_5prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[0], rb),
-            seg_end_genomic=int(mapsplice_row[1]),
-            gene=gene_5prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
-        tr_5prime = tr_5prime[0]
-
-        tr_3prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[1], rb),
-            seg_start_genomic=int(mapsplice_row[2]),
-            gene=gene_3prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
-        tr_3prime = tr_3prime[0]
-
-        ce = self._get_causative_event(
-            mapsplice_row[0].split("~")[0], mapsplice_row[0].split("~")[1]
-        )
-        return self._format_fusion(
-            AssayedFusion, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce
         )
 
 

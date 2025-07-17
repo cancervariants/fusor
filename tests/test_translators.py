@@ -3,7 +3,6 @@
 import pickle
 from pathlib import Path
 
-import polars as pl
 import pytest
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
@@ -34,7 +33,6 @@ from fusor.translator import (
     CIVICTranslator,
     EnFusionTranslator,
     FusionCatcherTranslator,
-    FusionMapTranslator,
     GenieTranslator,
     JAFFATranslator,
     STARFusionTranslator,
@@ -584,54 +582,6 @@ async def test_fusion_catcher(
     )
     assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
     assert fusion_catcher_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
-
-
-@pytest.mark.asyncio
-async def test_fusion_map(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
-    """Test Fusion Map translator"""
-    translator = FusionMapTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    fusion_map_data = pl.DataFrame(
-        {
-            "KnownGene1": "TPM3",
-            "KnownGene2": "PDGFRB",
-            "Chromosome1": "1",
-            "Position1": "154170465",
-            "Chromosome2": "5",
-            "Position2": "150126612",
-            "FusionGene": "TPM3->PDGFRB",
-            "SplicePatternClass": "CanonicalPattern[Major]",
-            "FrameShiftClass": "InFrame",
-        }
-    )
-    fusion_map_fusor = await translator.translate(
-        fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
-    )
-    assert fusion_map_fusor.structure == fusion_data_example().structure
-
-    # Test non-exonic breakpoint
-    fusion_map_data_nonexonic = pl.DataFrame(
-        {
-            "KnownGene1": "TPM3",
-            "KnownGene2": "PDGFRB",
-            "Chromosome1": "1",
-            "Position1": "154173079",
-            "Chromosome2": "5",
-            "Position2": "150127173",
-            "FusionGene": "TPM3->PDGFRB",
-            "SplicePatternClass": "CanonicalPattern[Major]",
-            "FrameShiftClass": "InFrame",
-        }
-    )
-    fusion_map_fusor_nonexonic = await translator.translate(
-        fusion_map_data_nonexonic, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
-    )
-    assert (
-        fusion_map_fusor_nonexonic.structure
-        == fusion_data_example_nonexonic().structure
-    )
 
 
 @pytest.mark.asyncio
