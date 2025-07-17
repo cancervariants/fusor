@@ -851,6 +851,7 @@ class CategoricalFusion(AbstractFusion):
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: list[CategoricalFusionElement]
     civicMolecularProfiles: list[MolecularProfile] | None = None
+    moaAssertion: dict | None = None
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
