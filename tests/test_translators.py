@@ -752,7 +752,7 @@ async def test_cicero(
         chr_5prime="1",
         chr_3prime="5",
         pos_5prime=154170466,
-        pos_3prime=150126611,
+        pos_3prime=150126612,
         sv_ort=">",
         event_type="CTX",
         reads_5prime=100,
@@ -781,7 +781,7 @@ async def test_cicero(
 
     # Test non-exonic breakpoint
     cicero.pos_5prime = 154173079
-    cicero.pos_3prime = 150127172
+    cicero.pos_3prime = 150127173
 
     cicero_fusor_nonexonic = await translator.translate(
         cicero,
