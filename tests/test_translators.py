@@ -751,8 +751,8 @@ async def test_cicero(
         gene_3prime="PDGFRB",
         chr_5prime="1",
         chr_3prime="5",
-        pos_5prime=154170465,
-        pos_3prime=150126612,
+        pos_5prime=154170466,
+        pos_3prime=150126611,
         sv_ort=">",
         event_type="CTX",
         reads_5prime=100,
@@ -764,7 +764,7 @@ async def test_cicero(
 
     cicero_fusor = await translator.translate(
         cicero,
-        CoordinateType.INTER_RESIDUE.value,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     fusion_data_example = fusion_data_example(
@@ -781,7 +781,7 @@ async def test_cicero(
 
     # Test non-exonic breakpoint
     cicero.pos_5prime = 154173079
-    cicero.pos_3prime = 150127173
+    cicero.pos_3prime = 150127172
 
     cicero_fusor_nonexonic = await translator.translate(
         cicero,

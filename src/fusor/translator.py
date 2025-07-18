@@ -744,7 +744,7 @@ class CiceroTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(cicero.chr_3prime, rb),
-            seg_start_genomic=cicero.pos_3prime,
+            seg_start_genomic=cicero.pos_3prime + 1,
             gene=fusion_partners.gene_3prime,
             coverage=BreakpointCoverage(fragmentCoverage=cicero.coverage_3prime),
             reads=AnchoredReads(reads=cicero.reads_3prime),
