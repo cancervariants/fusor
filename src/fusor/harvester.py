@@ -211,7 +211,7 @@ class CiceroHarvester(FusionCallerHarvester):
     delimiter = "\t"
     fusion_caller = Cicero
     translator_class = CiceroTranslator
-    coordinate_type = CoordinateType.RESIDUE
+    coordinate_type = CoordinateType.INTER_RESIDUE
 
 
 class EnFusionHarvester(FusionCallerHarvester):
