@@ -341,7 +341,7 @@ class MOAHarvester(FusionCallerHarvester):
         cache_dir = Path(__file__).resolve().parent / "data"
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
-        moa_file = moa_downloader.get_latest(force_refresh=True)[0]
+        moa_file = moa_downloader.get_latest(force_refresh=False)[0]
         with moa_file.open("rb") as f:  # Load MOA data if file already exists
             moa_objects = json.load(f)
             self.moa_objects = moa_objects["content"]
