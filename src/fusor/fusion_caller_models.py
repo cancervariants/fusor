@@ -26,6 +26,7 @@ class KnowledgebaseList(str, Enum):
     """Define supported knowledgebases"""
 
     CIVIC = "CIVIC"
+    MOA = "MOA"
 
 
 class FusionCaller(ABC, BaseModel):

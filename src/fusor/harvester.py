@@ -1,6 +1,7 @@
 """Harvester methods for output from different fusion callers"""
 
 import csv
+import json
 import logging
 from abc import ABC
 from itertools import dropwhile
@@ -9,6 +10,7 @@ from typing import ClassVar, Generic, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from wags_tails import MoaData
 
 from fusor.fusion_caller_models import (
     CIVIC,
@@ -31,6 +33,7 @@ from fusor.translator import (
     FusionCatcherTranslator,
     GenieTranslator,
     JAFFATranslator,
+    MOATranslator,
     STARFusionTranslator,
     Translator,
 )
@@ -84,12 +87,12 @@ class FusionCallerHarvester(ABC, Generic[T]):
     async def load_records(
         self,
         fusion_path: Path,
-    ) -> list[FusionCaller]:
+    ) -> list[AssayedFusion]:
         """Convert rows of fusion caller output to AssayedFusion objects
 
         :param fusion_path: The path to the fusions file
         :raise ValueError: if the file does not exist at the specified path
-        :return: A list of translated fusions, represented as Pydantic objects
+        :return: A list of translated fusions, represented as AssayedFusion objects
         """
         if not fusion_path.exists():
             statement = f"{fusion_path!s} does not exist"
@@ -291,10 +294,10 @@ class CIVICHarvester(FusionCallerHarvester):
         self.translator = CIVICTranslator(fusor=fusor)
         self.fusions_list = None
 
-    async def load_records(self) -> list[CIVIC]:
+    async def load_records(self) -> list[CategoricalFusion]:
         """Convert CIViC fusions to CategoricalFusion objects
 
-        :return A list of CIVIC objects
+        :return A list of CategoricalFusion objects
         """
         processed_fusions = []
         for fusion in self.fusions_list:
@@ -316,5 +319,58 @@ class CIVICHarvester(FusionCallerHarvester):
             if cat_fusion:
                 translated_fusions.append(cat_fusion)
         self._count_dropped_fusions(processed_fusions, translated_fusions)
+
+        return translated_fusions
+
+
+class MOAHarvester(FusionCallerHarvester):
+    """Class for harvesting Molecular Oncology Almanac (MOA) fusion data"""
+
+    translator_class: MOATranslator
+
+    def __init__(
+        self, fusor: FUSOR, cache_dir: Path | None = None, force_refresh: bool = False
+    ) -> None:
+        """Initialize MOAHarvester class
+
+        :param fusor: A FUSOR object
+        :param cache_dir: The path to the store the cached MOA assertions.
+            This by defualt is set to None, and the MOA assertions are
+            stored in src/fusor/data
+        :paran force_refresh: A boolean indicating if the MOA assertions
+            file should be regenerated. By default, this is set to ``False``.
+        """
+        self.translator = MOATranslator(fusor)
+        if not cache_dir:
+            cache_dir = Path(__file__).resolve().parent / "data"
+            cache_dir.mkdir(parents=True, exist_ok=True)
+        moa_downloader = MoaData(data_dir=cache_dir)
+        moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]
+        with moa_file.open("rb") as f:
+            moa_assertions = json.load(f)
+            self.assertions = moa_assertions["content"]
+
+    def load_records(self) -> list[CategoricalFusion]:
+        """Convert MOA records to CategoricalFusion objects
+
+        :return A list of CategoricalFusion objects
+        """
+        # Filter assertion dicts to only include fusion events
+        moa_fusions = [
+            assertion
+            for assertion in self.assertions
+            if any(
+                ext.get("name") == "rearrangement_type" and ext.get("value") == "Fusion"
+                for biomarker in assertion.get("proposition", {}).get("biomarkers", [])
+                for ext in biomarker.get("extensions", [])
+            )
+        ]
+        translated_fusions = []
+
+        for fusion in moa_fusions:
+            moa_fusion = self.translator.translate(fusion)
+            if moa_fusion:
+                translated_fusions.append(moa_fusion)
+        self._count_dropped_fusions(moa_fusions, translated_fusions)
 
         return translated_fusions

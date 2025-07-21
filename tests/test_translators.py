@@ -37,6 +37,7 @@ from fusor.translator import (
     FusionMapTranslator,
     GenieTranslator,
     JAFFATranslator,
+    MOATranslator,
     STARFusionTranslator,
 )
 
@@ -1031,3 +1032,382 @@ async def test_civic(
         == fusion_data_example_categorical_nonzerooffset().viccNomenclature
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
+
+
+def test_moa(fusor_instance):
+    """Test MOATranslator"""
+    translator = MOATranslator(fusor=fusor_instance)
+
+    # Test BCR::ABL1 example
+    moa_assertion_example_bcr_abl = {
+        "id": 109,
+        "type": "Statement",
+        "description": "The U.S. Food and Drug Administration granted approval to dasatinib for the treatment of newly diagnosed adult patients with Philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML) in chronic phase.",
+        "contributions": [
+            {
+                "id": 0,
+                "type": "Contribution",
+                "description": "Initial access of FDA approvals",
+                "date": "2024-10-30",
+                "agent": {
+                    "id": 0,
+                    "type": "Agent",
+                    "subtype": "organization",
+                    "name": "Van Allen lab",
+                    "description": "Van Allen lab, Dana-Farber Cancer Institute",
+                },
+            }
+        ],
+        "reportedIn": [
+            {
+                "id": "doc:fda.sprycel",
+                "type": "Document",
+                "subtype": "Regulatory approval",
+                "name": "Sprycel (dasatinib) [package insert]. FDA.",
+                "citation": "Bristol-Myers Squibb Company. Sprycel (dasatinib) [package insert]. U.S. Food and Drug Administration website. https://www.accessdata.fda.gov/drugsatfda_docs/label/2023/021986s027lbl.pdf. Revised February 2023. Accessed October 30, 2024.",
+                "company": "Bristol-Myers Squibb Company.",
+                "drug_name_brand": "Sprycel",
+                "drug_name_generic": "dasatinib",
+                "first_published": None,
+                "access_date": "2024-10-30",
+                "publication_date": "2023-02-08",
+                "url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2023/021986s027lbl.pdf",
+                "url_drug": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021986",
+                "application_number": 21986,
+                "organization": {
+                    "id": "fda",
+                    "name": "Food and Drug Administration",
+                    "description": "Regulatory agency that approves drugs for use in the United States.",
+                    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm",
+                    "last_updated": "2025-06-12",
+                },
+            }
+        ],
+        "indication": {
+            "id": "ind:fda.sprycel:0",
+            "indication": "SPRYCEL is a kinase inhibitor indicated for the treatment of newly diagnosed adults with Philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML) in chronic phase.",
+            "initial_approval_date": "2015-08-12",
+            "initial_approval_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2015/021986s016s017lbledt.pdf",
+            "description": "The U.S. Food and Drug Administration granted approval to dasatinib for the treatment of newly diagnosed adult patients with Philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML) in chronic phase.",
+            "raw_biomarkers": "philadelphia chromosome-positive (Ph+)",
+            "raw_cancer_type": "philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML)",
+            "raw_therapeutics": "Sprycel (dasatinib)",
+        },
+        "proposition": {
+            "id": 98,
+            "type": "VariantTherapeuticResponseProposition",
+            "predicate": "predictSensitivityTo",
+            "biomarkers": [
+                {
+                    "id": 12,
+                    "type": "CategoricalVariant",
+                    "name": "BCR::ABL1",
+                    "genes": [
+                        {
+                            "id": 6,
+                            "conceptType": "Gene",
+                            "name": "BCR",
+                            "mappings": [
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ensembl:ensg00000186716",
+                                        "code": "ENSG00000186716",
+                                        "system": "https://www.ensembl.org",
+                                    },
+                                },
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ncbi:613",
+                                        "code": "613",
+                                        "system": "https://www.ncbi.nlm.nih.gov/gene",
+                                    },
+                                },
+                                {
+                                    "relation": "relatedMatch",
+                                    "coding": {
+                                        "id": "refseq:NM_004327.4",
+                                        "code": "NM_004327.4",
+                                        "system": "https://www.ncbi.nlm.nih.gov/nuccore",
+                                    },
+                                },
+                            ],
+                            "extensions": [
+                                {"name": "location", "value": "22q11.23"},
+                                {"name": "location_sortable", "value": "22q11.23"},
+                            ],
+                            "primaryCoding": {
+                                "id": "hgnc:1014",
+                                "code": "HGNC:1014",
+                                "system": "https://genenames.org",
+                            },
+                        },
+                        {
+                            "id": 0,
+                            "conceptType": "Gene",
+                            "name": "ABL1",
+                            "mappings": [
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ensembl:ensg00000097007",
+                                        "code": "ENSG00000097007",
+                                        "system": "https://www.ensembl.org",
+                                    },
+                                },
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ncbi:25",
+                                        "code": "25",
+                                        "system": "https://www.ncbi.nlm.nih.gov/gene",
+                                    },
+                                },
+                                {
+                                    "relation": "relatedMatch",
+                                    "coding": {
+                                        "id": "refseq:NM_005157.6",
+                                        "code": "NM_005157.6",
+                                        "system": "https://www.ncbi.nlm.nih.gov/nuccore",
+                                    },
+                                },
+                            ],
+                            "extensions": [
+                                {"name": "location", "value": "9q34.12"},
+                                {"name": "location_sortable", "value": "09q34.12"},
+                            ],
+                            "primaryCoding": {
+                                "id": "hgnc:76",
+                                "code": "HGNC:76",
+                                "system": "https://genenames.org",
+                            },
+                        },
+                    ],
+                    "extensions": [
+                        {"name": "biomarker_type", "value": "Rearrangement"},
+                        {"name": "rearrangement_type", "value": "Fusion"},
+                        {"name": "locus", "value": None},
+                        {"name": "_present", "value": True},
+                    ],
+                }
+            ],
+            "subjectVariant": {},
+            "conditionQualifier": {
+                "id": 71,
+                "conceptType": "Disease",
+                "name": "Chronic Myeloid Leukemia, BCR-ABL1+",
+                "extensions": [
+                    {
+                        "name": "solid_tumor",
+                        "value": None,
+                        "description": "Boolean value for if this tumor type is categorized as a solid tumor.",
+                    }
+                ],
+                "primaryCoding": {
+                    "id": "oncotree:CMLBCRABL1",
+                    "code": "CMLBCRABL1",
+                    "name": "Chronic Myeloid Leukemia, BCR-ABL1+",
+                    "system": "https://oncotree.mskcc.org",
+                },
+            },
+            "objectTherapeutic": {
+                "id": 84,
+                "conceptType": "Drug",
+                "name": "Dasatinib",
+                "extensions": [
+                    {"name": "therapy_strategy", "value": ["BCR-ABL inhibition"]},
+                    {"name": "therapy_type", "value": "Targeted therapy"},
+                ],
+                "primaryCoding": {
+                    "id": "ncit:C38713",
+                    "code": "C38713",
+                    "name": "Dasatinib",
+                    "system": "https://evsexplore.semantics.cancer.gov",
+                },
+            },
+        },
+        "strength": {
+            "id": 0,
+            "conceptType": "Evidence",
+            "name": "Approval",
+            "primaryCoding": {
+                "id": "ncit:C25425",
+                "code": "C25425",
+                "name": "Approval",
+                "system": "https://evsexplore.semantics.cancer.gov",
+            },
+        },
+    }
+
+    moa_fusion = translator.translate(moa_assertion_example_bcr_abl)
+    assert moa_fusion.structure[0] == fusor_instance.gene_element("BCR")[0]
+    assert moa_fusion.structure[1] == fusor_instance.gene_element("ABL1")[0]
+    assert moa_fusion.moaAssertion == moa_assertion_example_bcr_abl
+
+    # Test v::ALK example
+    moa_assertion_example_v_alk = {
+        "id": 23,
+        "type": "Statement",
+        "description": "The U.S. Food and Drug Administration granted approval to alectinib for the adjuvant treatment of adult patients, following tumor resection, with anaplastic lymphoma kinase (ALK)-positive non-small cell lung cancer (NSCLC) (tumors >= 4 cm or node positive), as detected by an FDA-approved test.",
+        "contributions": [
+            {
+                "id": 0,
+                "type": "Contribution",
+                "description": "Initial access of FDA approvals",
+                "date": "2024-10-30",
+                "agent": {
+                    "id": 0,
+                    "type": "Agent",
+                    "subtype": "organization",
+                    "name": "Van Allen lab",
+                    "description": "Van Allen lab, Dana-Farber Cancer Institute",
+                },
+            }
+        ],
+        "reportedIn": [
+            {
+                "id": "doc:fda.alecensa",
+                "type": "Document",
+                "subtype": "Regulatory approval",
+                "name": "Alecensa (alectinib) [package insert]. FDA.",
+                "citation": "Genentech, Inc. Alecensa (alectinib) [package insert]. U.S. Food and Drug Administration website. https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208434s015lbl.pdf. Revised February 2023. Accessed October 30, 2024.",
+                "company": "Genentech, Inc.",
+                "drug_name_brand": "Alecensa",
+                "drug_name_generic": "alectinib",
+                "access_date": "2024-10-30",
+                "publication_date": "2024-04-18",
+                "url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208434s015lbl.pdf",
+                "url_drug": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=208434",
+                "application_number": 208434,
+                "organization": {
+                    "id": "fda",
+                    "name": "Food and Drug Administration",
+                    "description": "Regulatory agency that approves drugs for use in the United States.",
+                    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm",
+                    "last_updated": "2025-06-12",
+                },
+            }
+        ],
+        "direction": "supports",
+        "indication": {
+            "id": "ind:fda.alecensa:0",
+            "indication": "ALECENSA is a kinase inhibitor indicated for the adjuvant treatment in adult patients following tumor resection of anaplastic lymphoma kinase (ALK)-positive non-small cell lung cancer (NSCLC) (tumors >= 4 cm or node positive) as detected by an FDA-approved test.",
+            "initial_approval_date": "2024-04-18",
+            "initial_approval_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208434s015lbl.pdf",
+            "description": "The U.S. Food and Drug Administration granted approval to alectinib for the adjuvant treatment of adult patients, following tumor resection, with anaplastic lymphoma kinase (ALK)-positive non-small cell lung cancer (NSCLC) (tumors >= 4 cm or node positive), as detected by an FDA-approved test.",
+            "raw_biomarkers": "ALK-positive",
+            "raw_cancer_type": "non-small cell lung cancer",
+            "raw_therapeutics": "Alecensa (alectinib)",
+        },
+        "proposition": {
+            "id": 22,
+            "type": "VariantTherapeuticResponseProposition",
+            "predicate": "predictSensitivityTo",
+            "biomarkers": [
+                {
+                    "id": 8,
+                    "type": "CategoricalVariant",
+                    "name": "v::ALK",
+                    "genes": [
+                        {
+                            "id": 2,
+                            "conceptType": "Gene",
+                            "name": "ALK",
+                            "mappings": [
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ensembl:ensg00000171094",
+                                        "code": "ENSG00000171094",
+                                        "system": "https://www.ensembl.org",
+                                    },
+                                },
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ncbi:238",
+                                        "code": "238",
+                                        "system": "https://www.ncbi.nlm.nih.gov/gene",
+                                    },
+                                },
+                                {
+                                    "relation": "relatedMatch",
+                                    "coding": {
+                                        "id": "refseq:NM_004304.5",
+                                        "code": "NM_004304.5",
+                                        "system": "https://www.ncbi.nlm.nih.gov/nuccore",
+                                    },
+                                },
+                            ],
+                            "extensions": [
+                                {"name": "location", "value": "2p23.2-p23.1"},
+                                {"name": "location_sortable", "value": "02p23.2-p23.1"},
+                            ],
+                            "primaryCoding": {
+                                "id": "hgnc:427",
+                                "code": "HGNC:427",
+                                "system": "https://genenames.org",
+                            },
+                        }
+                    ],
+                    "extensions": [
+                        {"name": "biomarker_type", "value": "Rearrangement"},
+                        {"name": "rearrangement_type", "value": "Fusion"},
+                        {"name": "locus", "value": None},
+                        {"name": "_present", "value": True},
+                    ],
+                }
+            ],
+            "subjectVariant": {},
+            "conditionQualifier": {
+                "id": 47,
+                "conceptType": "Disease",
+                "name": "Non-Small Cell Lung Cancer",
+                "extensions": [
+                    {
+                        "name": "solid_tumor",
+                        "value": True,
+                        "description": "Boolean value for if this tumor type is categorized as a solid tumor.",
+                    }
+                ],
+                "primaryCoding": {
+                    "id": "oncotree:NSCLC",
+                    "code": "NSCLC",
+                    "name": "Non-Small Cell Lung Cancer",
+                    "system": "https://oncotree.mskcc.org",
+                },
+            },
+            "objectTherapeutic": {
+                "id": 9,
+                "conceptType": "Drug",
+                "name": "Alectinib",
+                "extensions": [
+                    {"name": "therapy_strategy", "value": ["ALK inhibition"]},
+                    {"name": "therapy_type", "value": "Targeted therapy"},
+                ],
+                "primaryCoding": {
+                    "id": "ncit:C101790",
+                    "code": "C101790",
+                    "name": "Alectinib",
+                    "system": "https://evsexplore.semantics.cancer.gov",
+                },
+            },
+        },
+        "strength": {
+            "id": 0,
+            "conceptType": "Evidence",
+            "name": "Approval",
+            "primaryCoding": {
+                "id": "ncit:C25425",
+                "code": "C25425",
+                "name": "Approval",
+                "system": "https://evsexplore.semantics.cancer.gov",
+            },
+        },
+    }
+
+    moa_fusion = translator.translate(moa_assertion_example_v_alk)
+    assert moa_fusion.structure[0] == fusor_instance.multiple_possible_genes_element()
+    assert moa_fusion.structure[1] == fusor_instance.gene_element("ALK")[0]
+    assert moa_fusion.moaAssertion == moa_assertion_example_v_alk
