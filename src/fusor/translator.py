@@ -1112,10 +1112,10 @@ class CIVICTranslator(Translator):
 class MOATranslator(Translator):
     """Initialize MOATranslator"""
 
-    def translate(self, moa: dict) -> CategoricalFusion | None:
+    def translate(self, moa_assertion: dict) -> CategoricalFusion | None:
         """Convert a MOA assertion to a CategoricalFusion object
 
-        :param moa: A dictionary representing a MOA assertion. To note, MOA fusions
+        :param moa_assertion: A dictionary representing a MOA assertion. To note, MOA fusions
             do not report genomic breakpoints. Currently, we only support fusions
             where both partners are listed, as we cannot definitively determine for
             cases where one gene symbol is provided if it describes the 5' or 3'
@@ -1123,15 +1123,22 @@ class MOATranslator(Translator):
         :return: A CategoricalFusion object or None if both gene partners are not
             provided.
         """
-        gene_5prime = moa["features"][0]["attributes"][0]["gene1"]
-        gene_3prime = moa["features"][0]["attributes"][0]["gene2"]
-        if not gene_5prime or not gene_3prime:
-            return None
-        gene_5prime_element = self.fusor.gene_element(gene_5prime)[0]
-        gene_3prime_element = self.fusor.gene_element(gene_3prime)[0]
+        bm = None
+        for biomarker in moa_assertion["proposition"]["biomarkers"]:
+            if (
+                "::" in biomarker["name"]
+            ):  # Extract CategoricalVariant describing fusion
+                bm = biomarker["name"]
+                break
+        moa_partners = bm.split("::")
+        gene_5prime = moa_partners[0]
+        gene_3prime = moa_partners[1]
+        fusion_partners = self._process_gene_symbols(
+            gene_5prime, gene_3prime, KnowledgebaseList.MOA
+        )
         return self._format_fusion(
             CategoricalFusion,
-            gene_5prime_element,
-            gene_3prime_element,
-            moa_assertion=moa,
+            fusion_partners.gene_5prime_element,
+            fusion_partners.gene_3prime_element,
+            moa_assertion=moa_assertion,
         )
