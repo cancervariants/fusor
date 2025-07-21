@@ -1112,10 +1112,10 @@ class CIVICTranslator(Translator):
 class MOATranslator(Translator):
     """Initialize MOATranslator"""
 
-    def translate(self, moa: dict) -> CategoricalFusion | None:
+    def translate(self, moa_assertion: dict) -> CategoricalFusion | None:
         """Convert a MOA assertion to a CategoricalFusion object
 
-        :param moa: A dictionary representing a MOA assertion. To note, MOA fusions
+        :param moa_assertion: A dictionary representing a MOA assertion. To note, MOA fusions
             do not report genomic breakpoints. Currently, we only support fusions
             where both partners are listed, as we cannot definitively determine for
             cases where one gene symbol is provided if it describes the 5' or 3'
@@ -1124,7 +1124,7 @@ class MOATranslator(Translator):
             provided.
         """
         bm = None
-        for biomarker in moa["proposition"]["biomarkers"]:
+        for biomarker in moa_assertion["proposition"]["biomarkers"]:
             if (
                 "::" in biomarker["name"]
             ):  # Extract CategoricalVariant describing fusion
@@ -1140,5 +1140,5 @@ class MOATranslator(Translator):
             CategoricalFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
-            moa_assertion=moa,
+            moa_assertion=moa_assertion,
         )

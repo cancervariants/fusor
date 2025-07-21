@@ -329,22 +329,26 @@ class MOAHarvester(FusionCallerHarvester):
     translator_class: MOATranslator
 
     def __init__(
-        self,
-        fusor: FUSOR,
+        self, fusor: FUSOR, cache_dir: Path | None = None, force_refresh: bool = False
     ) -> None:
         """Initialize MOAHarvester class
 
         :param fusor: A FUSOR object
-        :raises RuntimeError if the data cannot be loaded from the MOA API
+        :param cache_dir: The path to the store the cached MOA assertions.
+            This by defualt is set to None, and the MOA assertions are
+            stored in src/fusor/data
+        :paran force_refresh: A boolean indicating if the MOA assertions
+            file should be regenerated. By default, this is set to ``False``.
         """
         self.translator = MOATranslator(fusor)
         cache_dir = Path(__file__).resolve().parent / "data"
-        cache_dir.mkdir(parents=True, exist_ok=True)
+        if not cache_dir:
+            cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
-        moa_file = moa_downloader.get_latest(force_refresh=False)[0]
+        moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]
         with moa_file.open("rb") as f:
-            moa_objects = json.load(f)
-            self.moa_objects = moa_objects["content"]
+            moa_assertions = json.load(f)
+            self.assertions = moa_assertions["content"]
 
     def load_records(self) -> list[CategoricalFusion]:
         """Convert MOA records to CategoricalFusion objects
@@ -354,7 +358,7 @@ class MOAHarvester(FusionCallerHarvester):
         # Filter assertion dicts to only include fusion events
         moa_fusions = [
             assertion
-            for assertion in self.moa_objects
+            for assertion in self.assertions
             if any(
                 ext.get("name") == "rearrangement_type" and ext.get("value") == "Fusion"
                 for biomarker in assertion.get("proposition", {}).get("biomarkers", [])
@@ -368,5 +372,6 @@ class MOAHarvester(FusionCallerHarvester):
             if moa_fusion:
                 translated_fusions.append(moa_fusion)
         self._count_dropped_fusions(moa_fusions, translated_fusions)
+        self.translated_fusions = translated_fusions
 
         return translated_fusions
