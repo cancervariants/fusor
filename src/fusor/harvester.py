@@ -341,8 +341,8 @@ class MOAHarvester(FusionCallerHarvester):
             file should be regenerated. By default, this is set to ``False``.
         """
         self.translator = MOATranslator(fusor)
-        cache_dir = Path(__file__).resolve().parent / "data"
         if not cache_dir:
+            cache_dir = Path(__file__).resolve().parent / "data"
             cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
         moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]
@@ -372,6 +372,5 @@ class MOAHarvester(FusionCallerHarvester):
             if moa_fusion:
                 translated_fusions.append(moa_fusion)
         self._count_dropped_fusions(moa_fusions, translated_fusions)
-        self.translated_fusions = translated_fusions
 
         return translated_fusions
