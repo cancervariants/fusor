@@ -117,4 +117,4 @@ def test_get_moa_records(fusor_instance):
     """Test that MOAHarvester works correctly"""
     harvester = MOAHarvester(fusor_instance)
     fusions_list = harvester.load_records()
-    assert len(fusions_list) == 32
+    assert len(fusions_list) == 67
