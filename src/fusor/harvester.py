@@ -8,9 +8,9 @@ from itertools import dropwhile
 from pathlib import Path
 from typing import ClassVar, Generic, TextIO, TypeVar
 
-import requests
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from wags_tails import MoaData
 
 from fusor.fusion_caller_models import (
     CIVIC,
@@ -329,34 +329,22 @@ class MOAHarvester(FusionCallerHarvester):
     translator_class: MOATranslator
 
     def __init__(
-        self, fusor: FUSOR, cache_name: str | None = "moa_assertions.json"
+        self,
+        fusor: FUSOR,
     ) -> None:
         """Initialize MOAHarvester class
 
         :param fusor: A FUSOR object
-        :param cache_name: A filename for storing unprocessed MOA assertions. Set by
-            default to moa_assertions.json
         :raises RuntimeError if the data cannot be loaded from the MOA API
         """
         self.translator = MOATranslator(fusor)
         cache_dir = Path(__file__).resolve().parent / "data"
         cache_dir.mkdir(parents=True, exist_ok=True)
-        moa_file = cache_dir / cache_name
-        if not moa_file.exists():  # Save MOA data if it does not already exist
-            try:
-                response = requests.get(
-                    "https://moalmanac.org/api/assertions", timeout=30
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    self.moa_objects = data
-                    with moa_file.open("w") as f:  # Save MOA data to file
-                        json.dump(data, f, indent=4)
-            except requests.RequestException as e:
-                msg = "Failed to retrieve MOAlmanac data from API"
-                raise RuntimeError(msg) from e
+        moa_downloader = MoaData(data_dir=cache_dir)
+        moa_file = moa_downloader.get_latest(force_refresh=True)[0]
         with moa_file.open("rb") as f:  # Load MOA data if file already exists
-            self.moa_objects = json.load(f)
+            moa_objects = json.load(f)
+            self.moa_objects = moa_objects["content"]
 
     def load_records(self) -> list[CategoricalFusion]:
         """Convert MOA records to CategoricalFusion objects
@@ -368,10 +356,9 @@ class MOAHarvester(FusionCallerHarvester):
             assertion
             for assertion in self.moa_objects
             if any(
-                attr.get("feature_type") == "rearrangement"
-                and attr.get("rearrangement_type") == "Fusion"
-                for feature in assertion.get("features", [])
-                for attr in feature.get("attributes", [])
+                ext.get("name") == "rearrangement_type" and ext.get("value") == "Fusion"
+                for biomarker in assertion.get("proposition", {}).get("biomarkers", [])
+                for ext in biomarker.get("extensions", [])
             )
         ]
         translated_fusions = []
