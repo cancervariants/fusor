@@ -10,7 +10,7 @@ def get_data_dir() -> Path:
     By default, conform to `XDG Base Directory Specification <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>`_,
     unless a directory is specified otherwise:
 
-    1) check env var ``"WAGS_TAILS_DIR"``
+    1) check env var ``"FUSOR_DIR"``
     2) check env var ``"XDG_DATA_HOME"``
     3) check env var ``"XDG_DATA_DIRS"`` for a colon-separated list, skipping any
         that can't be used (i.e. they're already a file)
