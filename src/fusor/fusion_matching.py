@@ -297,3 +297,375 @@ class FusionMatcher:
             )
 
         return matched_fusions
+
+
+class AssayedAssayedMatching:
+    """Class for matching assayed fusions against assayed fusions"""
+
+    def __init__(
+        self,
+        assayed_fusions_query: list[AssayedFusion] | None = None,
+        assayed_fusions_comparator: list[AssayedFusion] | None = None,
+        cache_dir: Path | None = None,
+        cache_files: list[str] | None = None,
+    ) -> None:
+        """Initialize AssayedAssayedMatching class and comparator
+        assayed fusion objects
+
+        :param assayed_fusions_query: A list of AssayedFusion objects
+        :param assayed_fusions_comparator: A list AssayedFusion objects
+        :param cache_dir: The directory containing the cached assayed fusions
+            files. If cached files do not exist in the directory, a cached file at
+            the provided location will be generated for each source.
+        :param cache_files: A list of cache file names in ``cache_dir`` containing
+            AssayedFusion objects to load, or None. By default this is set to None.
+            It assumes that files contain lists of valid AssayedFusion objects.
+        :raises ValueError: If ``categorical_fusions`` is not provided and either
+            ``cache_dir`` or ``cache_files`` is not provided.
+        """
+        if not assayed_fusions_comparator and (not cache_dir or not cache_files):
+            msg = "Either a list of AssayedFusion objects must be provided to `assayed_fusions_comparator` or a Path and list of file names must be provided to `cache_dir` and `cache_files`, respectively"
+            raise ValueError(msg)
+        self.cache_dir = cache_dir
+        self.assayed_fusions_query = assayed_fusions_query
+        self.cache_files = cache_files
+
+        # Load in AssayedFusions, prioritizing those directly provided by the user
+        # with self.assayed_fusions_comparator
+        self.assayed_fusions_comparator = (
+            assayed_fusions_comparator
+            if assayed_fusions_comparator
+            else self._load_assayed_fusions()
+        )
+
+    def _load_assayed_fusions(self) -> list[AssayedFusion]:
+        """Load in cache of AsssayedFusion objects
+
+        :raises ValueError: If the cache_dir or cache_files variables are None
+        :return: A list of AssayedFusion objects
+        """
+        if not self.cache_dir or not self.cache_files:
+            msg = "`cache_dir` and `cache_files` parameters must be provided"
+            raise ValueError(msg)
+        assayed_fusions = []
+        for file in self.cache_files:
+            cached_file = self.cache_dir / file
+            if cached_file.is_file():
+                with cached_file.open("rb") as f:
+                    assayed_fusions.extend(pickle.load(f))  # noqa: S301
+        return assayed_fusions
+
+    def _extract_fusion_partners(
+        self,
+        fusion_elements: list[
+            UnknownGeneElement
+            | MultiplePossibleGenesElement
+            | TranscriptSegmentElement
+            | LinkerElement
+            | GeneElement
+        ],
+    ) -> list[str, str]:
+        """Extract gene symbols for a fusion event to allow for filtering
+
+        :param fusion_elements: A list of possible fusion elements
+        :return: The two gene symbols involved in the fusion, or ?/v if one partner is not known/provided
+        """
+        gene_symbols = []
+        for element in fusion_elements:
+            if isinstance(element, GeneElement | TranscriptSegmentElement):
+                gene_symbols.append(element.gene.name)
+            elif isinstance(element, UnknownGeneElement):
+                gene_symbols.append("?")
+            elif isinstance(element, MultiplePossibleGenesElement):
+                gene_symbols.append("v")
+        return gene_symbols
+
+    def _partners_matching(
+        self, queried_fusion: AssayedFusion
+    ) -> list[AssayedFusion] | None:
+        """Return matches where both fusion partners have the same gene
+        symbol
+
+        :param queried_fusion: An AssayedFusion object
+        :return: A list of AssayedFusion objects or none
+        """
+        matches = [
+            comparator_fusion
+            for comparator_fusion in self.assayed_fusions_comparator
+            if self._extract_fusion_partners(queried_fusion)
+            == self._extract_fusion_partners(comparator_fusion)
+        ]
+        return matches if matches else None
+
+    def _single_partner_match(
+        self, queried_fusion: AssayedFusion, five_prime_match: bool
+    ) -> list[AssayedFusion] | None:
+        """Return matches where one symbol of the queried fusion is the same as
+        the 5' or 3' gene symbol of the comparator fusion.
+
+        :param queried_fusion: An AssayedFusion object
+        :param five_prime_match: A boolean indicating whether the 5' symbol
+            or 3' symbol is being matched against the comparator set
+        :return: A list of AssayedFusion objects, or None if the 5' symbol is
+            an UnknownGeneElement object
+        """
+        index = 0 if five_prime_match else 1
+        symbol = self._extract_fusion_partners(queried_fusion)[index]
+        if symbol == "?":
+            return None
+
+        matches = [
+            fusion
+            for fusion in self.assayed_fusions_comparator
+            if symbol in self._extract_fusion_partners(fusion)
+        ]
+        return matches if matches else None
+
+    def _match_fusion_partners(
+        self, query: AssayedFusion, comparator: AssayedFusion
+    ) -> bool:
+        """Determine if two assayed fusions have the same partners
+
+        :param query: AssayedFusion object
+        :param comparator: AssayedFusion object
+        :return: ``True`` if the symbols for the fusion match, ``False`` if not
+        """
+        query_gene_symbols = self._extract_fusion_partners(query.structure)
+        comparator_gene_symbols = self._extract_fusion_partners(comparator.structure)
+        return (
+            query_gene_symbols == comparator_gene_symbols
+            or (
+                comparator_gene_symbols[0] == "?"
+                and query_gene_symbols[1] == comparator_gene_symbols[1]
+            )
+            or (
+                query_gene_symbols[0] == comparator_gene_symbols[0]
+                and query_gene_symbols[1] == "?"
+            )
+        )
+
+    def _filter_assayed_fusions(
+        self,
+        assayed_fusion: AssayedFusion,
+    ) -> list[AssayedFusion]:
+        """Filter AssayedFusion comparator list to ensure fusion matching is run
+        on fusions whose partners match those in the queried object
+
+        :param assayed_fusion: The AssayedFusion object that is being queried
+        :return: A list of filtered AssayedFusion objects, or an empty list if no
+            filtered AssayedFusions are generated
+        """
+        return [
+            assayed_fusion_comparator
+            for assayed_fusion_comparator in self.assayed_fusions_comparator
+            if self._match_fusion_partners(assayed_fusion, assayed_fusion_comparator)
+        ]
+
+    def _match_fusion_structure(
+        self,
+        assayed_element: TranscriptSegmentElement | UnknownGeneElement | GeneElement,
+        assayed_element_comparator: TranscriptSegmentElement
+        | UnknownGeneElement
+        | GeneElement,
+        is_five_prime_partner: bool,
+    ) -> int:
+        """Compare fusion partner information for two assayed fusions. A
+        maximum of 5 fields are compared: the gene symbol, transcript accession,
+        exon number, exon offset, and genomic breakpoint. A match score of 5 is
+        returned if all these fields are equivalent. A match score of 0 is returned
+        if one of these fields differs. `None` is returned when a gene partner
+        is ambiguous and a clear comparison cannot be made.
+
+        :param assayed_element: The assayed fusion transcript or unknown gene element
+            or gene element
+        :param assayed_element_comparator: The categorical fusion transcript or mulitple
+            possible genes element
+        :param is_five_prime_partner: If the 5' fusion partner is being compared
+        :return: A score indiciating the degree of match
+        """
+        # Set default match score
+        match_score = 0
+
+        # If both assayed partners are unknown, increment match score by 1.
+        # E.g ?::BRAF matched to ?::BRAF
+        if isinstance(assayed_element, UnknownGeneElement) and isinstance(
+            assayed_element_comparator, UnknownGeneElement
+        ):
+            match_score += 1
+
+        # Compare gene partners first
+        if assayed_element.gene == assayed_element_comparator.gene:
+            match_score += 1
+        else:
+            return 0
+
+        # Then compare transcript partners if transcript data exists
+        if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
+            assayed_element_comparator, TranscriptSegmentElement
+        ):
+            if assayed_element.transcript == assayed_element_comparator.transcript:
+                match_score += 1
+            else:
+                return 0
+
+            start_or_end = "End" if is_five_prime_partner else "Start"
+            fields_to_compare = [
+                f"exon{start_or_end}",
+                f"exon{start_or_end}Offset",
+                f"elementGenomic{start_or_end}",
+            ]
+
+            # Determine if exon number, offset, and genomic breakpoint match
+            for field in fields_to_compare:
+                if getattr(assayed_element, field) == getattr(
+                    assayed_element_comparator, field
+                ):
+                    match_score += 1
+                else:
+                    return 0
+
+        return match_score
+
+    def _compare_fusion(
+        self, assayed_fusion: AssayedFusion, assayed_fusion_comparator: AssayedFusion
+    ) -> tuple[bool, int]:
+        """Compare assayed fusions to determine if their attributes
+        are equivalent. If one attribute does not match, then we know the fusions
+        do not match.
+
+        :param assayed_fusion: AssayedFusion object
+        :param assayed_fusion_comparator: Comparator AssayedFusion objects
+        :return: A tuple containing a boolean and match score. The boolean
+            indicates if the AssayedFusion objects match, and the
+            match score describes the quality of the match. A higher match score
+            indicates a higher quality match.
+        """
+        assayed_fusion_structure = assayed_fusion.structure
+        assayed_fusion_comparator_structure = assayed_fusion_comparator.structure
+        match_score = 0
+
+        # Check for linker elements first
+        if (
+            len(assayed_fusion_structure)
+            == len(assayed_fusion_comparator_structure)
+            == 3
+        ):
+            if assayed_fusion_structure[1] == assayed_fusion_comparator_structure[1]:
+                match_score += 1
+                # Remove linker sequences for additional comparison
+                assayed_fusion_structure.pop(1)
+                assayed_fusion_comparator_structure.pop(1)
+            else:
+                return False, 0  # Linker Sequences are not equivalent, no match
+
+        # Compare other structural elements
+        match_data_5prime = self._match_fusion_structure(
+            assayed_fusion_structure[0], assayed_fusion_comparator_structure[0], True
+        )
+        if match_data_5prime == 0:
+            return False, 0
+        match_data_3prime = self._match_fusion_structure(
+            assayed_fusion_structure[1], assayed_fusion_comparator_structure[1], False
+        )
+        if match_data_3prime == 0:
+            return False, 0
+
+        # Update match scores in event partner is ? or v
+        match_data_5prime = match_data_5prime if match_data_5prime else 0
+        match_data_3prime = match_data_3prime if match_data_3prime else 0
+        match_score = match_score + match_data_5prime + match_data_3prime
+        return (True, match_score) if match_score > 0 else (False, 0)
+
+    async def _deep_match_fusion(
+        self,
+    ) -> list[list[tuple[AssayedFusion, int]] | None]:
+        """Return best matching fusions
+
+        This method prioritizes using assayed fusion objects that are
+        provided in ``self.assayed_fusions_comparator`` as opposed those that exist in the
+        ``cache_dir`` directory.
+
+        :return: A list of list of tuples containing matching AsssayedFusion objects
+            and their associated match score or None, for each examined AssayedFusion
+            object. This method iterates through all supplied AssayedFusion objects to
+            find corresponding matches. The match score represents how many attributes
+            are equivalent between the two AssayedFusions. The attributes that
+            are compared include the gene partner, transcript accession,
+            exon number, exon offset, and genomic breakpoint. A higher match
+            score indicates that more fields were equivalent. Matches are
+            returned for each queried AssayedFusion in descending order, with
+            the highest quality match reported first.
+        """
+        matched_fusions = []
+
+        for assayed_fusion in self.assayed_fusions_query:
+            matching_output = []
+            filtered_assayed_fusions = self._filter_assayed_fusions(
+                assayed_fusion,
+            )
+            if not filtered_assayed_fusions:  # Add None to matched_fusions
+                matched_fusions.append(None)
+                continue
+
+            for assayed_fusion_comparator in filtered_assayed_fusions:
+                is_match, match_score = self._compare_fusion(
+                    assayed_fusion, assayed_fusion_comparator
+                )
+                if is_match:
+                    matching_output.append((assayed_fusion_comparator, match_score))
+            matched_fusions.append(
+                sorted(matching_output, key=lambda x: x[1], reverse=True)
+            )
+
+        return matched_fusions
+
+    async def match_fusion(
+        self,
+        gene_partner_match: bool = False,
+        five_prime_match: bool = False,
+        three_prime_match: bool = False,
+    ) -> list[
+        list[tuple[AssayedFusion, int]] | list[list[AssayedFusion] | None] | None
+    ]:
+        """Perform matching between assayed fusions
+
+        :param gene_partner_match: A boolean indicating if both gene fusion
+            partners are being compared
+        :param five_prime_match: A boolean indicating if the 5' partner of
+            the queried fusion is matched against either partner in the
+            comparator set
+        :param three_prime_match: A boolean indicating if the 3' partner of
+            the queried fusion is matched against either partner in the
+            comparator set
+        :return: A list of list of tuples containing matching AssayedFusion objects
+            and their associated match score, a list of list of AssayedFusion
+            objects or None, or None for each examined AssayedFusion object.
+        :raises ValueError: If a list of AssayedFusion objects for the query
+            and comparator set or if not of the matching booleans are set to
+            ``True``
+        """
+        if not self.assayed_fusions_query or self.assayed_fusions_comparator:
+            msg = "A list of assayed fusions to query and a list of assayed fusions to compare against must be provided"
+            raise ValueError(msg)
+        if not any([gene_partner_match, five_prime_match, three_prime_match]):
+            msg = "Please set one of the matching conditions to True"
+            raise ValueError(msg)
+
+        if gene_partner_match:
+            return [
+                self._partners_matching(fusion) for fusion in self.assayed_fusions_query
+            ]
+
+        if five_prime_match:
+            return [
+                self._single_partner_match(fusion, five_prime_match=True)
+                for fusion in self.assayed_fusions_query
+            ]
+
+        if three_prime_match:
+            return [
+                self._single_partner_match(fusion, five_prime_match=False)
+                for fusion in self.assayed_fusions_query
+            ]
+        # Perform deep matching if none of the booleans are set to True
+        return await self._deep_match_fusion()
