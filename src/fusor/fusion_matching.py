@@ -391,30 +391,6 @@ class AssayedAssayedMatching:
         ]
         return matches if matches else None
 
-    def _single_partner_match(
-        self, queried_fusion: AssayedFusion, five_prime_match: bool
-    ) -> list[AssayedFusion] | None:
-        """Return matches where one symbol of the queried fusion is the same as
-        the 5' or 3' gene symbol of the comparator fusion.
-
-        :param queried_fusion: An AssayedFusion object
-        :param five_prime_match: A boolean indicating whether the 5' symbol
-            or 3' symbol is being matched against the comparator set
-        :return: A list of AssayedFusion objects, or None if the 5' symbol is
-            an UnknownGeneElement object
-        """
-        index = 0 if five_prime_match else 1
-        symbol = self._extract_fusion_partners(queried_fusion.structure)[index]
-        if symbol == "?":
-            return None
-
-        matches = [
-            fusion
-            for fusion in self.assayed_fusions_comparator
-            if symbol in self._extract_fusion_partners(fusion.structure)
-        ]
-        return matches if matches else None
-
     def _match_fusion_partners(
         self, query: AssayedFusion, comparator: AssayedFusion
     ) -> bool:
@@ -615,8 +591,6 @@ class AssayedAssayedMatching:
     async def match_fusion(
         self,
         gene_partner_match: bool = False,
-        five_prime_match: bool = False,
-        three_prime_match: bool = False,
     ) -> list[
         list[tuple[AssayedFusion, int]] | list[list[AssayedFusion] | None] | None
     ]:
@@ -646,16 +620,5 @@ class AssayedAssayedMatching:
                 self._partners_matching(fusion) for fusion in self.assayed_fusions_query
             ]
 
-        if five_prime_match:
-            return [
-                self._single_partner_match(fusion, five_prime_match=True)
-                for fusion in self.assayed_fusions_query
-            ]
-
-        if three_prime_match:
-            return [
-                self._single_partner_match(fusion, five_prime_match=False)
-                for fusion in self.assayed_fusions_query
-            ]
-        # Perform deep matching if none of the booleans are set to True
+        # Perform deep matching
         return await self._deep_match_fusion()
