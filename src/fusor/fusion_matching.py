@@ -7,7 +7,6 @@ from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
     GeneElement,
-    LinkerElement,
     MultiplePossibleGenesElement,
     TranscriptSegmentElement,
     UnknownGeneElement,
@@ -75,7 +74,6 @@ class FusionMatcher:
             UnknownGeneElement
             | MultiplePossibleGenesElement
             | TranscriptSegmentElement
-            | LinkerElement
             | GeneElement
         ],
     ) -> list[str, str]:
@@ -358,11 +356,7 @@ class AssayedAssayedMatching:
     def _extract_fusion_partners(
         self,
         fusion_elements: list[
-            UnknownGeneElement
-            | MultiplePossibleGenesElement
-            | TranscriptSegmentElement
-            | LinkerElement
-            | GeneElement
+            UnknownGeneElement | TranscriptSegmentElement | GeneElement
         ],
     ) -> list[str, str]:
         """Extract gene symbols for a fusion event to allow for filtering
@@ -392,8 +386,8 @@ class AssayedAssayedMatching:
         matches = [
             comparator_fusion
             for comparator_fusion in self.assayed_fusions_comparator
-            if self._extract_fusion_partners(queried_fusion)
-            == self._extract_fusion_partners(comparator_fusion)
+            if self._extract_fusion_partners(queried_fusion.structure)
+            == self._extract_fusion_partners(comparator_fusion.structure)
         ]
         return matches if matches else None
 
@@ -410,14 +404,14 @@ class AssayedAssayedMatching:
             an UnknownGeneElement object
         """
         index = 0 if five_prime_match else 1
-        symbol = self._extract_fusion_partners(queried_fusion)[index]
+        symbol = self._extract_fusion_partners(queried_fusion.structure)[index]
         if symbol == "?":
             return None
 
         matches = [
             fusion
             for fusion in self.assayed_fusions_comparator
-            if symbol in self._extract_fusion_partners(fusion)
+            if symbol in self._extract_fusion_partners(fusion.structure)
         ]
         return matches if matches else None
 
@@ -435,12 +429,12 @@ class AssayedAssayedMatching:
         return (
             query_gene_symbols == comparator_gene_symbols
             or (
-                comparator_gene_symbols[0] == "?"
-                and query_gene_symbols[1] == comparator_gene_symbols[1]
+                query_gene_symbols[0] == comparator_gene_symbols[0]
+                and comparator_gene_symbols[1] == "?"
             )
             or (
-                query_gene_symbols[0] == comparator_gene_symbols[0]
-                and query_gene_symbols[1] == "?"
+                query_gene_symbols[1] == comparator_gene_symbols[1]
+                and comparator_gene_symbols[0] == "?"
             )
         )
 
@@ -486,14 +480,13 @@ class AssayedAssayedMatching:
         # Set default match score
         match_score = 0
 
-        # If both assayed partners are unknown, increment match score by 1.
-        # E.g ?::BRAF matched to ?::BRAF
-        if isinstance(assayed_element, UnknownGeneElement) and isinstance(
+        # If both an assayed partner is unknown, return None
+        if isinstance(assayed_element, UnknownGeneElement) or isinstance(
             assayed_element_comparator, UnknownGeneElement
         ):
-            match_score += 1
+            return None
 
-        # Compare gene partners first
+        # Compare gene partners if both are known
         if assayed_element.gene == assayed_element_comparator.gene:
             match_score += 1
         else:
@@ -644,11 +637,8 @@ class AssayedAssayedMatching:
             and comparator set or if not of the matching booleans are set to
             ``True``
         """
-        if not self.assayed_fusions_query or self.assayed_fusions_comparator:
+        if not self.assayed_fusions_query or not self.assayed_fusions_comparator:
             msg = "A list of assayed fusions to query and a list of assayed fusions to compare against must be provided"
-            raise ValueError(msg)
-        if not any([gene_partner_match, five_prime_match, three_prime_match]):
-            msg = "Please set one of the matching conditions to True"
             raise ValueError(msg)
 
         if gene_partner_match:
