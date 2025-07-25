@@ -189,3 +189,115 @@ tests:
             - gene:
                 name: "ABL1"
         score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        score: 2

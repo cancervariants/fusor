@@ -12,6 +12,7 @@ from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 from wags_tails import MoaData
 
+from fusor.config import get_data_config
 from fusor.fusion_caller_models import (
     CIVIC,
     JAFFA,
@@ -336,14 +337,14 @@ class MOAHarvester(FusionCallerHarvester):
         :param fusor: A FUSOR object
         :param cache_dir: The path to the store the cached MOA assertions.
             This by defualt is set to None, and the MOA assertions are
-            stored in src/fusor/data
+            stored in the `FUSOR_DIR` directory.
         :paran force_refresh: A boolean indicating if the MOA assertions
             file should be regenerated. By default, this is set to ``False``.
         """
         self.translator = MOATranslator(fusor)
         if not cache_dir:
-            cache_dir = Path(__file__).resolve().parent / "data"
-            cache_dir.mkdir(parents=True, exist_ok=True)
+            cache_dir = get_data_config()
+        cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
         moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]
         with moa_file.open("rb") as f:
