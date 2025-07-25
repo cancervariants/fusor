@@ -11,8 +11,8 @@ def get_data_config() -> Path:
 
     :return: A Path object
     """
-    return (
-        Path(env_var_data_dir)
-        if (env_var_data_dir := os.environ.get("FUSOR_DIR"))
-        else get_data_dir() / "fusor"
-    )
+    if env_var_data_dir := os.environ.get("FUSOR_DIR"):
+        cache_data_path = Path(env_var_data_dir)
+    else:
+        cache_data_path = get_data_dir() / "fusor"
+    return cache_data_path
