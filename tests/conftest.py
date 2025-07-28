@@ -6,12 +6,12 @@ from pathlib import Path
 import pytest
 from cool_seq_tool.app import CoolSeqTool
 
-from fusor.config import get_data_config
+from fusor.config import config
 from fusor.fusion_matching import FusionMatcher
 from fusor.fusor import FUSOR
 
 FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
-CACHE_DATA_DIR = get_data_config()
+CACHE_DATA_DIR = config.data_root
 CACHE_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 

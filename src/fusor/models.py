@@ -26,7 +26,7 @@ from pydantic import (
     model_validator,
 )
 
-from fusor.config import get_data_config
+from fusor.config import config
 
 _logger = logging.getLogger(__name__)
 
@@ -966,7 +966,7 @@ def save_fusions_cache(
         not supplied, it will default to storing data in the `FUSOR_DIR` directory
     """
     if not cache_dir:
-        cache_dir = get_data_config()
+        cache_dir = config.data_root
     cache_dir.mkdir(parents=True, exist_ok=True)
     output_file = cache_dir / cache_name
     if output_file.exists():

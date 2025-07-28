@@ -3,7 +3,7 @@
 import pickle
 from pathlib import Path
 
-from fusor.config import get_data_config
+from fusor.config import config
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
@@ -42,7 +42,7 @@ class FusionMatcher:
             msg = "Either a list of CategoricalFusion objects must be provided to `categorical_fusions` or a Path and list of file names must be provided to `cache_dir` and `cache_files`, respectively"
             raise ValueError(msg)
         if not cache_dir:
-            cache_dir = get_data_config()
+            cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
         self.cache_dir = cache_dir
         self.assayed_fusions = assayed_fusions

@@ -12,7 +12,7 @@ from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
 from wags_tails import MoaData
 
-from fusor.config import get_data_config
+from fusor.config import config
 from fusor.fusion_caller_models import (
     CIVIC,
     JAFFA,
@@ -343,7 +343,7 @@ class MOAHarvester(FusionCallerHarvester):
         """
         self.translator = MOATranslator(fusor)
         if not cache_dir:
-            cache_dir = get_data_config()
+            cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
         moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]

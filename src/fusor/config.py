@@ -2,17 +2,30 @@
 
 import os
 from pathlib import Path
+from typing import NamedTuple
 
 from wags_tails.utils.storage import get_data_dir
 
 
-def get_data_config() -> Path:
-    """Get location for storing cached fusion objects
+class _Config(NamedTuple):
+    """Define config data structure."""
 
-    :return: A Path object
+    data_root: Path
+
+
+def _get_configs() -> _Config:
+    """Fetch config values from environment.
+
+    Eventually this may be transformed into something using `pydantic-settings` but for
+    now it just assembles a NamedTuple.
+
+    :return: constructed config object
     """
     if env_var_data_dir := os.environ.get("FUSOR_DIR"):
-        cache_data_path = Path(env_var_data_dir)
+        data_root_location = Path(env_var_data_dir)
     else:
-        cache_data_path = get_data_dir() / "fusor"
-    return cache_data_path
+        data_root_location = get_data_dir() / "fusor"
+    return _Config(data_root=data_root_location)
+
+
+config = _get_configs()
