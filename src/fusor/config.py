@@ -21,7 +21,7 @@ def _get_configs() -> _Config:
 
     :return: constructed config object
     """
-    if env_var_data_dir := os.environ.get("FUSOR_DIR"):
+    if env_var_data_dir := os.environ.get("FUSOR_DATA_DIR"):
         data_root_location = Path(env_var_data_dir)
     else:
         data_root_location = get_data_dir() / "fusor"
