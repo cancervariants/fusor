@@ -6,6 +6,7 @@ import pytest
 from cool_seq_tool.schemas import Strand
 from pydantic import ValidationError
 
+from fusor.config import config
 from fusor.models import (
     AbstractFusion,
     AnchoredReads,
@@ -1067,7 +1068,7 @@ def test_model_examples():
             model(**schema["example"])
 
 
-def test_save_cache(fixture_data_dir):
+def test_save_cache():
     """Test cache saving functionality for AssayedFusion and CategoricalFusion
     objects
     """
@@ -1081,15 +1082,13 @@ def test_save_cache(fixture_data_dir):
     # Test AssayedFusion
     save_fusions_cache(
         fusions_list=[assayed_fusion],
-        cache_dir=Path(fixture_data_dir),
         cache_name="assayed_cache_test.pkl",
     )
-    assert Path.exists(fixture_data_dir / "assayed_cache_test.pkl")
+    assert Path.exists(config.data_root / "assayed_cache_test.pkl")
 
     # Test CategoricalFusion
     save_fusions_cache(
         fusions_list=[categorical_fusion],
-        cache_dir=Path(fixture_data_dir),
         cache_name="categorical_cache_test.pkl",
     )
-    assert Path.exists(fixture_data_dir / "categorical_cache_test.pkl")
+    assert Path.exists(config.data_root / "categorical_cache_test.pkl")

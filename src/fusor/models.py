@@ -26,6 +26,8 @@ from pydantic import (
     model_validator,
 )
 
+from fusor.config import config
+
 _logger = logging.getLogger(__name__)
 
 LINKER_REGEX = r"\|([atcg]+)\|"
@@ -953,19 +955,19 @@ Fusion = CategoricalFusion | AssayedFusion
 
 def save_fusions_cache(
     fusions_list: list[AssayedFusion | CategoricalFusion],
-    cache_dir: Path,
     cache_name: str,
+    cache_dir: Path | None = None,
 ) -> None:
     """Save a list of translated fusions as a cache
 
     :param fusions_list: A list of FUSOR-translated fusions
-    :param output_dir: The location to store the cached file. If this parameter is
-        not supplied, it will default to creating a `data` directory under
-        `src/fusor`
     :param cache_name: The name for the resultant cached file
+    :param cache_dir: The location to store the cached file. If this parameter is
+        not supplied, it will default to storing data in the `FUSOR_DATA_DIR`
+        directory
     """
-    if not Path.is_dir(cache_dir):
-        cache_dir = Path(__file__).resolve().parent / "data"
+    if not cache_dir:
+        cache_dir = config.data_root
     cache_dir.mkdir(parents=True, exist_ok=True)
     output_file = cache_dir / cache_name
     if output_file.exists():
