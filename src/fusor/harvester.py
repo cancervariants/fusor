@@ -337,7 +337,7 @@ class MOAHarvester(FusionCallerHarvester):
         :param fusor: A FUSOR object
         :param cache_dir: The path to the store the cached MOA assertions.
             This by defualt is set to None, and the MOA assertions are
-            stored in the `FUSOR_DIR` directory.
+            stored in the `FUSOR_DATA_DIR` directory.
         :paran force_refresh: A boolean indicating if the MOA assertions
             file should be regenerated. By default, this is set to ``False``.
         """

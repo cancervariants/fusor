@@ -29,7 +29,7 @@ class FusionMatcher:
 
         :param cache_dir: The directory containing the cached categorical fusions
             files. If this parameter is not provided, it will be set by default
-            to be `FUSOR_DIR`.
+            to be `FUSOR_DATA_DIR`.
         :param assayed_fusions: A list of AssayedFusion objects
         :param categorical_fusions: A list of CategoricalFusion objects
         :param cache_files: A list of cache file names in ``cache_dir`` containing

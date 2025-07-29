@@ -963,7 +963,8 @@ def save_fusions_cache(
     :param fusions_list: A list of FUSOR-translated fusions
     :param cache_name: The name for the resultant cached file
     :param cache_dir: The location to store the cached file. If this parameter is
-        not supplied, it will default to storing data in the `FUSOR_DIR` directory
+        not supplied, it will default to storing data in the `FUSOR_DATA_DIR`
+        directory
     """
     if not cache_dir:
         cache_dir = config.data_root
