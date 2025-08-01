@@ -74,11 +74,10 @@ async def check_data_resources(
         cool_seq_tool = CoolSeqTool()
     cst_status = await check_cst_status()
 
-    if gene_database is None:
-        gene_database = create_db()
-
     gene_status = False
     try:
+        if gene_database is None:
+            gene_database = create_db()
         if not gene_database.check_schema_initialized():
             _logger.error("Health check failed: gene DB schema uninitialized")
         else:
