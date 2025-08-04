@@ -6,7 +6,7 @@ import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import ClassVar, Generic, TextIO, TypeVar
+from typing import ClassVar, Generic, TextIO, TypeVar, Type
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
@@ -47,8 +47,8 @@ T = TypeVar("T", bound=Translator)
 class FusionCallerHarvester(ABC, Generic[T]):
     """ABC for fusion caller harvesters"""
 
-    fusion_caller: FusionCaller
-    column_rename: dict
+    fusion_caller: Type[FusionCaller]
+    column_rename: ClassVar[dict[str,str]]
     delimiter: str
     translator_class: type[T]
     coordinate_type: CoordinateType
