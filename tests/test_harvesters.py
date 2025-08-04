@@ -26,6 +26,9 @@ async def test_get_jaffa_records(fixture_data_dir, fusor_instance):
     records = await harvester.load_records(path)
     assert len(records) == 2
 
+    records = await harvester.load_record_table(path)
+    assert len(records) == 2
+
     path = Path(fixture_data_dir / "jaffa_resultss_test.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
@@ -36,6 +39,9 @@ async def test_get_star_fusion_records(fixture_data_dir, fusor_instance):
     path = Path(fixture_data_dir / "star_fusion_test.tsv")
     harvester = StarFusionHarvester(fusor_instance, assembly=Assembly.GRCH38)
     records = await harvester.load_records(path)
+    assert len(records) == 3
+
+    records = await harvester.load_record_table(path)
     assert len(records) == 3
 
     path = Path(fixture_data_dir / "star_fusion_test.tsvs")
@@ -50,6 +56,9 @@ async def test_get_fusion_catcher_records(fixture_data_dir, fusor_instance):
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 3
 
+    records = await harvester.load_record_table(path)
+    assert len(records) == 3
+
     path = Path(fixture_data_dir / "fusionn_catcher.txts")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
@@ -61,6 +70,9 @@ async def test_get_arriba_records(fixture_data_dir, fusor_instance):
     harvester = ArribaHarvester(fusor_instance, assembly=Assembly.GRCH37)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
+
+    records = await harvester.load_record_table(path)
+    assert len(records) == 1
 
     path = Path(fixture_data_dir / "fusionss_arriba_test.tsv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
@@ -74,6 +86,9 @@ async def test_get_cicero_records(fixture_data_dir, fusor_instance):
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
+    records = await harvester.load_record_table(path)
+    assert len(records) == 1
+
     path = Path(fixture_data_dir / "annnotated.fusion.txt")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
@@ -86,6 +101,9 @@ async def test_get_enfusion_records(fixture_data_dir, fusor_instance):
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
+    records = await harvester.load_record_table(path)
+    assert len(records) == 1
+
     path = Path(fixture_data_dir / "enfusions_test.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
@@ -97,6 +115,9 @@ async def test_get_genie_records(fixture_data_dir, fusor_instance):
     harvester = GenieHarvester(fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
+
+    records = await harvester.load_record_table(path)
+    assert len(records) == 1
 
     path = Path(fixture_data_dir / "genie_tests.txt")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
