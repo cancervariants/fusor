@@ -293,7 +293,9 @@ class CIVICHarvester(FusionCallerHarvester):
 
         civic.load_cache(local_cache_path=local_cache_path, on_stale="ignore")
         self.translator = CIVICTranslator(fusor=fusor)
-        self.fusions_list = None
+
+        # Load in accepted fusion variants from CIViC
+        self.fusions_list = civic.get_all_fusion_variants(include_status="accepted")
 
     async def load_records(self) -> list[CategoricalFusion]:
         """Convert CIViC fusions to CategoricalFusion objects
