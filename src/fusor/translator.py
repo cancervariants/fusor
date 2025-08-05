@@ -708,7 +708,7 @@ class CiceroTranslator(Translator):
         cicero: Cicero,
         coordinate_type: CoordinateType,
         rb: Assembly,
-    ) -> AssayedFusion | str:
+    ) -> AssayedFusion:
         """Parse CICERO output to create AssayedFusion object
 
         :param cicero: Output from CICERO caller
@@ -720,10 +720,14 @@ class CiceroTranslator(Translator):
         # gene symbols for `gene_5prime` or `gene_3prime`, which are separated by a comma. As
         # there is not a precise way to resolve this ambiguity, we do not process
         # these events
-        if "," in cicero.gene_5prime or "," in cicero.gene_3prime:
-            msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
-            _logger.warning(msg)
-            return msg
+        if "," in cicero.gene_5prime:
+            msg = f"Ambiguous 5' gene symbols reported by CICERO: {cicero.gene_5prime}"
+            self.logger.warning(msg)
+            raise RuntimeError(msg)
+        if "," in cicero.gene_3prime:
+            msg = f"Ambiguous 3' gene symbols reported by CICERO: {cicero.gene_3prime}"
+            self.logger.warning(msg)
+            raise RuntimeError(msg)
 
         fusion_partners = self._process_gene_symbols(
             cicero.gene_5prime, cicero.gene_3prime, Caller.CICERO
@@ -733,8 +737,8 @@ class CiceroTranslator(Translator):
         # has biological meaning
         if cicero.sv_ort != ">":
             msg = "CICERO annotation indicates that this event does not have confident biological meaning"
-            _logger.warning(msg)
-            return msg
+            self.logger.warning(msg)
+            raise RuntimeError(msg)
 
         if not self._are_fusion_partners_different(
             fusion_partners.gene_5prime, fusion_partners.gene_3prime
