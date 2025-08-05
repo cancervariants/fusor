@@ -377,8 +377,8 @@ async def test_jaffa(
 
     jaffa_fusor = await translator.translate(
         jaffa,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(
@@ -395,8 +395,8 @@ async def test_jaffa(
 
     jaffa_fusor_nonexonic = await translator.translate(
         jaffa,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(
@@ -413,13 +413,13 @@ async def test_jaffa(
     # Test unknown partner
     jaffa.fusion_genes = "NA:PDGFRB"
     jaffa_fusor_unknown = await translator.translate(
-        jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        jaffa, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert jaffa_fusor_unknown.structure[0] == UnknownGeneElement()
     assert jaffa_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     jaffa.fusion_genes = "TPM3:NA"
     jaffa_fusor_unknown = await translator.translate(
-        jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        jaffa, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert jaffa_fusor_unknown.structure[1] == UnknownGeneElement()
     assert jaffa_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -444,8 +444,8 @@ async def test_star_fusion(
 
     star_fusion_fusor = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(
@@ -462,8 +462,8 @@ async def test_star_fusion(
 
     star_fusion_fusor_nonexonic = await translator.translate(
         star_fusion,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(
@@ -485,8 +485,8 @@ async def test_star_fusion(
     star_fusion.left_gene = "NA"
     star_fusion_fusor_unknown = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert star_fusion_fusor_unknown.structure[0] == UnknownGeneElement()
     assert (
@@ -496,8 +496,8 @@ async def test_star_fusion(
     star_fusion.right_gene = "NA"
     star_fusion_fusor_unknown = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert star_fusion_fusor_unknown.structure[1] == UnknownGeneElement()
     assert star_fusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+4::?"
@@ -523,8 +523,8 @@ async def test_fusion_catcher(
 
     fusion_catcher_fusor = await translator.translate(
         fusion_catcher,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(
@@ -545,8 +545,8 @@ async def test_fusion_catcher(
 
     fusion_catcher_fusor_nonexonic = await translator.translate(
         fusion_catcher,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(
@@ -571,7 +571,7 @@ async def test_fusion_catcher(
     # Test unknown partners
     fusion_catcher.five_prime_partner = "NA"
     fusion_catcher_fusor_unknown = await translator.translate(
-        fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        fusion_catcher, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert fusion_catcher_fusor_unknown.structure[0] == UnknownGeneElement()
     assert (
@@ -581,7 +581,7 @@ async def test_fusion_catcher(
     fusion_catcher.five_prime_partner = "TPM3"
     fusion_catcher.three_prime_partner = "NA"
     fusion_catcher_fusor_unknown = await translator.translate(
-        fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        fusion_catcher, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
     assert fusion_catcher_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -608,7 +608,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor = await translator.translate(
-        fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
+        fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
     )
     assert fusion_map_fusor.structure == fusion_data_example().structure
 
@@ -627,7 +627,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor_nonexonic = await translator.translate(
-        fusion_map_data_nonexonic, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        fusion_map_data_nonexonic, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert (
         fusion_map_fusor_nonexonic.structure
@@ -664,8 +664,8 @@ async def test_arriba(
 
     arriba_fusor = await translator.translate(
         arriba,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
@@ -686,8 +686,8 @@ async def test_arriba(
 
     arriba_fusor_nonexonic = await translator.translate(
         arriba,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
@@ -713,7 +713,7 @@ async def test_arriba(
     arriba_linker = arriba.model_copy(deep=True)
     arriba_linker.fusion_transcript = "ATAGAT|atatacgat|TATGAT"
     arriba_fusor_linker = await translator.translate(
-        arriba_linker, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        arriba_linker, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     linker_element = arriba_fusor_linker.structure[1]
     assert linker_element
@@ -726,14 +726,14 @@ async def test_arriba(
     # Test unknown partners
     arriba.gene1 = "NA"
     arriba_fusor_unknown = await translator.translate(
-        arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        arriba, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert arriba_fusor_unknown.structure[0] == UnknownGeneElement()
     assert arriba_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     arriba.gene1 = "TPM3"
     arriba.gene2 = "NA"
     arriba_fusor_unknown = await translator.translate(
-        arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        arriba, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert arriba_fusor_unknown.structure[1] == UnknownGeneElement()
     assert arriba_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -764,8 +764,8 @@ async def test_cicero(
 
     cicero_fusor = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         contig=ContigSequence(contig=cicero.contig)
@@ -785,8 +785,8 @@ async def test_cicero(
 
     cicero_fusor_nonexonic = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         contig=ContigSequence(contig=cicero.contig)
@@ -812,8 +812,8 @@ async def test_cicero(
 
     non_confident_bio = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert (
         non_confident_bio
@@ -825,8 +825,8 @@ async def test_cicero(
 
     multiple_genes_fusion_partner = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert (
         multiple_genes_fusion_partner
@@ -838,14 +838,14 @@ async def test_cicero(
     cicero.gene_5prime = "NA"
     cicero.gene_3prime = "PDGFRB"
     cicero_fusor_unknown = await translator.translate(
-        cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        cicero, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert cicero_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     assert cicero_fusor_unknown.structure[0] == UnknownGeneElement()
     cicero.gene_5prime = "TPM3"
     cicero.gene_3prime = "NA"
     cicero_fusor_unknown = await translator.translate(
-        cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        cicero, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert cicero_fusor_unknown.structure[1] == UnknownGeneElement()
     assert cicero_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -869,8 +869,8 @@ async def test_enfusion(
 
     enfusion_fusor = await translator.translate(
         enfusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert enfusion_fusor.structure == fusion_data_example().structure
     assert enfusion_fusor.viccNomenclature == fusion_data_example().viccNomenclature
@@ -881,8 +881,8 @@ async def test_enfusion(
 
     enfusion_fusor_nonexonic = await translator.translate(
         enfusion,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert (
         enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
@@ -895,14 +895,14 @@ async def test_enfusion(
     # Test unknown partner
     enfusion.gene_5prime = "NA"
     enfusion_fusor_unknown = await translator.translate(
-        enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        enfusion, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert enfusion_fusor_unknown.structure[0] == UnknownGeneElement()
     assert enfusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     enfusion.gene_5prime = "TPM3"
     enfusion.gene_3prime = "NA"
     enfusion_fusor_unknown = await translator.translate(
-        enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        enfusion, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert enfusion_fusor_unknown.structure[1] == UnknownGeneElement()
     assert enfusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -928,8 +928,8 @@ async def test_genie(
 
     genie_fusor = await translator.translate(
         genie,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert genie_fusor.structure == fusion_data_example().structure
     assert genie_fusor.viccNomenclature == fusion_data_example().viccNomenclature
@@ -940,8 +940,8 @@ async def test_genie(
 
     genie_fusor_nonexonic = await translator.translate(
         genie,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
     assert (
@@ -952,14 +952,14 @@ async def test_genie(
     # Test unknown partner
     genie.site1_hugo = "NA"
     genie_fusor_unknown = await translator.translate(
-        genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        genie, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert genie_fusor_unknown.structure[0] == UnknownGeneElement()
     assert genie_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     genie.site1_hugo = "TPM3"
     genie.site2_hugo = "NA"
     genie_fusor_unknown = await translator.translate(
-        genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        genie, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert genie_fusor_unknown.structure[1] == UnknownGeneElement()
     assert genie_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
