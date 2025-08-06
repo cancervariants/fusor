@@ -209,7 +209,7 @@ class Translator(ABC):
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
         alias_list, errors = sr.translate_identifier(
-            f"{build}:{chrom}", target_namespaces="refseq"
+            f"{build.value}:{chrom}", target_namespaces="refseq"
         )
         if errors:
             statement = f"Genomic accession for {chrom} could not be retrieved"
@@ -1056,10 +1056,10 @@ class CIVICTranslator(Translator):
             isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
             and civic.five_prime_end_exon_coords.chromosome
         ):  # Process for cases where exon data is available for 5' transcript
-            rb = (
-                Assembly.GRCH37.value
+            rb: Assembly = (
+                Assembly.GRCH37
                 if civic.five_prime_end_exon_coords.reference_build == "GRCH37"
-                else Assembly.GRCH38.value
+                else Assembly.GRCH38
             )
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
@@ -1080,10 +1080,10 @@ class CIVICTranslator(Translator):
             isinstance(civic.three_prime_start_exon_coords, ExonCoordinate)
             and civic.three_prime_start_exon_coords.chromosome
         ):  # Process for case where exon data is available for 3' transcript
-            rb = (
-                Assembly.GRCH37.value
+            rb: Assembly = (
+                Assembly.GRCH37
                 if civic.three_prime_start_exon_coords.reference_build == "GRCH37"
-                else Assembly.GRCH38.value
+                else Assembly.GRCH38
             )
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
