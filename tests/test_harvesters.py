@@ -22,7 +22,7 @@ from fusor.harvester import (
 async def test_get_jaffa_records(fixture_data_dir, fusor_instance):
     """Test that JAFFAHarvester works correctly"""
     path = Path(fixture_data_dir / "jaffa_results_test.csv")
-    harvester = JAFFAHarvester(fusor_instance, assembly=Assembly.GRCH38.value)
+    harvester = JAFFAHarvester(fusor_instance, assembly=Assembly.GRCH38)
     records = await harvester.load_records(path)
     assert len(records) == 2
 
@@ -34,7 +34,7 @@ async def test_get_jaffa_records(fixture_data_dir, fusor_instance):
 async def test_get_star_fusion_records(fixture_data_dir, fusor_instance):
     """Test that STARFusionHarvester works correctly"""
     path = Path(fixture_data_dir / "star_fusion_test.tsv")
-    harvester = StarFusionHarvester(fusor_instance, assembly=Assembly.GRCH38.value)
+    harvester = StarFusionHarvester(fusor_instance, assembly=Assembly.GRCH38)
     records = await harvester.load_records(path)
     assert len(records) == 3
 
@@ -46,7 +46,7 @@ async def test_get_star_fusion_records(fixture_data_dir, fusor_instance):
 async def test_get_fusion_catcher_records(fixture_data_dir, fusor_instance):
     """Test that FusionCatcherHarvester works correctly"""
     path = Path(fixture_data_dir / "fusion_catcher_test.txt")
-    harvester = FusionCatcherHarvester(fusor_instance, assembly=Assembly.GRCH38.value)
+    harvester = FusionCatcherHarvester(fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 3
 
@@ -58,7 +58,7 @@ async def test_get_fusion_catcher_records(fixture_data_dir, fusor_instance):
 async def test_get_arriba_records(fixture_data_dir, fusor_instance):
     """Test that ArribaHarvester works correctly"""
     path = Path(fixture_data_dir / "fusions_arriba_test.tsv")
-    harvester = ArribaHarvester(fusor_instance, assembly=Assembly.GRCH37.value)
+    harvester = ArribaHarvester(fusor_instance, assembly=Assembly.GRCH37)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -70,7 +70,7 @@ async def test_get_arriba_records(fixture_data_dir, fusor_instance):
 async def test_get_cicero_records(fixture_data_dir, fusor_instance):
     """Test that CiceroHarvester works correctly"""
     path = Path(fixture_data_dir / "annotated.fusion.txt")
-    harvester = CiceroHarvester(fusor_instance, assembly=Assembly.GRCH38.value)
+    harvester = CiceroHarvester(fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -82,7 +82,7 @@ async def test_get_cicero_records(fixture_data_dir, fusor_instance):
 async def test_get_enfusion_records(fixture_data_dir, fusor_instance):
     """Test that EnFusionHarvester works correctly"""
     path = Path(fixture_data_dir / "enfusion_test.csv")
-    harvester = EnFusionHarvester(fusor_instance, assembly=Assembly.GRCH38.value)
+    harvester = EnFusionHarvester(fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
@@ -94,7 +94,7 @@ async def test_get_enfusion_records(fixture_data_dir, fusor_instance):
 async def test_get_genie_records(fixture_data_dir, fusor_instance):
     """Test that GenieHarvester works correctly"""
     path = Path(fixture_data_dir / "genie_test.txt")
-    harvester = GenieHarvester(fusor_instance, assembly=Assembly.GRCH38.value)
+    harvester = GenieHarvester(fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
     assert len(fusions_list) == 1
 
