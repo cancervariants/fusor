@@ -6,7 +6,7 @@ import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import ClassVar, Generic, TextIO, TypeVar
+from typing import ClassVar, Generic, Literal, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
@@ -274,6 +274,7 @@ class CIVICHarvester(FusionCallerHarvester):
         update_cache: bool = False,
         update_from_remote: bool = True,
         local_cache_path: str = civic.LOCAL_CACHE_PATH,
+        include_status: Literal["accepted", "submitted", "rejected"] = ["accepted"],
     ) -> None:
         """Initialize CivicHarvester class.
 
@@ -286,6 +287,9 @@ class CIVICHarvester(FusionCallerHarvester):
             This parameter defaults to ``True``.
         :param local_cache_path: A filepath destination for the retrieved remote
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
+        :param include_status: Whether to include accepted, submitted, and/or
+            rejected fusion variants from civicpy cache. By default, this is
+            set to accepted.
         """
         super().__init__(fusor, Assembly.GRCH37)
         if update_cache:
@@ -295,7 +299,7 @@ class CIVICHarvester(FusionCallerHarvester):
         self.translator = CIVICTranslator(fusor=fusor)
 
         # Load in accepted fusion variants from CIViC
-        self.fusions_list = civic.get_all_fusion_variants(include_status="accepted")
+        self.fusions_list = civic.get_all_fusion_variants(include_status=include_status)
 
     async def load_records(self) -> list[CategoricalFusion]:
         """Convert CIViC fusions to CategoricalFusion objects
