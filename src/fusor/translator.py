@@ -5,7 +5,9 @@ objects (AssayedFusion/CategoricalFusion)
 import logging
 import re
 from abc import ABC, abstractmethod
+from collections.abc import MutableMapping
 from enum import Enum
+from typing import Any
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -70,6 +72,16 @@ class Translator(ABC):
         :param fusor: A FUSOR instance
         """
         self.fusor = fusor
+
+        # This field allows log messages written by translators to be captured.
+        self.record_log: logging.Logger | logging.LoggerAdapter | None = None
+
+    @property
+    def logger(self) -> logging.Logger | logging.LoggerAdapter:
+        """Returns the appropriate logger for this translator to use.
+        This is either the record_log field, or the module-level logger.
+        """
+        return self.record_log if self.record_log else _logger
 
     def _format_fusion(
         self,
@@ -1142,3 +1154,44 @@ class MOATranslator(Translator):
             fusion_partners.gene_3prime_element,
             moa_assertion=moa_assertion,
         )
+
+
+class LogCaptureAdapter(logging.LoggerAdapter):
+    """construct a LoggerAdapter which records messages written for separate use"""
+
+    def __init__(self, logger: logging.Logger, kwargs: MutableMapping[str, Any]):
+        """Construct a LogCaptureAdapter"""
+        super().__init__(logger, kwargs)
+        self._messages: list[str] = []
+
+    def process(
+        self, msg: str, kwargs: MutableMapping[str, Any]
+    ) -> tuple[Any, MutableMapping[str, Any]]:
+        """Format this message, and save it for later."""
+        # Save the message using only the kwargs from the log call, not the extras passed to the constructor
+        # Those arguments get reported in a json blob with the extra information already present.
+        self._messages.append(self._format(msg, kwargs))
+        # Log the message using the kwargs from the log call and the extras passed to the constructor
+        # so that all the information is visible in the log
+        # In practice these are both dicts, so this is fine, but the type checker doesn't like
+        # that they are MutableMapping, which (in general) doesn't work with **
+        all_fields = {**self.extra, **kwargs}  # pyright: ignore[reportGeneralTypeIssues]
+        content = self._format(msg, all_fields)
+        return content, kwargs
+
+    def _format(self, msg: str, kwargs: MutableMapping[str, Any]) -> str:
+        final: str = msg
+        if kwargs:
+            final += " " + " ".join([f"{key}:{value}" for key, value in kwargs.items()])
+        return final
+
+    def get_messages(self) -> list[str]:
+        """Return the saved messages"""
+        return self._messages
+
+
+def make_record_logger(fusion_caller: str, line: int) -> LogCaptureAdapter:
+    """Construct a logger suitable for logging per-record entries.
+    The returned Adapter can be used to obtain the logged messages.
+    """
+    return LogCaptureAdapter(_logger, {"caller": fusion_caller, "line": line})

@@ -38,6 +38,7 @@ from fusor.translator import (
     MOATranslator,
     STARFusionTranslator,
     Translator,
+    make_record_logger,
 )
 
 _logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ class FusionCallerRecord:
     source: dict[str, Any]
     annotated: AssayedFusion | CategoricalFusion | None
     annotation_error: str | None
+    annotation_messages: list[str]
 
 
 class FusionCallerHarvester(ABC, Generic[T]):
@@ -141,7 +143,9 @@ class FusionCallerHarvester(ABC, Generic[T]):
         reader = self._get_records(fusion_path.open())
         records: list[FusionCallerRecord] = []
 
-        for row in reader:
+        for i, row in enumerate(reader):
+            # line numbers are 1-indexed, and there's a header row, so add 2 to get the line number
+            line = i + 2
             raw_row = {}
             filtered_row = {}
             for key, value in row.items():
@@ -154,7 +158,9 @@ class FusionCallerHarvester(ABC, Generic[T]):
 
             error: str | None = None
             translated_fusion: AssayedFusion | CategoricalFusion | None = None
+            adapter = make_record_logger(self.fusion_caller.__name__, line)
             try:
+                self.translator.record_log = adapter
                 translated_fusion = await self.translator.translate(
                     fusion, self.coordinate_type, self.assembly
                 )
@@ -163,12 +169,15 @@ class FusionCallerHarvester(ABC, Generic[T]):
                     "Error encountered while loading records from %s", fusion_path
                 )
                 error = str(exc)
+            finally:
+                self.translator.record_log = None
 
             records.append(
                 FusionCallerRecord(
                     source=raw_row,
                     annotated=translated_fusion,
                     annotation_error=error,
+                    annotation_messages=adapter.get_messages(),
                 )
             )
 
