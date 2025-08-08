@@ -5,8 +5,9 @@ objects (AssayedFusion/CategoricalFusion)
 import logging
 import re
 from abc import ABC, abstractmethod
+from collections.abc import MutableMapping
 from enum import Enum
-from typing import Any, MutableMapping
+from typing import Any
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -1156,6 +1157,8 @@ class MOATranslator(Translator):
 
 
 class LogCaptureAdapter(logging.LoggerAdapter):
+    """Define class used to log warning messages"""
+
     def __init__(self, logger: logging.Logger, kwargs: MutableMapping[str, Any]):
         """Construct a LogCaptureAdapter"""
         super().__init__(logger, kwargs)
