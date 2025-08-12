@@ -611,7 +611,9 @@ class ArribaTranslator(Translator):
         if not self._are_fusion_partners_different(
             fusion_partners.gene_5prime, fusion_partners.gene_3prime
         ):
-            return None
+            raise RuntimeError(
+                f"Fusion partners are the same: {fusion_partners.gene_5prime}"
+            )
 
         strand1 = arriba.strand1.split("/")[1]  # Determine strand that is transcribed
         strand2 = arriba.strand2.split("/")[1]  # Determine strand that is transcribed
