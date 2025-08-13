@@ -6,10 +6,11 @@ import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import ClassVar, Generic, Literal, TextIO, TypeVar
+from typing import Any, ClassVar, Generic, Literal, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from pydantic.dataclasses import dataclass
 from wags_tails import MoaData
 
 from fusor.config import config
@@ -44,11 +45,25 @@ _logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=Translator)
 
 
+@dataclass
+class FusionCallerRecord:
+    """Records a single entry in a fusion caller data table.
+
+    :param source: The untranslated fusion caller row
+    :param annotated: The annotated fusion data
+    :param annotation_errors: Captures any errors that occurred during fusion translation
+    """
+
+    source: dict[str, Any]
+    annotated: AssayedFusion | CategoricalFusion | None
+    annotation_error: str | None
+
+
 class FusionCallerHarvester(ABC, Generic[T]):
     """ABC for fusion caller harvesters"""
 
-    fusion_caller: FusionCaller
-    column_rename: dict
+    fusion_caller: type[FusionCaller]
+    column_rename: ClassVar[dict[str, str]]
     delimiter: str
     translator_class: type[T]
     coordinate_type: CoordinateType
@@ -73,7 +88,7 @@ class FusionCallerHarvester(ABC, Generic[T]):
     @staticmethod
     def _count_dropped_fusions(
         initial_fusions: list,
-        translated_fusions: list[AssayedFusion | CategoricalFusion],
+        translated_fusions: list,
     ) -> None:
         """Count the number of fusions that were dropped during translation
 
@@ -95,36 +110,69 @@ class FusionCallerHarvester(ABC, Generic[T]):
         :raise ValueError: if the file does not exist at the specified path
         :return: A list of translated fusions, represented as AssayedFusion objects
         """
+        records = await self.load_record_table(fusion_path)
+        fusions = [
+            record.annotated
+            for record in records
+            if isinstance(record.annotated, AssayedFusion)
+        ]
+        self._count_dropped_fusions(records, fusions)
+
+        return fusions
+
+    async def load_record_table(
+        self,
+        fusion_path: Path,
+    ) -> list[FusionCallerRecord]:
+        """Convert rows of fusion caller output to FusionCallerRecord objects.
+
+        Each entry in the returned list includes the raw fusion caller output row, as well as the
+        annotated fusion model. Any errors encountered when annotating fusions are captured and returned per fusion.
+
+        :param fusion_path: The path to the fusions file
+        :raise ValueError: if the file does not exist at the specified path
+        :return: A list of fusion caller records
+        """
         if not fusion_path.exists():
-            statement = f"{fusion_path!s} does not exist"
-            raise ValueError(statement)
-        fusions_list = []
+            msg = f"{fusion_path!s} does not exist"
+            raise ValueError(msg)
+
         fields_to_keep = self.fusion_caller.__annotations__
         reader = self._get_records(fusion_path.open())
+        records: list[FusionCallerRecord] = []
 
         for row in reader:
+            raw_row = {}
             filtered_row = {}
             for key, value in row.items():
                 renamed_key = self.column_rename.get(key, key)
+                raw_row[renamed_key] = value
                 if renamed_key in fields_to_keep:
                     filtered_row[renamed_key] = value
-            fusions_list.append(self.fusion_caller(**filtered_row))
 
-        translated_fusions = []
-        for fusion in fusions_list:
+            fusion = self.fusion_caller(**filtered_row)
+
+            error: str | None = None
+            translated_fusion: AssayedFusion | CategoricalFusion | None = None
             try:
                 translated_fusion = await self.translator.translate(
                     fusion, self.coordinate_type, self.assembly
                 )
-            except ValueError:
+            except Exception as exc:
                 _logger.exception(
-                    "ValueError encountered while loading records from %s", fusion_path
+                    "Error encountered while loading records from %s", fusion_path
                 )
-            else:
-                translated_fusions.append(translated_fusion)
-        self._count_dropped_fusions(fusions_list, translated_fusions)
+                error = str(exc)
 
-        return translated_fusions
+            records.append(
+                FusionCallerRecord(
+                    source=raw_row,
+                    annotated=translated_fusion,
+                    annotation_error=error,
+                )
+            )
+
+        return records
 
 
 class JAFFAHarvester(FusionCallerHarvester):
