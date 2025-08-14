@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-from civicpy import civic
 from cool_seq_tool.schemas import Assembly
 
 from fusor.harvester import (
@@ -124,12 +123,14 @@ async def test_get_genie_records(fixture_data_dir, fusor_instance):
         assert await harvester.load_records(path)
 
 
-async def test_get_civic_records(fusor_instance):
+async def test_get_civic_records(fixture_data_dir, fusor_instance):
     """Test that CIVICHarvester works correctly"""
-    civic_variants = civic.get_all_fusion_variants()
-    civic_variants = civic_variants[:5]  # Look at first 5 records in test
-    harvester = CIVICHarvester(fusor_instance)
-    harvester.fusions_list = civic_variants
+    harvester = CIVICHarvester(
+        fusor_instance, local_cache_path=fixture_data_dir / "civic_cache.pkl"
+    )
+    harvester.fusions_list = harvester.fusions_list[
+        :5
+    ]  # Look at first 5 records in test
     fusions_list = await harvester.load_records()
     assert len(fusions_list) == 5
 
