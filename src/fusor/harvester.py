@@ -322,7 +322,8 @@ class CIVICHarvester(FusionCallerHarvester):
         update_cache: bool = False,
         update_from_remote: bool = True,
         local_cache_path: str = civic.LOCAL_CACHE_PATH,
-        include_status: Literal["accepted", "submitted", "rejected"] = ["accepted"],
+        include_status: list[Literal["accepted", "submitted", "rejected"]]
+        | None = None,
     ) -> None:
         """Initialize CivicHarvester class.
 
@@ -337,7 +338,7 @@ class CIVICHarvester(FusionCallerHarvester):
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         :param include_status: Whether to include accepted, submitted, and/or
             rejected fusion variants from civicpy cache. By default, this is
-            set to accepted.
+            set to None.
         """
         super().__init__(fusor, Assembly.GRCH37)
         if update_cache:
