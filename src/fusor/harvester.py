@@ -338,7 +338,7 @@ class CIVICHarvester(FusionCallerHarvester):
             cache. This parameter defaults to LOCAL_CACHE_PATH from civicpy.
         :param include_status: Whether to include accepted, submitted, and/or
             rejected fusion variants from civicpy cache. By default, this is
-            set to ``accepted`` if the user does not supply this variable.
+            set to ``accepted`` if include_status is set to None.
         """
         super().__init__(fusor, Assembly.GRCH37)
         if update_cache:
@@ -349,7 +349,7 @@ class CIVICHarvester(FusionCallerHarvester):
 
         # Set include_status to accepted if it is None
         if not include_status:
-            include_status = "accepted"
+            include_status = ["accepted"]
         # Load in fusion variants from CIViC
         self.fusions_list = civic.get_all_fusion_variants(include_status=include_status)
 
