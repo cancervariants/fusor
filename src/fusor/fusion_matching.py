@@ -110,7 +110,7 @@ class MatchInformation(BaseModel):
             and self.three_prime_gene
             and not self._transcript_match(three_prime)
         ):
-            return MatchType.SHARED_GENES_THREE_PRIME_EXACT
+            return MatchType.SHARED_GENES_FIVE_PRIME_EXACT
         if (
             self._transcript_match(three_prime)
             and self.five_prime_gene
