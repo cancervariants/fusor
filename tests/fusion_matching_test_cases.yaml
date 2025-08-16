@@ -19,7 +19,7 @@ tests:
               transcript: "refseq:NM_020975.6"
               elementGenomicStart:
                   start: 43114479
-        score: 10
+        match_type: "EXACT"
   - name: "EML4::ALK"
     input_index: 1
     expected_matches:
@@ -40,7 +40,61 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        score: 10
+        match_type: "EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 20
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42325554
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "SHARED_GENES_3P_EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 2
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42245687
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "SHARED_GENES_3P_EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 6
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42264731
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "SHARED_GENES_3P_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -52,7 +106,77 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        score: 5
+        match_type: "THREE_PRIME_EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - type: "MultiplePossibleGenesElement"
+            - gene:
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
   - name: "INVALID"
     input_index: 2
     expected_matches: []
@@ -76,7 +200,7 @@ tests:
               transcript: "refseq:NM_005157.6"
               elementGenomicStart:
                 start: 130854063
-        score: 10
+        match_type: "EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -84,7 +208,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -92,7 +216,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -100,7 +224,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -108,7 +232,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -116,7 +240,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -124,7 +248,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -132,7 +256,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -140,7 +264,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -148,7 +272,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -156,7 +280,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -164,7 +288,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -172,7 +296,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -180,7 +304,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -188,7 +312,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -196,7 +320,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -204,7 +328,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -212,7 +336,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -220,7 +344,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -228,7 +352,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -236,7 +360,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -244,7 +368,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -252,7 +376,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -260,7 +384,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -268,7 +392,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -276,7 +400,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -284,7 +408,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -292,7 +416,7 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -300,4 +424,4 @@ tests:
                 name: "BCR"
             - gene:
                 name: "ABL1"
-        score: 2
+        match_type: "SHARED_GENES"

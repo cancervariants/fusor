@@ -1,7 +1,10 @@
 """Module for matching assayed fusions against categorical fusions"""
 
 import pickle
+from enum import Enum
 from pathlib import Path
+
+from pydantic import BaseModel
 
 from fusor.config import config
 from fusor.models import (
@@ -13,6 +16,139 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
+
+
+class MatchType(str, Enum):
+    """Enum for defining different match types"""
+
+    EXACT = "EXACT"
+    SHARED_GENES_5P_EXACT = "SHARED_GENES_5P_EXACT"
+    SHARED_GENES_3P_EXACT = "SHARED_GENES_3P_EXACT"
+    SHARED_GENES = "SHARED_GENES"
+    FIVE_PRIME_GENE = "FIVE_PRIME_GENE"
+    FIVE_PRIME_EXACT = "FIVE_PRIME_EXACT"
+    THREE_PRIME_GENE = "THREE_PRIME_GENE"
+    THREE_PRIME_EXACT = "THREE_PRIME_EXACT"
+    NO_MATCH = "NO_MATCH"
+
+    @property
+    def priority(self) -> int:
+        """Return numeric priority for sorting, where the lower the score
+        indicates the higher quality match
+        """
+        return {
+            MatchType.EXACT: 1,
+            MatchType.SHARED_GENES_5P_EXACT: 2,
+            MatchType.SHARED_GENES_3P_EXACT: 2,
+            MatchType.SHARED_GENES: 3,
+            MatchType.FIVE_PRIME_EXACT: 4,
+            MatchType.THREE_PRIME_EXACT: 4,
+            MatchType.FIVE_PRIME_GENE: 5,
+            MatchType.THREE_PRIME_GENE: 5,
+            MatchType.NO_MATCH: 6,
+        }[self]
+
+
+class MatchInformation(BaseModel):
+    """Class for reporting matching information"""
+
+    five_prime_gene: bool | None = None
+    five_prime_transcript: bool | None = None
+    five_prime_exon: bool | None = None
+    five_prime_exon_offset: bool | None = None
+    five_prime_breakpoint: bool | None = None
+    linker: bool | None = None
+    three_prime_gene: bool | None = None
+    three_prime_transcript: bool | None = None
+    three_prime_exon: bool | None = None
+    three_prime_exon_offset: bool | None = None
+    three_prime_breakpoint: bool | None = None
+
+    def _transcript_match(self, transcript_data: list[bool | None]) -> bool:
+        """Determine if transcript data matches
+
+        :param transcript_data: A list containing transcript elements
+        :return: ``True`` if match, ``False if not
+        """
+        return all(dat is True for dat in transcript_data)
+
+    def determine_match(self) -> MatchType:
+        """Determine match type based on fields in MatchInformation class
+
+        :return: A MatchType object
+        """
+        five_prime = [
+            self.five_prime_gene,
+            self.five_prime_transcript,
+            self.five_prime_exon,
+            self.five_prime_exon_offset,
+            self.five_prime_breakpoint,
+        ]
+        three_prime = [
+            self.three_prime_gene,
+            self.three_prime_transcript,
+            self.three_prime_exon,
+            self.three_prime_exon_offset,
+            self.three_prime_breakpoint,
+        ]
+
+        # Define and return match criteria
+        if (
+            self._transcript_match(five_prime)
+            and self._transcript_match(three_prime)
+            and self.linker is None
+        ):
+            return MatchType.EXACT
+        if (
+            self._transcript_match(five_prime)
+            and self._transcript_match(three_prime)
+            and self.linker
+        ):
+            return MatchType.EXACT
+        if (
+            self._transcript_match(five_prime)
+            and self.three_prime_gene
+            and not self._transcript_match(three_prime)
+        ):
+            return MatchType.SHARED_GENES_5P_EXACT
+        if (
+            self._transcript_match(three_prime)
+            and self.five_prime_gene
+            and not self._transcript_match(five_prime)
+        ):
+            return MatchType.SHARED_GENES_3P_EXACT
+        if (
+            self.five_prime_gene
+            and self.three_prime_gene
+            and not self._transcript_match(five_prime)
+            and not self._transcript_match(three_prime)
+        ):
+            return MatchType.SHARED_GENES
+        if (
+            self.five_prime_gene
+            and self._transcript_match(five_prime)
+            and not self._transcript_match(three_prime)
+        ):
+            return MatchType.FIVE_PRIME_EXACT
+        if (
+            self.three_prime_gene
+            and self._transcript_match(three_prime)
+            and not self._transcript_match(five_prime)
+        ):
+            return MatchType.THREE_PRIME_EXACT
+        if (
+            self.five_prime_gene
+            and not self._transcript_match(five_prime)
+            and not self._transcript_match(three_prime)
+        ):
+            return MatchType.FIVE_PRIME_GENE
+        if (
+            self.three_prime_gene
+            and not self._transcript_match(three_prime)
+            and not self._transcript_match(five_prime)
+        ):
+            return MatchType.THREE_PRIME_GENE
+        return MatchType.NO_MATCH
 
 
 class FusionMatcher:
@@ -149,7 +285,8 @@ class FusionMatcher:
         | MultiplePossibleGenesElement
         | GeneElement,
         is_five_prime_partner: bool,
-    ) -> int | None:
+        mi: MatchInformation,
+    ) -> MatchInformation:
         """Compare fusion partner information for assayed and categorical fusions. A
         maximum of 5 fields are compared: the gene symbol, transcript accession,
         exon number, exon offset, and genomic breakpoint. A match score of 5 is
@@ -162,102 +299,99 @@ class FusionMatcher:
         :param categorical_element: The categorical fusion transcript or mulitple
             possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
-        :return: A score indiciating the degree of match or None if the partner is
-            ? or v
+        :param mi: A MatchInformation object
+        :return: A MatchInformation object
         """
-        # Set default match score
-        match_score = 0
-
         # If the assayed partner is unknown or the categorical partner is a multiple
         # possible gene element, return None as no precise information
         # regarding the compared elements is known
         if isinstance(assayed_element, UnknownGeneElement) or isinstance(
             categorical_element, MultiplePossibleGenesElement
         ):
-            return None
+            return mi
 
         # Compare gene partners first
         if assayed_element.gene == categorical_element.gene:
-            match_score += 1
-        else:
-            return 0
+            if is_five_prime_partner:
+                mi.five_prime_gene = True
+            else:
+                mi.three_prime_gene = True
 
         # Then compare transcript partners if transcript data exists
         if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
             categorical_element, TranscriptSegmentElement
         ):
             if assayed_element.transcript == categorical_element.transcript:
-                match_score += 1
-            else:
-                return 0
+                if is_five_prime_partner:
+                    mi.five_prime_transcript = True
+                else:
+                    mi.three_prime_transcript = True
 
             start_or_end = "End" if is_five_prime_partner else "Start"
             fields_to_compare = [
-                f"exon{start_or_end}",
-                f"exon{start_or_end}Offset",
-                f"elementGenomic{start_or_end}",
+                ("exon", f"exon{start_or_end}"),
+                ("exon_offset", f"exon{start_or_end}Offset"),
+                ("breakpoint", f"elementGenomic{start_or_end}"),
             ]
 
             # Determine if exon number, offset, and genomic breakpoint match
-            for field in fields_to_compare:
-                if getattr(assayed_element, field) == getattr(
-                    categorical_element, field
+            for mi_field, element_field in fields_to_compare:
+                if getattr(assayed_element, element_field) == getattr(
+                    categorical_element, element_field
                 ):
-                    match_score += 1
-                else:
-                    return 0
+                    if is_five_prime_partner:
+                        setattr(mi, f"five_prime_{mi_field}", True)
+                    else:
+                        setattr(mi, f"three_prime_{mi_field}", True)
 
-        return match_score
+        return mi
 
     def _compare_fusion(
         self, assayed_fusion: AssayedFusion, categorical_fusion: CategoricalFusion
-    ) -> tuple[bool, int]:
+    ) -> MatchType | None:
         """Compare assayed and categorical fusions to determine if their attributes
         are equivalent. If one attribute does not match, then we know the fusions
         do not match.
 
         :param assayed_fusion: AssayedFusion object
         :param categorical_fusion: CategoricalFusion object
-        :return: A tuple containing a boolean and match score. The boolean
-            indicates if the AssayedFusion and CategoricalFusion objects match, and the
-            match score describes the quality of the match. A higher match score
-            indicates a higher quality match.
+        :return: A MatchType object reporting the type of match or None if this
+            information is not available
         """
         assayed_fusion_structure = assayed_fusion.structure
         categorical_fusion_structure = categorical_fusion.structure
-        match_score = 0
+        match_info = MatchInformation()
 
         # Check for linker elements first
-        if len(assayed_fusion_structure) == len(categorical_fusion_structure) == 3:
-            if assayed_fusion_structure[1] == categorical_fusion_structure[1]:
-                match_score += 1
-                # Remove linker sequences for additional comparison
-                assayed_fusion_structure.pop(1)
-                categorical_fusion_structure.pop(1)
-            else:
-                return False, 0  # Linker Sequences are not equivalent, no match
+        if (
+            len(assayed_fusion_structure) == len(categorical_fusion_structure) == 3
+            and assayed_fusion_structure[1] == categorical_fusion_structure[1]
+        ):
+            match_info.linker = True
+            # Remove linker sequences for additional comparison
+            assayed_fusion_structure.pop(1)
+            categorical_fusion_structure.pop(1)
 
         # Compare other structural elements
-        match_data_5prime = self._match_fusion_structure(
-            assayed_fusion_structure[0], categorical_fusion_structure[0], True
+        self._match_fusion_structure(
+            assayed_fusion_structure[0],
+            categorical_fusion_structure[0],
+            True,
+            match_info,
         )
-        if match_data_5prime == 0:
-            return False, 0
-        match_data_3prime = self._match_fusion_structure(
-            assayed_fusion_structure[1], categorical_fusion_structure[1], False
+        self._match_fusion_structure(
+            assayed_fusion_structure[1],
+            categorical_fusion_structure[1],
+            False,
+            match_info,
         )
-        if match_data_3prime == 0:
-            return False, 0
 
-        # Update match scores in event partner is ? or v
-        match_data_5prime = match_data_5prime if match_data_5prime else 0
-        match_data_3prime = match_data_3prime if match_data_3prime else 0
-        match_score = match_score + match_data_5prime + match_data_3prime
-        return (True, match_score) if match_score > 0 else (False, 0)
+        # Determine and return match type
+        return match_info.determine_match()
 
     async def match_fusion(
         self,
-    ) -> list[list[tuple[CategoricalFusion, int]] | None]:
+    ) -> list[list[tuple[CategoricalFusion, MatchType]] | None]:
         """Return best matching fusion
 
         This method prioritizes using categorical fusion objects that are
@@ -266,15 +400,13 @@ class FusionMatcher:
 
         :raises ValueError: If a list of AssayedFusion objects is not provided
         :return: A list of list of tuples containing matching categorical fusion objects
-            and their associated match score or None, for each examined AssayedFusion
+            and their associated match type, for each examined AssayedFusion
             object. This method iterates through all supplied AssayedFusion objects to
-            find corresponding matches. The match score represents how many attributes
-            are equivalent between an AssayedFusion and CategoricalFusion. The
+            find corresponding matches. The match type represents how many attributes
+            are shared between an AssayedFusion and CategoricalFusion. The
             attributes that are compared include the gene partner, transcript accession,
-            exon number, exon offset, and genomic breakpoint. A higher match score
-            indicates that more fields were equivalent. Matches are returned for each
-            queried AssayedFusion in descending order, with the highest quality match
-            reported first.
+            exon number, exon offset, and genomic breakpoint. Matches are returned
+            according to the priority of their match type.
         """
         if not self.assayed_fusions:
             msg = "`assayed_fusions` must be provided a list of AssayedFusion objects before running `match_fusion`"
@@ -291,13 +423,8 @@ class FusionMatcher:
                 continue
 
             for categorical_fusion in filtered_categorical_fusions:
-                is_match, match_score = self._compare_fusion(
-                    assayed_fusion, categorical_fusion
-                )
-                if is_match:
-                    matching_output.append((categorical_fusion, match_score))
-            matched_fusions.append(
-                sorted(matching_output, key=lambda x: x[1], reverse=True)
-            )
+                match_type = self._compare_fusion(assayed_fusion, categorical_fusion)
+                matching_output.append((categorical_fusion, match_type))
+            matched_fusions.append(sorted(matching_output, key=lambda x: x[1].priority))
 
         return matched_fusions

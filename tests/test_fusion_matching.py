@@ -6,6 +6,7 @@ import pytest
 import yaml
 from cool_seq_tool.schemas import Assembly
 
+from fusor.fusion_matching import MatchType
 from fusor.harvester import ArribaHarvester, StarFusionHarvester
 
 
@@ -60,9 +61,9 @@ async def test_fusion_matching(
 
         matches = matches[0]
         for i, expected in enumerate(case["expected_matches"]):
-            fusion, score = matches[i]
+            fusion, match_type = matches[i]
             expected_fusion = expected["fields"]
-            expected_score = expected["score"]
+            expected_match_type = MatchType[expected["match_type"]]
 
             fusion = fusion.model_dump(exclude_none=True)
             for field, expected_value in expected_fusion.items():
@@ -71,4 +72,4 @@ async def test_fusion_matching(
                 else:
                     assert fusion[field] == expected_value
 
-            assert score == expected_score
+            assert match_type == expected_match_type
