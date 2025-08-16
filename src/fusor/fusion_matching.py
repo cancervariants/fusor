@@ -124,16 +124,12 @@ class MatchInformation(BaseModel):
             and not self._transcript_match(three_prime)
         ):
             return MatchType.SHARED_GENES
-        if (
-            self.five_prime_gene
-            and self._transcript_match(five_prime)
-            and not self._transcript_match(three_prime)
+        if self._transcript_match(five_prime) and not self._transcript_match(
+            three_prime
         ):
             return MatchType.FIVE_PRIME_EXACT
-        if (
-            self.three_prime_gene
-            and self._transcript_match(three_prime)
-            and not self._transcript_match(five_prime)
+        if self._transcript_match(three_prime) and not self._transcript_match(
+            five_prime
         ):
             return MatchType.THREE_PRIME_EXACT
         if (
