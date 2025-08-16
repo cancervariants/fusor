@@ -22,8 +22,8 @@ class MatchType(str, Enum):
     """Enum for defining different match types"""
 
     EXACT = "EXACT"
-    SHARED_GENES_5P_EXACT = "SHARED_GENES_5P_EXACT"
-    SHARED_GENES_3P_EXACT = "SHARED_GENES_3P_EXACT"
+    SHARED_GENES_FIVE_PRIME_EXACT = "SHARED_GENES_FIVE_PRIME_EXACT"
+    SHARED_GENES_THREE_PRIME_EXACT = "SHARED_GENES_THREE_PRIME_EXACT"
     SHARED_GENES = "SHARED_GENES"
     FIVE_PRIME_GENE = "FIVE_PRIME_GENE"
     FIVE_PRIME_EXACT = "FIVE_PRIME_EXACT"
@@ -38,8 +38,8 @@ class MatchType(str, Enum):
         """
         return {
             MatchType.EXACT: 1,
-            MatchType.SHARED_GENES_5P_EXACT: 2,
-            MatchType.SHARED_GENES_3P_EXACT: 2,
+            MatchType.SHARED_GENES_FIVE_PRIME_EXACT: 2,
+            MatchType.SHARED_GENES_THREE_PRIME_EXACT: 2,
             MatchType.SHARED_GENES: 3,
             MatchType.FIVE_PRIME_EXACT: 4,
             MatchType.THREE_PRIME_EXACT: 4,
@@ -110,13 +110,13 @@ class MatchInformation(BaseModel):
             and self.three_prime_gene
             and not self._transcript_match(three_prime)
         ):
-            return MatchType.SHARED_GENES_5P_EXACT
+            return MatchType.SHARED_GENES_THREE_PRIME_EXACT
         if (
             self._transcript_match(three_prime)
             and self.five_prime_gene
             and not self._transcript_match(five_prime)
         ):
-            return MatchType.SHARED_GENES_3P_EXACT
+            return MatchType.SHARED_GENES_THREE_PRIME_EXACT
         if (
             self.five_prime_gene
             and self.three_prime_gene

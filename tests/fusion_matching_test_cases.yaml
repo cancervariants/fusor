@@ -58,7 +58,7 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        match_type: "SHARED_GENES_3P_EXACT"
+        match_type: "SHARED_GENES_THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -76,7 +76,7 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        match_type: "SHARED_GENES_3P_EXACT"
+        match_type: "SHARED_GENES_THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -94,7 +94,7 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        match_type: "SHARED_GENES_3P_EXACT"
+        match_type: "SHARED_GENES_THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
