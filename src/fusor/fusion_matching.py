@@ -348,15 +348,14 @@ class FusionMatcher:
 
     def _compare_fusion(
         self, assayed_fusion: AssayedFusion, categorical_fusion: CategoricalFusion
-    ) -> MatchType | None:
+    ) -> MatchType:
         """Compare assayed and categorical fusions to determine if their attributes
         are equivalent. If one attribute does not match, then we know the fusions
         do not match.
 
         :param assayed_fusion: AssayedFusion object
         :param categorical_fusion: CategoricalFusion object
-        :return: A MatchType object reporting the type of match or None if this
-            information is not available
+        :return: A MatchType object reporting the type of match
         """
         assayed_fusion_structure = assayed_fusion.structure
         categorical_fusion_structure = categorical_fusion.structure
