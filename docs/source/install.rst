@@ -43,6 +43,7 @@ Gene Normalizer
 Finally, ``FUSOR`` uses the `Gene Normalizer <https://github.com/cancervariants/gene-normalization>`_ to ground gene terms. See the `Gene Normalizer documentation <https://gene-normalizer.readthedocs.io/stable/install.html>`_ for setup instructions.
 
 Connection information for the normalizer database can be set using the environment variable ``GENE_NORM_DB_URL``. See the `Gene Normalizer docs <https://gene-normalizer.readthedocs.io/stable/reference/api/database/gene.database.database.html#gene.database.database.create_db>`_ for more information on connection configuration.
+As a default, this connects to port 8000: ``http://localhost:8000``.
 
 Check data availability
 +++++++++++++++++++++++

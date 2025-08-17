@@ -5,6 +5,7 @@ objects (AssayedFusion/CategoricalFusion)
 import logging
 import re
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
@@ -85,6 +86,7 @@ class Translator(ABC):
         linker_sequence: LinkerElement | None = None,
         reads: ReadData | None = None,
         molecular_profiles: list[MolecularProfile] | None = None,
+        moa_assertion: dict | None = None,
     ) -> AssayedFusion | CategoricalFusion | InternalTandemDuplication:
         """Format classes to create Fusion and Internal Tandem Duplication (ITD) objects
 
@@ -101,6 +103,7 @@ class Translator(ABC):
         :param linker_sequence: The non-template linker sequence
         :param reads: The read data
         :param molecular_profiles: A list of CIViC Molecular Profiles
+        :param moa_assertion: The MOA assertion, represented as a dictionary
         :return AssayedFusion or CategoricalFusion object
         """
         params = {
@@ -110,6 +113,7 @@ class Translator(ABC):
             "contig": contig,
             "readData": reads,
             "civicMolecularProfiles": molecular_profiles,
+            "moaAssertion": moa_assertion,
         }
         if not tr_5prime and not tr_3prime:
             params["structure"] = [gene_5prime, gene_3prime]
@@ -203,7 +207,7 @@ class Translator(ABC):
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
         alias_list, errors = sr.translate_identifier(
-            f"{build}:{chrom}", target_namespaces="refseq"
+            f"{build.value}:{chrom}", target_namespaces="refseq"
         )
         if errors:
             statement = f"Genomic accession for {chrom} could not be retrieved"
@@ -212,17 +216,23 @@ class Translator(ABC):
         return alias_list[0].split(":")[1]
 
     def _assess_gene_symbol(
-        self, gene: str, caller: Caller | KnowledgebaseList
-    ) -> tuple[GeneElement | UnknownGeneElement | MultiplePossibleGenesElement, str]:
+        self, gene: str | None, caller: Caller | KnowledgebaseList
+    ) -> (
+        tuple[GeneElement | UnknownGeneElement | MultiplePossibleGenesElement, str]
+        | None
+    ):
         """Determine if a gene symbol exists and return the corresponding
         GeneElement
 
-        :param gene: The gene symbol
+        :param gene: The gene symbol or None
         :param caller: The gene fusion caller or fusion knowledgebase
         :return A tuple containing a GeneElement or UnknownGeneElement and a string,
             representing the unknown fusion partner, or MultiplePossibleGenesElement
-            and a string, representing any possible fusion partner
+            and a string, representing any possible fusion partner or None if no gene
+            is provided
         """
+        if not gene:
+            return None
         if gene == "NA":
             return UnknownGeneElement(), "NA"
         if gene == "v":
@@ -1020,12 +1030,65 @@ class GenieTranslator(Translator):
 class CIVICTranslator(Translator):
     """Initialize CIVICTranslator"""
 
-    async def translate(self, civic: CIVIC) -> CategoricalFusion:
+    class Direction(Enum):
+        """Define CIViC-specific enum for transcript direction"""
+
+        POSITIVE = "POSITIVE"
+        NEGATIVE = "NEGATIVE"
+
+    def _get_breakpoint(
+        self, coordinate_data: ExonCoordinate, is_5prime: bool = True
+    ) -> int:
+        """Extract correct breakpoint for downstream processing
+
+        :param coordinate_data: An ExonCoordinate object
+        :param is_5prime: A boolean indicating if 5'partner is being processed
+        :return: The modified genomic breakpoint, taking strand, offset, and
+            offset direction into account
+        """
+        if is_5prime:
+            coord_to_use = (
+                coordinate_data.stop
+                if coordinate_data.strand == self.Direction.POSITIVE.value
+                else coordinate_data.start
+            )
+        else:
+            coord_to_use = (
+                coordinate_data.start
+                if coordinate_data.strand == self.Direction.POSITIVE.value
+                else coordinate_data.stop
+            )
+        if coordinate_data.exon_offset_direction == self.Direction.POSITIVE.value:
+            return coord_to_use + coordinate_data.exon_offset
+        if coordinate_data.exon_offset_direction == self.Direction.NEGATIVE.value:
+            return coord_to_use - coordinate_data.exon_offset
+        return coord_to_use  # Return current position if exon_offset is 0
+
+    def _valid_exon_coords(self, coord: ExonCoordinate | None) -> bool:
+        """Validate exon coordinates
+
+        :param coord: A ExonCoordinate object or None
+        :return ``True`` If a start or stop coordinate is associated with the 5'
+            end exon or 3` start exon, or ``False``. We cannot peform accurate
+            translation with only an Ensembl transcript accession and exon number
+        """
+        return not (
+            isinstance(coord, ExonCoordinate)
+            and coord.exon
+            and not (coord.start and coord.stop)
+        )
+
+    async def translate(self, civic: CIVIC) -> CategoricalFusion | None:
         """Convert CIViC record to Categorical Fusion
 
         :param civic A CIVIC object
         :return A CategoricalFusion object, if construction is successful
         """
+        if not (
+            self._valid_exon_coords(civic.five_prime_end_exon_coords)
+            and self._valid_exon_coords(civic.three_prime_start_exon_coords)
+        ):
+            return None
         fusion_partners = civic.vicc_compliant_name
         if fusion_partners.startswith("v::"):
             gene_5prime = "v"
@@ -1057,23 +1120,20 @@ class CIVICTranslator(Translator):
         if (
             isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
             and civic.five_prime_end_exon_coords.chromosome
-        ):
-            rb = (
-                Assembly.GRCH37.value
+        ):  # Process for cases where exon data is available for 5' transcript
+            rb: Assembly = (
+                Assembly.GRCH37
                 if civic.five_prime_end_exon_coords.reference_build == "GRCH37"
-                else Assembly.GRCH38.value
+                else Assembly.GRCH38
             )
-            strand = (
-                civic.five_prime_end_exon_coords.strand
-            )  # Choose strand for 5' end exon
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
                     civic.five_prime_end_exon_coords.chromosome, rb
                 ),
-                seg_end_genomic=civic.five_prime_end_exon_coords.stop
-                if strand == "POSITIVE"
-                else civic.five_prime_end_exon_coords.start,
+                seg_end_genomic=self._get_breakpoint(
+                    civic.five_prime_end_exon_coords, True
+                ),
                 gene=fusion_partners.gene_5prime,
                 coordinate_type=CoordinateType.RESIDUE,
                 starting_assembly=rb,
@@ -1084,23 +1144,20 @@ class CIVICTranslator(Translator):
         if (
             isinstance(civic.three_prime_start_exon_coords, ExonCoordinate)
             and civic.three_prime_start_exon_coords.chromosome
-        ):
-            rb = (
-                Assembly.GRCH37.value
+        ):  # Process for case where exon data is available for 3' transcript
+            rb: Assembly = (
+                Assembly.GRCH37
                 if civic.three_prime_start_exon_coords.reference_build == "GRCH37"
-                else Assembly.GRCH38.value
+                else Assembly.GRCH38
             )
-            strand = (
-                civic.three_prime_start_exon_coords.strand
-            )  # Choose strand for 3' start exon
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(
                     civic.three_prime_start_exon_coords.chromosome, rb
                 ),
-                seg_start_genomic=civic.three_prime_start_exon_coords.start
-                if strand == "POSITIVE"
-                else civic.three_prime_start_exon_coords.stop,
+                seg_start_genomic=self._get_breakpoint(
+                    civic.three_prime_start_exon_coords, False
+                ),
                 gene=fusion_partners.gene_3prime,
                 coordinate_type=CoordinateType.RESIDUE,
                 starting_assembly=rb,
@@ -1114,4 +1171,39 @@ class CIVICTranslator(Translator):
             tr_5prime if isinstance(tr_5prime, TranscriptSegmentElement) else None,
             tr_3prime if isinstance(tr_3prime, TranscriptSegmentElement) else None,
             molecular_profiles=civic.molecular_profiles,
+        )
+
+
+class MOATranslator(Translator):
+    """Initialize MOATranslator"""
+
+    def translate(self, moa_assertion: dict) -> CategoricalFusion | None:
+        """Convert a MOA assertion to a CategoricalFusion object
+
+        :param moa_assertion: A dictionary representing a MOA assertion. To note, MOA fusions
+            do not report genomic breakpoints. Currently, we only support fusions
+            where both partners are listed, as we cannot definitively determine for
+            cases where one gene symbol is provided if it describes the 5' or 3'
+            partner.
+        :return: A CategoricalFusion object or None if both gene partners are not
+            provided.
+        """
+        bm = None
+        for biomarker in moa_assertion["proposition"]["biomarkers"]:
+            if (
+                "::" in biomarker["name"]
+            ):  # Extract CategoricalVariant describing fusion
+                bm = biomarker["name"]
+                break
+        moa_partners = bm.split("::")
+        gene_5prime = moa_partners[0]
+        gene_3prime = moa_partners[1]
+        fusion_partners = self._process_gene_symbols(
+            gene_5prime, gene_3prime, KnowledgebaseList.MOA
+        )
+        return self._format_fusion_itd(
+            CategoricalFusion,
+            fusion_partners.gene_5prime_element,
+            fusion_partners.gene_3prime_element,
+            moa_assertion=moa_assertion,
         )

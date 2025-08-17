@@ -6,6 +6,7 @@ import pytest
 from cool_seq_tool.schemas import Strand
 from pydantic import ValidationError
 
+from fusor.config import config
 from fusor.models import (
     AbstractFusion,
     AbstractTranscriptStructuralVariant,
@@ -705,6 +706,9 @@ def test_contig():
     test_contig = ContigSequence(contig="GTATACTATGATCAGT|ATGATCATGAT")
     assert test_contig.contig == "GTATACTATGATCAGT|ATGATCATGAT"
 
+    test_contig = ContigSequence(contig="TGTGT*NNNNNATATG")
+    assert test_contig.contig == "TGTGT*NNNNNATATG"
+
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert ContigSequence(type="contig")
@@ -714,7 +718,7 @@ def test_contig():
     # test invalid input
     with pytest.raises(ValidationError) as exc_info:
         ContigSequence(contig="1212341|ATGATCATGAT")
-    msg = "String should match pattern '^(?:[^A-Za-z0-9]|[ACTGactg])*$'"
+    msg = "String should match pattern '^(?:[^A-Za-z0-9]|[ACTGNactgn])*$'"
     check_validation_error(exc_info, msg)
 
 
@@ -1105,7 +1109,7 @@ def test_model_examples():
             model(**schema["example"])
 
 
-def test_save_cache(fixture_data_dir):
+def test_save_cache():
     """Test cache saving functionality for AssayedFusion and CategoricalFusion
     objects
     """
@@ -1122,23 +1126,20 @@ def test_save_cache(fixture_data_dir):
     # Test AssayedFusion
     save_fusions_cache(
         variants_list=[assayed_fusion],
-        cache_dir=Path(fixture_data_dir),
         cache_name="assayed_cache_test.pkl",
     )
-    assert Path.exists(fixture_data_dir / "assayed_cache_test.pkl")
+    assert Path.exists(config.data_root / "assayed_cache_test.pkl")
 
     # Test CategoricalFusion
     save_fusions_cache(
         variants_list=[categorical_fusion],
-        cache_dir=Path(fixture_data_dir),
         cache_name="categorical_cache_test.pkl",
     )
-    assert Path.exists(fixture_data_dir / "categorical_cache_test.pkl")
+    assert Path.exists(config.data_root / "categorical_cache_test.pkl")
 
     # Test ITD
     save_fusions_cache(
         variants_list=[itd],
-        cache_dir=Path(fixture_data_dir),
-        cache_name="itd_test.pkl",
+        cache_name="itd_cache_test.pkl",
     )
-    assert Path.exists(fixture_data_dir / "itd_test.pkl")
+    assert Path.exists(config.data_root / "itd_cache_test.pkl")

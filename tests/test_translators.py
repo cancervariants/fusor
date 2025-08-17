@@ -38,6 +38,7 @@ from fusor.translator import (
     FusionMapTranslator,
     GenieTranslator,
     JAFFATranslator,
+    MOATranslator,
     STARFusionTranslator,
 )
 
@@ -383,6 +384,53 @@ def fusion_data_example_categorical_mpge():
     return _create_base_fixture
 
 
+@pytest.fixture(scope="module")
+def fusion_data_example_categorical_nonzerooffset():
+    """Create test fixture for CategoricalFusion where the offset is non-zero"""
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "CategoricalFusion",
+            "structure": [
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_005252.4",
+                    "strand": 1,
+                    "exonEnd": 4,
+                    "exonEndOffset": -1122,
+                    "gene": {
+                        "primaryCoding": {
+                            "id": "hgnc:3796",
+                            "code": "HGNC:3796",
+                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                        },
+                        "conceptType": "Gene",
+                        "name": "FOS",
+                    },
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.dWC0LMlSNxmqC1J0_-GTQtXFhH7vjnoG",
+                        "type": "SequenceLocation",
+                        "digest": "dWC0LMlSNxmqC1J0_-GTQtXFhH7vjnoG",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000014.9",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.eK4D2MosgK_ivBkgi6FVPg5UXs1bYESm",
+                        },
+                        "end": 75281108,
+                    },
+                },
+                {
+                    "type": "MultiplePossibleGenesElement",
+                },
+            ],
+            "viccNomenclature": "NM_005252.4(FOS):e.4-1122::v",
+        }
+        categorical_fusion = CategoricalFusion(**params)
+        return categorical_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
+
+
 @pytest.mark.asyncio
 async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, fusor_instance
@@ -405,8 +453,8 @@ async def test_jaffa(
 
     jaffa_fusor = await translator.translate(
         jaffa,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
 
     fusion_data_example = fusion_data_example(
@@ -424,8 +472,8 @@ async def test_jaffa(
 
     jaffa_fusor_nonexonic = await translator.translate(
         jaffa,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(
@@ -442,13 +490,13 @@ async def test_jaffa(
     # Test unknown partner
     jaffa.fusion_genes = "NA:PDGFRB"
     jaffa_fusor_unknown = await translator.translate(
-        jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        jaffa, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert jaffa_fusor_unknown.structure[0] == UnknownGeneElement()
     assert jaffa_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     jaffa.fusion_genes = "TPM3:NA"
     jaffa_fusor_unknown = await translator.translate(
-        jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        jaffa, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert jaffa_fusor_unknown.structure[1] == UnknownGeneElement()
     assert jaffa_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -473,8 +521,8 @@ async def test_star_fusion(
 
     star_fusion_fusor = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(
@@ -491,8 +539,8 @@ async def test_star_fusion(
 
     star_fusion_fusor_nonexonic = await translator.translate(
         star_fusion,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(
@@ -514,8 +562,8 @@ async def test_star_fusion(
     star_fusion.left_gene = "NA"
     star_fusion_fusor_unknown = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert star_fusion_fusor_unknown.structure[0] == UnknownGeneElement()
     assert (
@@ -525,8 +573,8 @@ async def test_star_fusion(
     star_fusion.right_gene = "NA"
     star_fusion_fusor_unknown = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert star_fusion_fusor_unknown.structure[1] == UnknownGeneElement()
     assert star_fusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+4::?"
@@ -552,8 +600,8 @@ async def test_fusion_catcher(
 
     fusion_catcher_fusor = await translator.translate(
         fusion_catcher,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(
@@ -574,8 +622,8 @@ async def test_fusion_catcher(
 
     fusion_catcher_fusor_nonexonic = await translator.translate(
         fusion_catcher,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(
@@ -600,7 +648,7 @@ async def test_fusion_catcher(
     # Test unknown partners
     fusion_catcher.five_prime_partner = "NA"
     fusion_catcher_fusor_unknown = await translator.translate(
-        fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        fusion_catcher, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert fusion_catcher_fusor_unknown.structure[0] == UnknownGeneElement()
     assert (
@@ -610,7 +658,7 @@ async def test_fusion_catcher(
     fusion_catcher.five_prime_partner = "TPM3"
     fusion_catcher.three_prime_partner = "NA"
     fusion_catcher_fusor_unknown = await translator.translate(
-        fusion_catcher, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        fusion_catcher, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
     assert fusion_catcher_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -637,7 +685,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor = await translator.translate(
-        fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
+        fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
     )
     assert fusion_map_fusor.structure == fusion_data_example().structure
 
@@ -656,7 +704,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor_nonexonic = await translator.translate(
-        fusion_map_data_nonexonic, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        fusion_map_data_nonexonic, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert (
         fusion_map_fusor_nonexonic.structure
@@ -693,8 +741,8 @@ async def test_arriba(
 
     arriba_fusor = await translator.translate(
         arriba,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
@@ -715,8 +763,8 @@ async def test_arriba(
 
     arriba_fusor_nonexonic = await translator.translate(
         arriba,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
@@ -742,7 +790,7 @@ async def test_arriba(
     arriba_linker = arriba.model_copy(deep=True)
     arriba_linker.fusion_transcript = "ATAGAT|atatacgat|TATGAT"
     arriba_fusor_linker = await translator.translate(
-        arriba_linker, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        arriba_linker, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     linker_element = arriba_fusor_linker.structure[1]
     assert linker_element
@@ -755,14 +803,14 @@ async def test_arriba(
     # Test unknown partners
     arriba.gene1 = "NA"
     arriba_fusor_unknown = await translator.translate(
-        arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        arriba, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert arriba_fusor_unknown.structure[0] == UnknownGeneElement()
     assert arriba_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     arriba.gene1 = "TPM3"
     arriba.gene2 = "NA"
     arriba_fusor_unknown = await translator.translate(
-        arriba, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        arriba, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert arriba_fusor_unknown.structure[1] == UnknownGeneElement()
     assert arriba_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -780,7 +828,7 @@ async def test_cicero(
         gene_3prime="PDGFRB",
         chr_5prime="1",
         chr_3prime="5",
-        pos_5prime=154170465,
+        pos_5prime=154170466,
         pos_3prime=150126612,
         sv_ort=">",
         event_type="CTX",
@@ -793,8 +841,8 @@ async def test_cicero(
 
     cicero_fusor = await translator.translate(
         cicero,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example = fusion_data_example(
         contig=ContigSequence(contig=cicero.contig)
@@ -814,8 +862,8 @@ async def test_cicero(
 
     cicero_fusor_nonexonic = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         contig=ContigSequence(contig=cicero.contig)
@@ -841,8 +889,8 @@ async def test_cicero(
 
     non_confident_bio = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert (
         non_confident_bio
@@ -854,8 +902,8 @@ async def test_cicero(
 
     multiple_genes_fusion_partner = await translator.translate(
         cicero,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert (
         multiple_genes_fusion_partner
@@ -867,14 +915,14 @@ async def test_cicero(
     cicero.gene_5prime = "NA"
     cicero.gene_3prime = "PDGFRB"
     cicero_fusor_unknown = await translator.translate(
-        cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        cicero, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert cicero_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     assert cicero_fusor_unknown.structure[0] == UnknownGeneElement()
     cicero.gene_5prime = "TPM3"
     cicero.gene_3prime = "NA"
     cicero_fusor_unknown = await translator.translate(
-        cicero, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        cicero, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert cicero_fusor_unknown.structure[1] == UnknownGeneElement()
     assert cicero_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -898,8 +946,8 @@ async def test_enfusion(
 
     enfusion_fusor = await translator.translate(
         enfusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert enfusion_fusor.structure == fusion_data_example().structure
     assert enfusion_fusor.viccNomenclature == fusion_data_example().viccNomenclature
@@ -910,8 +958,8 @@ async def test_enfusion(
 
     enfusion_fusor_nonexonic = await translator.translate(
         enfusion,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert (
         enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
@@ -924,14 +972,14 @@ async def test_enfusion(
     # Test unknown partner
     enfusion.gene_5prime = "NA"
     enfusion_fusor_unknown = await translator.translate(
-        enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        enfusion, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert enfusion_fusor_unknown.structure[0] == UnknownGeneElement()
     assert enfusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     enfusion.gene_5prime = "TPM3"
     enfusion.gene_3prime = "NA"
     enfusion_fusor_unknown = await translator.translate(
-        enfusion, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        enfusion, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert enfusion_fusor_unknown.structure[1] == UnknownGeneElement()
     assert enfusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -957,8 +1005,8 @@ async def test_genie(
 
     genie_fusor = await translator.translate(
         genie,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert genie_fusor.structure == fusion_data_example().structure
     assert genie_fusor.viccNomenclature == fusion_data_example().viccNomenclature
@@ -969,8 +1017,8 @@ async def test_genie(
 
     genie_fusor_nonexonic = await translator.translate(
         genie,
-        CoordinateType.RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
     )
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
     assert (
@@ -981,14 +1029,14 @@ async def test_genie(
     # Test unknown partner
     genie.site1_hugo = "NA"
     genie_fusor_unknown = await translator.translate(
-        genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        genie, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert genie_fusor_unknown.structure[0] == UnknownGeneElement()
     assert genie_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
     genie.site1_hugo = "TPM3"
     genie.site2_hugo = "NA"
     genie_fusor_unknown = await translator.translate(
-        genie, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+        genie, CoordinateType.RESIDUE, Assembly.GRCH38
     )
     assert genie_fusor_unknown.structure[1] == UnknownGeneElement()
     assert genie_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
@@ -998,6 +1046,7 @@ async def test_genie(
 async def test_civic(
     fusion_data_example_categorical,
     fusion_data_example_categorical_mpge,
+    fusion_data_example_categorical_nonzerooffset,
     fusor_instance,
     fixture_data_dir,
 ):
@@ -1024,7 +1073,7 @@ async def test_civic(
     )
     assert len(civic_fusor.civicMolecularProfiles) == 64
 
-    # Test case where one parter is a MultiplePossibleGenesElement object
+    # Test case where one partner is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
         vicc_compliant_name=fusions_list[1].vicc_compliant_name,
         five_prime_end_exon_coords=fusions_list[1].five_prime_end_exon_coordinates,
@@ -1041,10 +1090,31 @@ async def test_civic(
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
 
+    # Test case where there is a non-zero offset
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[2].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[2].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            2
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[2].molecular_profiles,
+    )
+    civic_fusor = await translator.translate(test_fusion)
+    assert (
+        civic_fusor.structure
+        == fusion_data_example_categorical_nonzerooffset().structure
+    )
+    assert (
+        civic_fusor.viccNomenclature
+        == fusion_data_example_categorical_nonzerooffset().viccNomenclature
+    )
+    assert len(civic_fusor.civicMolecularProfiles) == 1
+
 
 @pytest.mark.asyncio
-async def test_itds(itd_example, translator_instance):
+async def test_itds(itd_example, fusor_instance):
     """Test ITD example across all fusion callers and sources"""
+    translator = JAFFATranslator(fusor=fusor_instance)
     jaffa = JAFFA(
         fusion_genes="TPM3:TPM3",
         chrom1="chr1",
@@ -1058,13 +1128,14 @@ async def test_itds(itd_example, translator_instance):
         spanning_pairs=80,
     )
 
-    jaffa_fusor = await translator_instance.from_jaffa(
+    jaffa_fusor = await translator.translate(
         jaffa,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert jaffa_fusor.structure == itd_example().structure
 
+    translator = STARFusionTranslator(fusor=fusor_instance)
     star_fusion = STARFusion(
         left_gene="TPM3^ENSG00000143549.19",
         right_gene="TPM3^ENSG00000143549.19",
@@ -1075,10 +1146,10 @@ async def test_itds(itd_example, translator_instance):
         spanning_frag_count=80,
     )
 
-    star_fusion_fusor = await translator_instance.from_star_fusion(
+    star_fusion_fusor = await translator.translate(
         star_fusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert star_fusion_fusor.structure == itd_example().structure
 
@@ -1093,13 +1164,15 @@ async def test_itds(itd_example, translator_instance):
         fusion_sequence="CTAGATGAC*TACTACTA",
     )
 
-    fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
+    translator = FusionCatcherTranslator(fusor=fusor_instance)
+    fusion_catcher_fusor = await translator.translate(
         fusion_catcher,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert fusion_catcher_fusor.structure == itd_example().structure
 
+    translator = FusionMapTranslator(fusor=fusor_instance)
     fusion_map_data = pl.DataFrame(
         {
             "KnownGene1": "TPM3",
@@ -1113,11 +1186,12 @@ async def test_itds(itd_example, translator_instance):
             "FrameShiftClass": "InFrame",
         }
     )
-    fusion_map_fusor = await translator_instance.from_fusion_map(
-        fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
+    fusion_map_fusor = await translator.translate(
+        fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
     )
     assert fusion_map_fusor.structure == itd_example().structure
 
+    translator = CiceroTranslator(fusor=fusor_instance)
     cicero = Cicero(
         gene_5prime="TPM3",
         gene_3prime="TPM3",
@@ -1134,10 +1208,10 @@ async def test_itds(itd_example, translator_instance):
         contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
     )
 
-    cicero_fusor = await translator_instance.from_cicero(
+    cicero_fusor = await translator.translate(
         cicero,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     itd_example_cicero = itd_example(contig=ContigSequence(contig=cicero.contig))
     itd_example_cicero.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
@@ -1146,6 +1220,7 @@ async def test_itds(itd_example, translator_instance):
     itd_example_cicero.structure[1].anchoredReads = AnchoredReads(reads=90)
     assert cicero_fusor.structure == itd_example_cicero.structure
 
+    translator = EnFusionTranslator(fusor=fusor_instance)
     enfusion = EnFusion(
         gene_5prime="TPM3",
         gene_3prime="TPM3",
@@ -1155,13 +1230,14 @@ async def test_itds(itd_example, translator_instance):
         break_3prime=154170465,
     )
 
-    enfusion_fusor = await translator_instance.from_enfusion(
+    enfusion_fusor = await translator.translate(
         enfusion,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert enfusion_fusor.structure == itd_example().structure
 
+    translator = GenieTranslator(fusor=fusor_instance)
     genie = Genie(
         site1_hugo="TPM3",
         site2_hugo="TPM3",
@@ -1173,9 +1249,388 @@ async def test_itds(itd_example, translator_instance):
         reading_frame="In_frame",
     )
 
-    genie_fusor = await translator_instance.from_genie(
+    genie_fusor = await translator.translate(
         genie,
-        CoordinateType.INTER_RESIDUE.value,
-        Assembly.GRCH38.value,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
     )
     assert genie_fusor.structure == itd_example().structure
+
+
+def test_moa(fusor_instance):
+    """Test MOATranslator"""
+    translator = MOATranslator(fusor=fusor_instance)
+
+    # Test BCR::ABL1 example
+    moa_assertion_example_bcr_abl = {
+        "id": 109,
+        "type": "Statement",
+        "description": "The U.S. Food and Drug Administration granted approval to dasatinib for the treatment of newly diagnosed adult patients with Philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML) in chronic phase.",
+        "contributions": [
+            {
+                "id": 0,
+                "type": "Contribution",
+                "description": "Initial access of FDA approvals",
+                "date": "2024-10-30",
+                "agent": {
+                    "id": 0,
+                    "type": "Agent",
+                    "subtype": "organization",
+                    "name": "Van Allen lab",
+                    "description": "Van Allen lab, Dana-Farber Cancer Institute",
+                },
+            }
+        ],
+        "reportedIn": [
+            {
+                "id": "doc:fda.sprycel",
+                "type": "Document",
+                "subtype": "Regulatory approval",
+                "name": "Sprycel (dasatinib) [package insert]. FDA.",
+                "citation": "Bristol-Myers Squibb Company. Sprycel (dasatinib) [package insert]. U.S. Food and Drug Administration website. https://www.accessdata.fda.gov/drugsatfda_docs/label/2023/021986s027lbl.pdf. Revised February 2023. Accessed October 30, 2024.",
+                "company": "Bristol-Myers Squibb Company.",
+                "drug_name_brand": "Sprycel",
+                "drug_name_generic": "dasatinib",
+                "first_published": None,
+                "access_date": "2024-10-30",
+                "publication_date": "2023-02-08",
+                "url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2023/021986s027lbl.pdf",
+                "url_drug": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021986",
+                "application_number": 21986,
+                "organization": {
+                    "id": "fda",
+                    "name": "Food and Drug Administration",
+                    "description": "Regulatory agency that approves drugs for use in the United States.",
+                    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm",
+                    "last_updated": "2025-06-12",
+                },
+            }
+        ],
+        "indication": {
+            "id": "ind:fda.sprycel:0",
+            "indication": "SPRYCEL is a kinase inhibitor indicated for the treatment of newly diagnosed adults with Philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML) in chronic phase.",
+            "initial_approval_date": "2015-08-12",
+            "initial_approval_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2015/021986s016s017lbledt.pdf",
+            "description": "The U.S. Food and Drug Administration granted approval to dasatinib for the treatment of newly diagnosed adult patients with Philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML) in chronic phase.",
+            "raw_biomarkers": "philadelphia chromosome-positive (Ph+)",
+            "raw_cancer_type": "philadelphia chromosome-positive (Ph+) chronic myeloid leukemia (CML)",
+            "raw_therapeutics": "Sprycel (dasatinib)",
+        },
+        "proposition": {
+            "id": 98,
+            "type": "VariantTherapeuticResponseProposition",
+            "predicate": "predictSensitivityTo",
+            "biomarkers": [
+                {
+                    "id": 12,
+                    "type": "CategoricalVariant",
+                    "name": "BCR::ABL1",
+                    "genes": [
+                        {
+                            "id": 6,
+                            "conceptType": "Gene",
+                            "name": "BCR",
+                            "mappings": [
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ensembl:ensg00000186716",
+                                        "code": "ENSG00000186716",
+                                        "system": "https://www.ensembl.org",
+                                    },
+                                },
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ncbi:613",
+                                        "code": "613",
+                                        "system": "https://www.ncbi.nlm.nih.gov/gene",
+                                    },
+                                },
+                                {
+                                    "relation": "relatedMatch",
+                                    "coding": {
+                                        "id": "refseq:NM_004327.4",
+                                        "code": "NM_004327.4",
+                                        "system": "https://www.ncbi.nlm.nih.gov/nuccore",
+                                    },
+                                },
+                            ],
+                            "extensions": [
+                                {"name": "location", "value": "22q11.23"},
+                                {"name": "location_sortable", "value": "22q11.23"},
+                            ],
+                            "primaryCoding": {
+                                "id": "hgnc:1014",
+                                "code": "HGNC:1014",
+                                "system": "https://genenames.org",
+                            },
+                        },
+                        {
+                            "id": 0,
+                            "conceptType": "Gene",
+                            "name": "ABL1",
+                            "mappings": [
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ensembl:ensg00000097007",
+                                        "code": "ENSG00000097007",
+                                        "system": "https://www.ensembl.org",
+                                    },
+                                },
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ncbi:25",
+                                        "code": "25",
+                                        "system": "https://www.ncbi.nlm.nih.gov/gene",
+                                    },
+                                },
+                                {
+                                    "relation": "relatedMatch",
+                                    "coding": {
+                                        "id": "refseq:NM_005157.6",
+                                        "code": "NM_005157.6",
+                                        "system": "https://www.ncbi.nlm.nih.gov/nuccore",
+                                    },
+                                },
+                            ],
+                            "extensions": [
+                                {"name": "location", "value": "9q34.12"},
+                                {"name": "location_sortable", "value": "09q34.12"},
+                            ],
+                            "primaryCoding": {
+                                "id": "hgnc:76",
+                                "code": "HGNC:76",
+                                "system": "https://genenames.org",
+                            },
+                        },
+                    ],
+                    "extensions": [
+                        {"name": "biomarker_type", "value": "Rearrangement"},
+                        {"name": "rearrangement_type", "value": "Fusion"},
+                        {"name": "locus", "value": None},
+                        {"name": "_present", "value": True},
+                    ],
+                }
+            ],
+            "subjectVariant": {},
+            "conditionQualifier": {
+                "id": 71,
+                "conceptType": "Disease",
+                "name": "Chronic Myeloid Leukemia, BCR-ABL1+",
+                "extensions": [
+                    {
+                        "name": "solid_tumor",
+                        "value": None,
+                        "description": "Boolean value for if this tumor type is categorized as a solid tumor.",
+                    }
+                ],
+                "primaryCoding": {
+                    "id": "oncotree:CMLBCRABL1",
+                    "code": "CMLBCRABL1",
+                    "name": "Chronic Myeloid Leukemia, BCR-ABL1+",
+                    "system": "https://oncotree.mskcc.org",
+                },
+            },
+            "objectTherapeutic": {
+                "id": 84,
+                "conceptType": "Drug",
+                "name": "Dasatinib",
+                "extensions": [
+                    {"name": "therapy_strategy", "value": ["BCR-ABL inhibition"]},
+                    {"name": "therapy_type", "value": "Targeted therapy"},
+                ],
+                "primaryCoding": {
+                    "id": "ncit:C38713",
+                    "code": "C38713",
+                    "name": "Dasatinib",
+                    "system": "https://evsexplore.semantics.cancer.gov",
+                },
+            },
+        },
+        "strength": {
+            "id": 0,
+            "conceptType": "Evidence",
+            "name": "Approval",
+            "primaryCoding": {
+                "id": "ncit:C25425",
+                "code": "C25425",
+                "name": "Approval",
+                "system": "https://evsexplore.semantics.cancer.gov",
+            },
+        },
+    }
+
+    moa_fusion = translator.translate(moa_assertion_example_bcr_abl)
+    assert moa_fusion.structure[0] == fusor_instance.gene_element("BCR")[0]
+    assert moa_fusion.structure[1] == fusor_instance.gene_element("ABL1")[0]
+    assert moa_fusion.moaAssertion == moa_assertion_example_bcr_abl
+
+    # Test v::ALK example
+    moa_assertion_example_v_alk = {
+        "id": 23,
+        "type": "Statement",
+        "description": "The U.S. Food and Drug Administration granted approval to alectinib for the adjuvant treatment of adult patients, following tumor resection, with anaplastic lymphoma kinase (ALK)-positive non-small cell lung cancer (NSCLC) (tumors >= 4 cm or node positive), as detected by an FDA-approved test.",
+        "contributions": [
+            {
+                "id": 0,
+                "type": "Contribution",
+                "description": "Initial access of FDA approvals",
+                "date": "2024-10-30",
+                "agent": {
+                    "id": 0,
+                    "type": "Agent",
+                    "subtype": "organization",
+                    "name": "Van Allen lab",
+                    "description": "Van Allen lab, Dana-Farber Cancer Institute",
+                },
+            }
+        ],
+        "reportedIn": [
+            {
+                "id": "doc:fda.alecensa",
+                "type": "Document",
+                "subtype": "Regulatory approval",
+                "name": "Alecensa (alectinib) [package insert]. FDA.",
+                "citation": "Genentech, Inc. Alecensa (alectinib) [package insert]. U.S. Food and Drug Administration website. https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208434s015lbl.pdf. Revised February 2023. Accessed October 30, 2024.",
+                "company": "Genentech, Inc.",
+                "drug_name_brand": "Alecensa",
+                "drug_name_generic": "alectinib",
+                "access_date": "2024-10-30",
+                "publication_date": "2024-04-18",
+                "url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208434s015lbl.pdf",
+                "url_drug": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=208434",
+                "application_number": 208434,
+                "organization": {
+                    "id": "fda",
+                    "name": "Food and Drug Administration",
+                    "description": "Regulatory agency that approves drugs for use in the United States.",
+                    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm",
+                    "last_updated": "2025-06-12",
+                },
+            }
+        ],
+        "direction": "supports",
+        "indication": {
+            "id": "ind:fda.alecensa:0",
+            "indication": "ALECENSA is a kinase inhibitor indicated for the adjuvant treatment in adult patients following tumor resection of anaplastic lymphoma kinase (ALK)-positive non-small cell lung cancer (NSCLC) (tumors >= 4 cm or node positive) as detected by an FDA-approved test.",
+            "initial_approval_date": "2024-04-18",
+            "initial_approval_url": "https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208434s015lbl.pdf",
+            "description": "The U.S. Food and Drug Administration granted approval to alectinib for the adjuvant treatment of adult patients, following tumor resection, with anaplastic lymphoma kinase (ALK)-positive non-small cell lung cancer (NSCLC) (tumors >= 4 cm or node positive), as detected by an FDA-approved test.",
+            "raw_biomarkers": "ALK-positive",
+            "raw_cancer_type": "non-small cell lung cancer",
+            "raw_therapeutics": "Alecensa (alectinib)",
+        },
+        "proposition": {
+            "id": 22,
+            "type": "VariantTherapeuticResponseProposition",
+            "predicate": "predictSensitivityTo",
+            "biomarkers": [
+                {
+                    "id": 8,
+                    "type": "CategoricalVariant",
+                    "name": "v::ALK",
+                    "genes": [
+                        {
+                            "id": 2,
+                            "conceptType": "Gene",
+                            "name": "ALK",
+                            "mappings": [
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ensembl:ensg00000171094",
+                                        "code": "ENSG00000171094",
+                                        "system": "https://www.ensembl.org",
+                                    },
+                                },
+                                {
+                                    "relation": "exactMatch",
+                                    "coding": {
+                                        "id": "ncbi:238",
+                                        "code": "238",
+                                        "system": "https://www.ncbi.nlm.nih.gov/gene",
+                                    },
+                                },
+                                {
+                                    "relation": "relatedMatch",
+                                    "coding": {
+                                        "id": "refseq:NM_004304.5",
+                                        "code": "NM_004304.5",
+                                        "system": "https://www.ncbi.nlm.nih.gov/nuccore",
+                                    },
+                                },
+                            ],
+                            "extensions": [
+                                {"name": "location", "value": "2p23.2-p23.1"},
+                                {"name": "location_sortable", "value": "02p23.2-p23.1"},
+                            ],
+                            "primaryCoding": {
+                                "id": "hgnc:427",
+                                "code": "HGNC:427",
+                                "system": "https://genenames.org",
+                            },
+                        }
+                    ],
+                    "extensions": [
+                        {"name": "biomarker_type", "value": "Rearrangement"},
+                        {"name": "rearrangement_type", "value": "Fusion"},
+                        {"name": "locus", "value": None},
+                        {"name": "_present", "value": True},
+                    ],
+                }
+            ],
+            "subjectVariant": {},
+            "conditionQualifier": {
+                "id": 47,
+                "conceptType": "Disease",
+                "name": "Non-Small Cell Lung Cancer",
+                "extensions": [
+                    {
+                        "name": "solid_tumor",
+                        "value": True,
+                        "description": "Boolean value for if this tumor type is categorized as a solid tumor.",
+                    }
+                ],
+                "primaryCoding": {
+                    "id": "oncotree:NSCLC",
+                    "code": "NSCLC",
+                    "name": "Non-Small Cell Lung Cancer",
+                    "system": "https://oncotree.mskcc.org",
+                },
+            },
+            "objectTherapeutic": {
+                "id": 9,
+                "conceptType": "Drug",
+                "name": "Alectinib",
+                "extensions": [
+                    {"name": "therapy_strategy", "value": ["ALK inhibition"]},
+                    {"name": "therapy_type", "value": "Targeted therapy"},
+                ],
+                "primaryCoding": {
+                    "id": "ncit:C101790",
+                    "code": "C101790",
+                    "name": "Alectinib",
+                    "system": "https://evsexplore.semantics.cancer.gov",
+                },
+            },
+        },
+        "strength": {
+            "id": 0,
+            "conceptType": "Evidence",
+            "name": "Approval",
+            "primaryCoding": {
+                "id": "ncit:C25425",
+                "code": "C25425",
+                "name": "Approval",
+                "system": "https://evsexplore.semantics.cancer.gov",
+            },
+        },
+    }
+
+    moa_fusion = translator.translate(moa_assertion_example_v_alk)
+    assert moa_fusion.structure[0] == fusor_instance.multiple_possible_genes_element()
+    assert moa_fusion.structure[1] == fusor_instance.gene_element("ALK")[0]
+    assert moa_fusion.moaAssertion == moa_assertion_example_v_alk

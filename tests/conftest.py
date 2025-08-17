@@ -6,12 +6,13 @@ from pathlib import Path
 import pytest
 from cool_seq_tool.app import CoolSeqTool
 
+from fusor.config import config
 from fusor.fusion_matching import FusionMatcher
 from fusor.fusor import FUSOR
 
 FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
-CACHE_DATA_DIR = Path(__file__).resolve().parent.parent / "src" / "fusor" / "data"
-CACHE_DATA_DIR.mkdir(parents=True, exist_ok=True)  # Create cache data directory
+CACHE_DATA_DIR = config.data_root
+CACHE_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def pytest_addoption(parser):
@@ -62,7 +63,7 @@ def fusion_matching_instance():
     """Create test fixture for fusion matching object"""
     return FusionMatcher(
         cache_dir=CACHE_DATA_DIR,
-        cache_files=["civic_translated_fusions.pkl"],
+        cache_files=["civic_translated_fusions.pkl", "moa_translated_fusions.pkl"],
     )
 
 
