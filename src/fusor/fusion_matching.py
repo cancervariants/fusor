@@ -282,13 +282,11 @@ class FusionMatcher:
         | GeneElement,
         is_five_prime_partner: bool,
         mi: MatchInformation,
-    ) -> MatchInformation:
+    ) -> None:
         """Compare fusion partner information for assayed and categorical fusions. A
         maximum of 5 fields are compared: the gene symbol, transcript accession,
-        exon number, exon offset, and genomic breakpoint. A match score of 5 is
-        returned if all these fields are equivalent. A match score of 0 is returned
-        if one of these fields differs. `None` is returned when a gene partner
-        is ambiguous and a clear comparison cannot be made.
+        exon number, exon offset, and genomic breakpoint. The supplied
+        MatchInformation object is updated throughout the function.
 
         :param assayed_element: The assayed fusion transcript or unknown gene element
             or gene element
@@ -296,7 +294,6 @@ class FusionMatcher:
             possible genes element
         :param is_five_prime_partner: If the 5' fusion partner is being compared
         :param mi: A MatchInformation object
-        :return: A MatchInformation object
         """
         # If the assayed partner is unknown or the categorical partner is a multiple
         # possible gene element, return None as no precise information
@@ -304,7 +301,7 @@ class FusionMatcher:
         if isinstance(assayed_element, UnknownGeneElement) or isinstance(
             categorical_element, MultiplePossibleGenesElement
         ):
-            return mi
+            return
 
         # Compare gene partners first
         if assayed_element.gene == categorical_element.gene:
@@ -339,8 +336,6 @@ class FusionMatcher:
                         setattr(mi, f"five_prime_{mi_field}", True)
                     else:
                         setattr(mi, f"three_prime_{mi_field}", True)
-
-        return mi
 
     def _compare_fusion(
         self, assayed_fusion: AssayedFusion, categorical_fusion: CategoricalFusion
