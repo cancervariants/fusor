@@ -247,7 +247,7 @@ class FUSOR:
         :raise: FUSORParametersException if given incorrect fusion properties
         """
         try:
-            itd = InternalTandemDuplication(
+            return InternalTandemDuplication(
                 structure=structure,
                 regulatoryElement=regulatory_element,
                 causativeEvent=causative_event,
@@ -259,7 +259,6 @@ class FUSOR:
         except ValidationError as e:
             error_message = get_error_message(e)
             raise FUSORParametersException(error_message) from e
-        return itd
 
     async def transcript_segment_element(
         self,
