@@ -73,6 +73,12 @@ async def test_get_arriba_records(fixture_data_dir, fusor_instance):
     records = await harvester.load_record_table(path)
     assert len(records) == 1
 
+    # Test ITD example
+    path = Path(fixture_data_dir / "arriba_fusions_itd.tsv")
+    harvester = ArribaHarvester(fusor_instance, assembly=Assembly.GRCH38)
+    itd_list = await harvester.load_record_table(path)
+    assert len(itd_list) == 1
+
     path = Path(fixture_data_dir / "fusionss_arriba_test.tsv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)

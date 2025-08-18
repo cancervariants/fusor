@@ -105,18 +105,18 @@ class FusionCallerHarvester(ABC, Generic[T]):
     async def load_records(
         self,
         fusion_path: Path,
-    ) -> list[AssayedFusion]:
-        """Convert rows of fusion caller output to AssayedFusion objects
+    ) -> list[AssayedFusion | InternalTandemDuplication]:
+        """Convert rows of fusion caller output to AssayedFusion and InternalTandemDuplication objects
 
         :param fusion_path: The path to the fusions file
         :raise ValueError: if the file does not exist at the specified path
-        :return: A list of translated fusions, represented as AssayedFusion objects
+        :return: A list of translated fusions, represented as AssayedFusion or InternalTandemDuplcation objects
         """
         records = await self.load_record_table(fusion_path)
         fusions = [
             record.annotated
             for record in records
-            if isinstance(record.annotated, AssayedFusion)
+            if isinstance(record.annotated, AssayedFusion | InternalTandemDuplication)
         ]
         self._count_dropped_fusions(records, fusions)
 
