@@ -26,7 +26,7 @@ from fusor.fusion_caller_models import (
     STARFusion,
 )
 from fusor.fusor import FUSOR
-from fusor.models import AssayedFusion, CategoricalFusion
+from fusor.models import AssayedFusion, CategoricalFusion, InternalTandemDuplication
 from fusor.translator import (
     ArribaTranslator,
     CiceroTranslator,
@@ -153,7 +153,9 @@ class FusionCallerHarvester(ABC, Generic[T]):
             fusion = self.fusion_caller(**filtered_row)
 
             error: str | None = None
-            translated_fusion: AssayedFusion | CategoricalFusion | None = None
+            translated_fusion: (
+                AssayedFusion | CategoricalFusion | InternalTandemDuplication | None
+            ) = None
             try:
                 translated_fusion = await self.translator.translate(
                     fusion, self.coordinate_type, self.assembly
