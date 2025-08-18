@@ -4,13 +4,13 @@ import csv
 import json
 import logging
 from abc import ABC
+from dataclasses import dataclass
 from itertools import dropwhile
 from pathlib import Path
 from typing import Any, ClassVar, Generic, Literal, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
-from pydantic.dataclasses import dataclass
 from wags_tails import MoaData
 
 from fusor.config import config
@@ -45,6 +45,8 @@ _logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=Translator)
 
 
+# NOTE: the pydantic dataclass has errors validating the `annotated` field.
+# We didn't fully investigate why, but the stdlib dataclass doesn't have this issue, so using it instead.
 @dataclass
 class FusionCallerRecord:
     """Records a single entry in a fusion caller data table.
@@ -55,7 +57,7 @@ class FusionCallerRecord:
     """
 
     source: dict[str, Any]
-    annotated: AssayedFusion | CategoricalFusion | None
+    annotated: InternalTandemDuplication | AssayedFusion | CategoricalFusion | None
     annotation_error: str | None
 
 
