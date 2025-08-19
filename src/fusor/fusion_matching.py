@@ -53,17 +53,17 @@ class MatchType(str, Enum):
 class MatchInformation(BaseModel):
     """Class for reporting matching information"""
 
-    five_prime_gene: bool | None = None
-    five_prime_transcript: bool | None = None
-    five_prime_exon: bool | None = None
-    five_prime_exon_offset: bool | None = None
-    five_prime_breakpoint: bool | None = None
+    five_prime_gene: bool = False
+    five_prime_transcript: bool = False
+    five_prime_exon: bool = False
+    five_prime_exon_offset: bool = False
+    five_prime_breakpoint: bool = False
     linker: bool | None = None
-    three_prime_gene: bool | None = None
-    three_prime_transcript: bool | None = None
-    three_prime_exon: bool | None = None
-    three_prime_exon_offset: bool | None = None
-    three_prime_breakpoint: bool | None = None
+    three_prime_gene: bool = False
+    three_prime_transcript: bool = False
+    three_prime_exon: bool = False
+    three_prime_exon_offset: bool = False
+    three_prime_breakpoint: bool = False
 
     def _transcript_match(self, transcript_data: list[bool | None]) -> bool:
         """Determine if transcript data matches
@@ -97,7 +97,7 @@ class MatchInformation(BaseModel):
         if (
             self._transcript_match(five_prime)
             and self._transcript_match(three_prime)
-            and self.linker is None
+            and self.linker is None  # Consider exact match if linker is not provided
         ):
             return MatchType.EXACT
         if (
@@ -354,11 +354,10 @@ class FusionMatcher:
         match_info = MatchInformation()
 
         # Check for linker elements first
-        if (
-            len(assayed_fusion_structure) == len(categorical_fusion_structure) == 3
-            and assayed_fusion_structure[1] == categorical_fusion_structure[1]
-        ):
-            match_info.linker = True
+        if len(assayed_fusion_structure) == len(categorical_fusion_structure) == 3:
+            match_info.linker = (
+                assayed_fusion_structure[1] == categorical_fusion_structure[1]
+            )
             # Remove linker sequences for additional comparison
             assayed_fusion_structure.pop(1)
             categorical_fusion_structure.pop(1)
