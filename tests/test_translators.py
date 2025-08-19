@@ -257,11 +257,13 @@ def itd_example():
                 },
             ],
             "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+            "fivePrimeJunction": "NM_152263.4(TPM3):e.8-66",
+            "threePrimeJunction": "NM_152263.4(TPM3):e.8-66",
             "r_frame_preserved": True,
             "assay": None,
         }
-        assayed_fusion = InternalTandemDuplication(**params)
-        return assayed_fusion.model_copy(update=kwargs)
+        itd = InternalTandemDuplication(**params)
+        return itd.model_copy(update=kwargs)
 
     return _create_base_fixture
 
@@ -1114,6 +1116,7 @@ async def test_civic(
 @pytest.mark.asyncio
 async def test_itds(itd_example, fusor_instance):
     """Test ITD example across all fusion callers and sources"""
+    dup_string = "NM_152263.4(TPM3):e.8-66"
     translator = JAFFATranslator(fusor=fusor_instance)
     jaffa = JAFFA(
         fusion_genes="TPM3:TPM3",
@@ -1134,6 +1137,8 @@ async def test_itds(itd_example, fusor_instance):
         Assembly.GRCH38,
     )
     assert jaffa_fusor.structure == itd_example().structure
+    assert jaffa_fusor.fivePrimeJunction == dup_string
+    assert jaffa_fusor.threePrimeJunction == dup_string
 
     translator = STARFusionTranslator(fusor=fusor_instance)
     star_fusion = STARFusion(
@@ -1152,6 +1157,8 @@ async def test_itds(itd_example, fusor_instance):
         Assembly.GRCH38,
     )
     assert star_fusion_fusor.structure == itd_example().structure
+    assert star_fusion_fusor.fivePrimeJunction == dup_string
+    assert star_fusion_fusor.threePrimeJunction == dup_string
 
     fusion_catcher = FusionCatcher(
         five_prime_partner="TPM3",
@@ -1171,6 +1178,8 @@ async def test_itds(itd_example, fusor_instance):
         Assembly.GRCH38,
     )
     assert fusion_catcher_fusor.structure == itd_example().structure
+    assert fusion_catcher_fusor.fivePrimeJunction == dup_string
+    assert fusion_catcher_fusor.threePrimeJunction == dup_string
 
     translator = FusionMapTranslator(fusor=fusor_instance)
     fusion_map_data = pl.DataFrame(
@@ -1190,6 +1199,8 @@ async def test_itds(itd_example, fusor_instance):
         fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
     )
     assert fusion_map_fusor.structure == itd_example().structure
+    assert fusion_map_fusor.fivePrimeJunction == dup_string
+    assert fusion_map_fusor.threePrimeJunction == dup_string
 
     translator = CiceroTranslator(fusor=fusor_instance)
     cicero = Cicero(
@@ -1219,6 +1230,8 @@ async def test_itds(itd_example, fusor_instance):
     itd_example_cicero.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
     itd_example_cicero.structure[1].anchoredReads = AnchoredReads(reads=90)
     assert cicero_fusor.structure == itd_example_cicero.structure
+    assert cicero_fusor.fivePrimeJunction == dup_string
+    assert cicero_fusor.threePrimeJunction == dup_string
 
     translator = EnFusionTranslator(fusor=fusor_instance)
     enfusion = EnFusion(
@@ -1236,6 +1249,8 @@ async def test_itds(itd_example, fusor_instance):
         Assembly.GRCH38,
     )
     assert enfusion_fusor.structure == itd_example().structure
+    assert enfusion_fusor.fivePrimeJunction == dup_string
+    assert enfusion_fusor.threePrimeJunction == dup_string
 
     translator = GenieTranslator(fusor=fusor_instance)
     genie = Genie(
@@ -1255,6 +1270,8 @@ async def test_itds(itd_example, fusor_instance):
         Assembly.GRCH38,
     )
     assert genie_fusor.structure == itd_example().structure
+    assert genie_fusor.fivePrimeJunction == dup_string
+    assert genie_fusor.threePrimeJunction == dup_string
 
 
 def test_moa(fusor_instance):

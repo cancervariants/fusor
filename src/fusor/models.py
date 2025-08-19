@@ -563,6 +563,8 @@ class AbstractTranscriptStructuralVariant(BaseModel, ABC):
 
     regulatoryElement: RegulatoryElement | None = None
     structure: list[BaseStructuralElement]
+    fivePrimeJunction: StrictStr | None = None
+    threePrimeJunction: StrictStr | None = None
     readingFramePreserved: StrictBool | None = None
 
     @classmethod
@@ -1008,6 +1010,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
     readData: ReadData | None = None
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     civicMolecularProfiles: list[MolecularProfile] | None = None
+    moaAssertion: dict | None = None
 
     @model_validator(mode="before")
     def enforce_element_quantities(cls, values):

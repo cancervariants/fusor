@@ -47,6 +47,7 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
+from fusor.nomenclature import gene_nomenclature, tx_segment_nomenclature
 
 _logger = logging.getLogger(__name__)
 
@@ -130,6 +131,17 @@ class Translator(ABC):
         # Assign VICC Nomenclature string to fusion event
         if type(variant) is not InternalTandemDuplication:
             variant.viccNomenclature = self.fusor.generate_nomenclature(variant)
+        else:
+            variant.fivePrimeJunction = (
+                tx_segment_nomenclature(tr_5prime)
+                if tr_5prime
+                else gene_nomenclature(gene_5prime)
+            )
+            variant.threePrimeJunction = (
+                tx_segment_nomenclature(tr_3prime)
+                if tr_3prime
+                else gene_nomenclature(gene_3prime)
+            )
         return variant
 
     def _get_causative_event(
