@@ -63,14 +63,6 @@ class MatchInformation:
     three_prime_exon_offset: bool = False
     three_prime_breakpoint: bool = False
 
-    def _transcript_match(self, transcript_data: list[bool | None]) -> bool:
-        """Determine if transcript data matches
-
-        :param transcript_data: A list containing transcript elements
-        :return: ``True`` if match, ``False if not
-        """
-        return all(transcript_data)
-
     def determine_match(self) -> MatchType:
         """Determine match type based on fields in MatchInformation class
 
@@ -93,55 +85,31 @@ class MatchInformation:
 
         # Define and return match criteria
         if (
-            self._transcript_match(five_prime)
-            and self._transcript_match(three_prime)
+            all(five_prime)
+            and all(three_prime)
             and self.linker is None  # Consider exact match if linker is not provided
         ):
             return MatchType.EXACT
-        if (
-            self._transcript_match(five_prime)
-            and self._transcript_match(three_prime)
-            and self.linker
-        ):
+        if all(five_prime) and all(three_prime) and self.linker:
             return MatchType.EXACT
-        if (
-            self._transcript_match(five_prime)
-            and self.three_prime_gene
-            and not self._transcript_match(three_prime)
-        ):
+        if all(five_prime) and self.three_prime_gene and not all(three_prime):
             return MatchType.SHARED_GENES_FIVE_PRIME_EXACT
-        if (
-            self._transcript_match(three_prime)
-            and self.five_prime_gene
-            and not self._transcript_match(five_prime)
-        ):
+        if all(three_prime) and self.five_prime_gene and not all(five_prime):
             return MatchType.SHARED_GENES_THREE_PRIME_EXACT
         if (
             self.five_prime_gene
             and self.three_prime_gene
-            and not self._transcript_match(five_prime)
-            and not self._transcript_match(three_prime)
+            and not all(five_prime)
+            and not all(three_prime)
         ):
             return MatchType.SHARED_GENES
-        if self._transcript_match(five_prime) and not self._transcript_match(
-            three_prime
-        ):
+        if all(five_prime) and not all(three_prime):
             return MatchType.FIVE_PRIME_EXACT
-        if self._transcript_match(three_prime) and not self._transcript_match(
-            five_prime
-        ):
+        if all(three_prime) and not all(five_prime):
             return MatchType.THREE_PRIME_EXACT
-        if (
-            self.five_prime_gene
-            and not self._transcript_match(five_prime)
-            and not self._transcript_match(three_prime)
-        ):
+        if self.five_prime_gene and not all(five_prime) and not all(three_prime):
             return MatchType.FIVE_PRIME_GENE
-        if (
-            self.three_prime_gene
-            and not self._transcript_match(three_prime)
-            and not self._transcript_match(five_prime)
-        ):
+        if self.three_prime_gene and not all(three_prime) and not all(five_prime):
             return MatchType.THREE_PRIME_GENE
         return MatchType.NO_MATCH
 
