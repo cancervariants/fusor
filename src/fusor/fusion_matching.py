@@ -164,9 +164,10 @@ class FusionMatcher:
         :param assayed_fusions: A list of AssayedFusion objects
         :param comparator_fusions: A list of AssayedFusion or CategoricalFusion objects
         :param cache_files: A list of cache file names in ``cache_dir`` containing
-            CategoricalFusion objects to load, or None. By default this is set to None.
-            It assumes that files contain lists of valid CategoricalFusion objects.
-        :raises ValueError: If ``categorical_fusions`` is not provided and either
+            AssayedFusion or CategoricalFusion objects to load, or None. By
+            default this is set to None. It assumes that files contain lists
+            of valid AssayedFusion or CategoricalFusion objects.
+        :raises ValueError: If ``comparator_fusions`` is not provided and either
             ``cache_dir`` or ``cache_files`` is not provided.
         """
         if not comparator_fusions and (not cache_dir or not cache_files):
@@ -237,7 +238,7 @@ class FusionMatcher:
         """Determine if assayed fusion and categorical fusion have the same partners
 
         :param assayed_fusion: AssayedFusion object
-        :param categorical_fusion: AssayedFusion or CategoricalFusion object
+        :param comparator_fusion: AssayedFusion or CategoricalFusion object
         :return: ``True`` if the symbols for the fusion match, ``False`` if not
         """
         assayed_fusion_gene_symbols = self._extract_fusion_partners(
@@ -274,8 +275,8 @@ class FusionMatcher:
         whose partners match those in the AssayedFusion object
 
         :param assayed_fusion: The AssayedFusion object that is being queried
-        :return: A list of filtered AssayedFusion or CategoricalFusion, or an empty list if no
-            filtered fusions are generated
+        :return: A list of filtered AssayedFusion or CategoricalFusion, or an
+            empty list if no filtered fusions are generated
         """
         return [
             comparator_fusion
@@ -300,8 +301,8 @@ class FusionMatcher:
 
         :param assayed_element: The assayed fusion transcript or unknown gene element
             or gene element
-        :param comparator_element: The comparator fusion transcript or mulitple
-            possible genes element or unknown gene element
+        :param comparator_element: The comparator fusion transcript,
+            MultiplePossibleGenesElement, UnknownGeneElement, or GeneElement
         :param is_five_prime_partner: If the 5' fusion partner is being compared
         :param mi: A MatchInformation object
         """
@@ -357,7 +358,7 @@ class FusionMatcher:
         do not match.
 
         :param assayed_fusion: AssayedFusion object
-        :param comparator_fusion: CategoricalFusion object
+        :param comparator_fusion: AssayedFusion or CategoricalFusion object
         :return: A MatchType object reporting the type of match
         """
         assayed_fusion_structure = assayed_fusion.structure
