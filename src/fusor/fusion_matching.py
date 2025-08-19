@@ -1,7 +1,7 @@
 """Module for matching assayed fusions against categorical fusions"""
 
 import pickle
-from enum import Enum
+from enum import Enum, unique
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -18,6 +18,7 @@ from fusor.models import (
 )
 
 
+@unique
 class MatchType(str, Enum):
     """Enum for defining different match types"""
 
@@ -37,15 +38,15 @@ class MatchType(str, Enum):
         indicates the higher quality match
         """
         return {
-            MatchType.EXACT: 1,
-            MatchType.SHARED_GENES_FIVE_PRIME_EXACT: 2,
-            MatchType.SHARED_GENES_THREE_PRIME_EXACT: 2,
-            MatchType.SHARED_GENES: 3,
-            MatchType.FIVE_PRIME_EXACT: 4,
-            MatchType.THREE_PRIME_EXACT: 4,
-            MatchType.FIVE_PRIME_GENE: 5,
-            MatchType.THREE_PRIME_GENE: 5,
-            MatchType.NO_MATCH: 6,
+            MatchType.EXACT: 10,
+            MatchType.SHARED_GENES_FIVE_PRIME_EXACT: 20,
+            MatchType.SHARED_GENES_THREE_PRIME_EXACT: 21,
+            MatchType.SHARED_GENES: 30,
+            MatchType.FIVE_PRIME_EXACT: 40,
+            MatchType.THREE_PRIME_EXACT: 41,
+            MatchType.FIVE_PRIME_GENE: 50,
+            MatchType.THREE_PRIME_GENE: 51,
+            MatchType.NO_MATCH: 60,
         }[self]
 
 
