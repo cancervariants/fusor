@@ -438,7 +438,7 @@ class FUSOR:
         :param use_minimal_gene: ``True`` if minimal gene object (``id``, ``label``) will be used. ``False`` if gene-normalizer's gene
             object will be used
         :param coordinate_type: The coordinate type that is being supplied. This
-            by default expectes residue coordinates
+            by default expects residue coordinates
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Tuple with FunctionalDomain and None value for warnings if
