@@ -71,7 +71,7 @@ class MatchInformation(BaseModel):
         :param transcript_data: A list containing transcript elements
         :return: ``True`` if match, ``False if not
         """
-        return all(dat is True for dat in transcript_data)
+        return all(transcript_data)
 
     def determine_match(self) -> MatchType:
         """Determine match type based on fields in MatchInformation class
