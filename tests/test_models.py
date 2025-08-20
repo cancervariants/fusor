@@ -1073,11 +1073,11 @@ def test_abstraction_validator(transcript_segments, linkers):
         )
 
     # can't create base fusion
-    with pytest.raises(ValidationError) as exc_info:
-        assert AbstractFusion(structure=[transcript_segments[2], linkers[0]])
-    check_validation_error(
-        exc_info, "Value error, Cannot instantiate Fusion abstract class"
-    )
+    with pytest.raises(
+        TypeError,
+        match="Cannot instantiate Fusion abstract class",
+    ):
+        AbstractFusion(structure=[transcript_segments[2], linkers[0]])
 
 
 def test_file_examples():
