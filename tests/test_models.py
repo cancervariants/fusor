@@ -955,7 +955,7 @@ def test_fusion_itd_element_count(
             regulatoryElement=[regulatory_elements[0]],
         )
     element_ct_msg = (
-        "Value error, Fusions must contain >= 2 structural elements, or >=1 structural element "
+        "Value error, Fusions must contain >= 2 structural elements, or >= 1 structural element "
         "and a regulatory element"
     )
     check_validation_error(exc_info, element_ct_msg)
@@ -966,7 +966,7 @@ def test_fusion_itd_element_count(
             regulatoryElement=[regulatory_elements[0]],
         )
     element_ct_msg_itd = (
-        "Value error, ITDs must contain >= 2 structural elements, or >=1 structural element "
+        "Value error, ITDs must contain >= 2 structural elements, or >= 1 structural element "
         "and a regulatory element"
     )
     check_validation_error(exc_info, element_ct_msg_itd)

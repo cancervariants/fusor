@@ -235,6 +235,7 @@ class FUSOR:
         civic_molecular_profiles: list[MolecularProfile] | None = None,
     ) -> InternalTandemDuplication:
         """Construct an InternalTandemDuplication (ITD) object
+
         :param structure: Elements constituting the ITD
         :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained

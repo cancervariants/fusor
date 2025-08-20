@@ -6,10 +6,11 @@ import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import Any, ClassVar, Generic, Literal, TextIO, TypeVar
+from typing import Annotated, Any, ClassVar, Generic, Literal, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from pydantic import Field
 from pydantic.dataclasses import dataclass
 from wags_tails import MoaData
 
@@ -55,7 +56,13 @@ class FusionCallerRecord:
     """
 
     source: dict[str, Any]
-    annotated: InternalTandemDuplication | AssayedFusion | CategoricalFusion | None
+    annotated: (
+        Annotated[
+            AssayedFusion | CategoricalFusion | InternalTandemDuplication,
+            Field(discriminator="type"),
+        ]
+        | None
+    )
     annotation_error: str | None
 
 

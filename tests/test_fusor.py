@@ -431,7 +431,7 @@ def test_fusion(
         f = fusor_instance.fusion(
             fusion_type="CategoricalFusion", structure=[linker_element]
         )
-    msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"
+    msg = "Fusions must contain >= 2 structural elements, or >= 1 structural element and a regulatory element"
     assert msg in str(excinfo.value)
 
     expected = copy.deepcopy(transcript_segment_element)

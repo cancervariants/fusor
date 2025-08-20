@@ -659,7 +659,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
         an unknown partner), then we raise an error.
         """
         qt_error_msg = (
-            "Fusions must contain >= 2 structural elements, or >=1 structural element "
+            "Fusions must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
         structure = values.get("structure", [])
@@ -691,12 +691,12 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             raise ValueError(uq_gene_msg)
         return values
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     def structure_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields required by
         their position.
         """
-        elements = values["structure"]
+        elements = values.structure
         error_messages = []
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exonEnd is None and not values.regulatoryElement:
