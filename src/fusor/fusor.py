@@ -423,6 +423,7 @@ class FUSOR:
         start: int,
         end: int,
         use_minimal_gene: bool = True,
+        coordinate_type: CoordinateType = CoordinateType.RESIDUE,
         seq_id_target_namespace: str | None = None,
     ) -> tuple[FunctionalDomain | None, str | None]:
         """Build FunctionalDomain object.
@@ -436,6 +437,9 @@ class FUSOR:
         :param end: end position on sequence
         :param use_minimal_gene: ``True`` if minimal gene object (``id``, ``label``) will be used. ``False`` if gene-normalizer's gene
             object will be used
+        :param coordinate_type: The coordinate type that is being supplied
+            for ``start`` and ``end``. This is set to residue coordinates
+            by default
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Tuple with FunctionalDomain and None value for warnings if
@@ -450,7 +454,7 @@ class FUSOR:
             return None, msg
 
         seq, warning = self.cool_seq_tool.seqrepo_access.get_reference_sequence(
-            sequence_id, start, end
+            sequence_id, start, end, coordinate_type=coordinate_type
         )
 
         if not seq:
@@ -463,7 +467,10 @@ class FUSOR:
             return None, warning
 
         loc_descr = self._sequence_location(
-            start, end, sequence_id, seq_id_target_namespace=seq_id_target_namespace
+            start - 1 if coordinate_type == CoordinateType.RESIDUE else start,
+            end,
+            sequence_id,
+            seq_id_target_namespace=seq_id_target_namespace,
         )
 
         try:
