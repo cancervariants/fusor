@@ -3,7 +3,7 @@
 import copy
 
 import pytest
-from cool_seq_tool.schemas import Strand
+from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core.models import Coding, MappableConcept
 from ga4gh.vrs.models import SequenceLocation
 
@@ -749,7 +749,7 @@ def test_functional_domain(
         "interpro:IPR001245",
         "BRAF",
         "NP_004324.2",
-        458,
+        459,
         712,
         use_minimal_gene=False,
     )
@@ -761,7 +761,7 @@ def test_functional_domain(
         "interpro:IPR001245",
         "BRAF",
         "NP_004324.2",
-        458,
+        459,
         712,
         use_minimal_gene=True,
     )
@@ -777,6 +777,7 @@ def test_functional_domain(
         712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene=True,
+        coordinate_type=CoordinateType.INTER_RESIDUE,
     )
     compare_domains(cd, functional_domain_seq_id)
 
@@ -790,6 +791,7 @@ def test_functional_domain(
         712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene=True,
+        coordinate_type=CoordinateType.INTER_RESIDUE,
     )
     assert cd[0] is None
     assert "Input should be 'lost' or 'preserved'" in cd[1]
@@ -801,7 +803,7 @@ def test_functional_domain(
         "interpro:IPR001245",
         "BRAF",
         "NM_004333.4",
-        458,
+        459,
         712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene=True,
@@ -817,7 +819,7 @@ def test_functional_domain(
         "interpro:IPR001245",
         "BRAF",
         accession,
-        458,
+        459,
         712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene=True,
@@ -832,7 +834,7 @@ def test_functional_domain(
         "interpro:IPR001245",
         "BRAF",
         "NP_004324.2",
-        458,
+        459,
         712000,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene=True,
