@@ -553,7 +553,7 @@ class DuplicationType(str, Enum):
     INTERNAL_TANDEM_DUPLICATION = FUSORTypes.INTERNAL_TANDEM_DUPLICATION.value
 
     @classmethod
-    def values(cls) -> set:
+    def values(cls) -> set[str]:
         """Provide all possible enum values."""
         return {c.value for c in cls}
 
@@ -627,11 +627,11 @@ class AbstractTranscriptStructuralVariant(BaseModel, ABC):
     @model_validator(mode="before")
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
-        if cls.__name__ == "AbstractTranscriptStructuralVariant":
+        if cls is AbstractTranscriptStructuralVariant:
             msg = (
                 "Cannot instantiate AbstractTranscriptStructuralVariant abstract class"
             )
-            raise ValueError(msg)
+            raise TypeError(msg)
         return values
 
 
@@ -691,12 +691,12 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             raise ValueError(uq_gene_msg)
         return values
 
-    @model_validator(mode="after")
+    @model_validator(mode="before")
     def structure_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields required by
         their position.
         """
-        elements = values.structure
+        elements = values["structure"]
         error_messages = []
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exonEnd is None and not values.regulatoryElement:
@@ -1013,7 +1013,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
     moaAssertion: dict | None = None
 
     @model_validator(mode="before")
-    def enforce_element_quantities(cls, values):
+    def enforce_itd_element_quantities(cls, values):
         """Ensure minimum # of elements for InternalTandemDuplications (ITDs)
 
         To validate the unique genes rule, we extract gene IDs from the elements that
@@ -1022,7 +1022,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
         an unknown partner), then we raise an error.
         """
         qt_error_msg = (
-            "ITDs must contain >= 2 structural elements, or >=1 structural element "
+            "ITDs must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
         structure = values.get("structure", [])

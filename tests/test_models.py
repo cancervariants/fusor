@@ -1064,14 +1064,14 @@ def test_abstraction_validator(transcript_segments, linkers):
     and AbstractFusion fails.
     """
     # can't create base AbstractTranscriptStructuralVariant
-    with pytest.raises(ValidationError) as exc_info:
-        assert AbstractTranscriptStructuralVariant(
+    with pytest.raises(
+        TypeError,
+        match="Cannot instantiate AbstractTranscriptStructuralVariant abstract class",
+    ):
+        AbstractTranscriptStructuralVariant(
             structure=[transcript_segments[2], linkers[0]]
         )
-    check_validation_error(
-        exc_info,
-        "Value error, Cannot instantiate AbstractTranscriptStructuralVariant abstract class",
-    )
+
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
         assert AbstractFusion(structure=[transcript_segments[2], linkers[0]])

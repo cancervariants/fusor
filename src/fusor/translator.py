@@ -91,7 +91,7 @@ class Translator(ABC):
     ) -> AssayedFusion | CategoricalFusion | InternalTandemDuplication:
         """Format classes to create Fusion and Internal Tandem Duplication (ITD) objects
 
-        :param fusion_type: If the fusion is an AssayedFusion, CategoricalFusion, or
+        :param variant_type: If the fusion is an AssayedFusion, CategoricalFusion, or
             InternalTandemDuplication
         :param gene_5prime: 5'prime GeneElement or UnknownGeneElement or MultiplePossibleGenesElement
         :param gene_3prime: 3'prime GeneElement or UnknownGeneElement or MultiplePossibleGenesElement
@@ -129,7 +129,7 @@ class Translator(ABC):
         variant = variant_type(**params)
 
         # Assign VICC Nomenclature string to fusion event
-        if type(variant) is not InternalTandemDuplication:
+        if not isinstance(variant, InternalTandemDuplication):
             variant.viccNomenclature = self.fusor.generate_nomenclature(variant)
         else:
             variant.fivePrimeJunction = (
@@ -287,7 +287,7 @@ class Translator(ABC):
     @abstractmethod
     async def translate(
         self, fusion_data: BaseModel, coordinate_type: CoordinateType, rb: Assembly
-    ) -> AssayedFusion | CategoricalFusion:
+    ) -> AssayedFusion | CategoricalFusion | InternalTandemDuplication:
         """Define abstract translate method
 
         :param fusion_data: The fusion data from a fusion caller
