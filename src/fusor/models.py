@@ -615,9 +615,9 @@ class AbstractFusion(BaseModel, ABC):
     @model_validator(mode="before")
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
-        if cls.__name__ == "AbstractFusion":
+        if cls is AbstractFusion:
             msg = "Cannot instantiate Fusion abstract class"
-            raise ValueError(msg)
+            raise TypeError(msg)
         return values
 
     @model_validator(mode="before")
