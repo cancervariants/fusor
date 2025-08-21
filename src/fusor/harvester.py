@@ -176,7 +176,9 @@ class FusionCallerHarvester(ABC, Generic[T]):
             records.append(
                 FusionCallerRecord(
                     source=raw_row,
-                    annotated=translated_fusion,
+                    annotated=None
+                    if isinstance(translated_fusion, str)
+                    else translated_fusion,
                     annotation_error=error,
                 )
             )
