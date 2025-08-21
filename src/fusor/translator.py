@@ -224,7 +224,7 @@ class Translator(ABC):
         if errors:
             statement = f"Genomic accession for {chrom} could not be retrieved"
             _logger.error(statement)
-            raise ValueError
+            raise ValueError(statement)
         return alias_list[0].split(":")[1]
 
     def _assess_gene_symbol(
@@ -748,6 +748,8 @@ class CiceroTranslator(Translator):
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
+        :raises RuntimeError: If CICERO annotations indicate the fusion is not
+            valid
         """
         # Check if gene symbols have valid formatting. CICERO can output two or more
         # gene symbols for `gene_5prime` or `gene_3prime`, which are separated by a comma. As
@@ -755,8 +757,8 @@ class CiceroTranslator(Translator):
         # these events
         if "," in cicero.gene_5prime or "," in cicero.gene_3prime:
             msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
-            _logger.warning(msg)
-            return msg
+            _logger.error(msg)
+            raise RuntimeError(msg)
 
         fusion_partners = self._process_gene_symbols(
             cicero.gene_5prime, cicero.gene_3prime, Caller.CICERO
@@ -766,8 +768,8 @@ class CiceroTranslator(Translator):
         # has biological meaning
         if cicero.sv_ort != ">":
             msg = "CICERO annotation indicates that this event does not have confident biological meaning"
-            _logger.warning(msg)
-            return msg
+            _logger.error(msg)
+            raise RuntimeError(msg)
 
         variant_type = (
             AssayedFusion

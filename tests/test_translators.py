@@ -888,29 +888,26 @@ async def test_cicero(
 
     # Test case where the called fusion does not have confident biological meaning
     cicero.sv_ort = "?"
-
-    non_confident_bio = await translator.translate(
-        cicero,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert (
-        non_confident_bio
-        == "CICERO annotation indicates that this event does not have confident biological meaning"
-    )
+    with pytest.raises(
+        RuntimeError,
+        match="CICERO annotation indicates that this event does not have confident biological meaning",
+    ):
+        await translator.translate(
+            cicero,
+            CoordinateType.RESIDUE,
+            Assembly.GRCH38,
+        )
 
     # Test case where multiple gene symbols are reported for a fusion partner
     cicero.gene_3prime = "PDGFRB,PDGFRB-FGFR4,FGFR4"
-
-    multiple_genes_fusion_partner = await translator.translate(
-        cicero,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert (
-        multiple_genes_fusion_partner
-        == "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
-    )
+    with pytest.raises(
+        RuntimeError, match="Ambiguous gene symbols are reported by CICERO"
+    ):
+        await translator.translate(
+            cicero,
+            CoordinateType.RESIDUE,
+            Assembly.GRCH38,
+        )
 
     # Test unknown partners
     cicero.sv_ort = ">"
