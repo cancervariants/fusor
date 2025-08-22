@@ -1147,7 +1147,7 @@ def save_fusions_cache(
 ) -> None:
     """Save a list of translated fusions as a cache
 
-    :param fusions_list: A list of FUSOR-translated fusions
+    :param variants_list: A list of FUSOR-translated fusions or ITDs
     :param cache_name: The name for the resultant cached file
     :param cache_dir: The location to store the cached file. If this parameter is
         not supplied, it will default to storing data in the `FUSOR_DATA_DIR`
