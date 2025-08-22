@@ -39,6 +39,8 @@ from fusor.models import (
     Fusion,
     FusionType,
     GeneElement,
+    InternalTandemDuplication,
+    InternalTandemDuplicationElements,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
@@ -221,6 +223,43 @@ class FUSOR:
             error_message = get_error_message(e)
             raise FUSORParametersException(error_message) from e
         return fusion
+
+    @staticmethod
+    def internal_tandem_duplication(
+        structure: list[InternalTandemDuplicationElements],
+        causative_event: CausativeEvent | None = None,
+        assay: Assay | None = None,
+        regulatory_element: RegulatoryElement | None = None,
+        reading_frame_preserved: bool | None = None,
+        critical_functional_domains: list[FunctionalDomain] | None = None,
+        civic_molecular_profiles: list[MolecularProfile] | None = None,
+    ) -> InternalTandemDuplication:
+        """Construct an InternalTandemDuplication (ITD) object
+
+        :param structure: Elements constituting the ITD
+        :param causative_event: event causing the fusion
+        :param assay: how knowledge of the fusion was obtained
+        :param regulatory_element: affected regulatory elements
+        :param critical_functional_domains: lost or preserved functional domains
+        :param reading_frame_preserved: ``True`` if reading frame is preserved.
+            ``False`` otherwise
+        :param civic_molecular_profiles: A list of MolecularProfile objects
+        :return: InternalTandemDuplication if construction successful
+        :raise: FUSORParametersException if given incorrect fusion properties
+        """
+        try:
+            return InternalTandemDuplication(
+                structure=structure,
+                regulatoryElement=regulatory_element,
+                causativeEvent=causative_event,
+                assay=assay,
+                readingFramePreserved=reading_frame_preserved,
+                criticalFunctionalDomains=critical_functional_domains,
+                civicMolecularProfiles=civic_molecular_profiles,
+            )
+        except ValidationError as e:
+            error_message = get_error_message(e)
+            raise FUSORParametersException(error_message) from e
 
     async def transcript_segment_element(
         self,

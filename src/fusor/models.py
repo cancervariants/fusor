@@ -56,6 +56,7 @@ class FUSORTypes(str, Enum):
     REGULATORY_ELEMENT = "RegulatoryElement"
     CATEGORICAL_FUSION = "CategoricalFusion"
     ASSAYED_FUSION = "AssayedFusion"
+    INTERNAL_TANDEM_DUPLICATION = "InternalTandemDuplication"
     CAUSATIVE_EVENT = "CausativeEvent"
 
 
@@ -546,14 +547,25 @@ class FusionType(str, Enum):
         return {c.value for c in cls}
 
 
-class AbstractFusion(BaseModel, ABC):
-    """Define AbstractFusion class"""
+class DuplicationType(str, Enum):
+    """Define possible Duplication types"""
 
-    type: FusionType
+    INTERNAL_TANDEM_DUPLICATION = FUSORTypes.INTERNAL_TANDEM_DUPLICATION.value
+
+    @classmethod
+    def values(cls) -> set[str]:
+        """Provide all possible enum values."""
+        return {c.value for c in cls}
+
+
+class AbstractTranscriptStructuralVariant(BaseModel, ABC):
+    """Define AbstractTranscriptStructuralVariant class"""
+
     regulatoryElement: RegulatoryElement | None = None
     structure: list[BaseStructuralElement]
+    fivePrimeJunction: StrictStr | None = None
+    threePrimeJunction: StrictStr | None = None
     readingFramePreserved: StrictBool | None = None
-    viccNomenclature: StrictStr | None = None
 
     @classmethod
     def _access_object_attr(
@@ -615,6 +627,23 @@ class AbstractFusion(BaseModel, ABC):
     @model_validator(mode="before")
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
+        if cls is AbstractTranscriptStructuralVariant:
+            msg = (
+                "Cannot instantiate AbstractTranscriptStructuralVariant abstract class"
+            )
+            raise TypeError(msg)
+        return values
+
+
+class AbstractFusion(AbstractTranscriptStructuralVariant):
+    """Define AbstractFusion class"""
+
+    type: FusionType
+    viccNomenclature: StrictStr | None = None
+
+    @model_validator(mode="before")
+    def enforce_abc(cls, values):
+        """Ensure only subclasses can be instantiated."""
         if cls is AbstractFusion:
             msg = "Cannot instantiate Fusion abstract class"
             raise TypeError(msg)
@@ -630,7 +659,7 @@ class AbstractFusion(BaseModel, ABC):
         an unknown partner), then we raise an error.
         """
         qt_error_msg = (
-            "Fusions must contain >= 2 structural elements, or >=1 structural element "
+            "Fusions must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
         structure = values.get("structure", [])
@@ -953,14 +982,172 @@ class CategoricalFusion(AbstractFusion):
 Fusion = CategoricalFusion | AssayedFusion
 
 
+InternalTandemDuplicationElements = Annotated[
+    TranscriptSegmentElement
+    | GeneElement
+    | TemplatedSequenceElement
+    | LinkerElement
+    | UnknownGeneElement
+    | MultiplePossibleGenesElement,
+    Field(discriminator="type"),
+]
+
+
+class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
+    """Internal tandem duplications are repeated transcribed elements within a gene as
+    a result of focal duplications. These can be described in both an assayed and
+    categorical context. These events differ from fusions in that the same gene symbol
+    must be used for both event partners, indicating a duplication.
+    """
+
+    type: Literal[FUSORTypes.INTERNAL_TANDEM_DUPLICATION] = (
+        FUSORTypes.INTERNAL_TANDEM_DUPLICATION
+    )
+    structure: list[InternalTandemDuplicationElements]
+    causativeEvent: CausativeEvent | None = None
+    assay: Assay | None = None
+    contig: ContigSequence | None = None
+    readData: ReadData | None = None
+    criticalFunctionalDomains: list[FunctionalDomain] | None = None
+    civicMolecularProfiles: list[MolecularProfile] | None = None
+    moaAssertion: dict | None = None
+
+    @model_validator(mode="before")
+    def enforce_itd_element_quantities(cls, values):
+        """Ensure minimum # of elements for InternalTandemDuplications (ITDs)
+
+        To validate the unique genes rule, we extract gene IDs from the elements that
+        designate genes, and take the number of total elements. If there is only one
+        unique gene ID, and there are no non-gene-defining elements (such as
+        an unknown partner), then we raise an error.
+        """
+        qt_error_msg = (
+            "ITDs must contain >= 2 structural elements, or >= 1 structural element "
+            "and a regulatory element"
+        )
+        structure = values.get("structure", [])
+        if not structure:
+            raise ValueError(qt_error_msg)
+        num_structure = len(structure)
+        reg_element = values.get("regulatoryElement")
+        if (num_structure + bool(reg_element)) < 2:
+            raise ValueError(qt_error_msg)
+
+        uq_gene_msg = "ITDs must be formed from only one unique gene."
+        gene_ids = []
+
+        for element in structure:
+            gene_id = cls._fetch_gene_id_or_name(obj=element)
+            if gene_id:
+                gene_ids.append(gene_id)
+
+        unique_gene_ids = set(gene_ids)
+        if len(unique_gene_ids) != 1:
+            raise ValueError(uq_gene_msg)
+        return values
+
+    # Provided example is a duplication event of exons 1-8 of TPM3
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        json_schema_extra={
+            "example": {
+                "type": "InternalTandemDuplication",
+                "readingFramePreserved": True,
+                "structure": [
+                    {
+                        "type": "TranscriptSegmentElement",
+                        "transcript": "refseq:NM_152263.3",
+                        "strand": -1,
+                        "exonStart": 1,
+                        "exonStartOffset": 0,
+                        "exonEnd": 8,
+                        "exonEndOffset": 0,
+                        "gene": {
+                            "primaryCoding": {
+                                "id": "hgnc:12012",
+                                "code": "HGNC:12012",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
+                            "conceptType": "Gene",
+                            "name": "TPM3",
+                        },
+                        "elementGenomicStart": {
+                            "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                            "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                            "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "type": "SequenceReference",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                            },
+                            "end": 154192135,
+                        },
+                        "elementGenomicEnd": {
+                            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                            "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                            "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "type": "SequenceReference",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                            },
+                            "start": 154170399,
+                        },
+                    },
+                    {
+                        "type": "TranscriptSegmentElement",
+                        "transcript": "refseq:NM_152263.3",
+                        "strand": -1,
+                        "exonStart": 1,
+                        "exonStartOffset": 0,
+                        "exonEnd": 8,
+                        "exonEndOffset": 0,
+                        "gene": {
+                            "primaryCoding": {
+                                "id": "hgnc:12012",
+                                "code": "HGNC:12012",
+                                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                            },
+                            "conceptType": "Gene",
+                            "name": "TPM3",
+                        },
+                        "elementGenomicStart": {
+                            "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                            "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                            "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "type": "SequenceReference",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                            },
+                            "end": 154192135,
+                        },
+                        "elementGenomicEnd": {
+                            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                            "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                            "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "type": "SequenceReference",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                            },
+                            "start": 154170399,
+                        },
+                    },
+                ],
+            }
+        },
+    )
+
+
 def save_fusions_cache(
-    fusions_list: list[AssayedFusion | CategoricalFusion],
+    variants_list: list[AssayedFusion | CategoricalFusion | InternalTandemDuplication],
     cache_name: str,
     cache_dir: Path | None = None,
 ) -> None:
     """Save a list of translated fusions as a cache
 
-    :param fusions_list: A list of FUSOR-translated fusions
+    :param variants_list: A list of FUSOR-translated fusions or ITDs
     :param cache_name: The name for the resultant cached file
     :param cache_dir: The location to store the cached file. If this parameter is
         not supplied, it will default to storing data in the `FUSOR_DATA_DIR`
@@ -973,4 +1160,4 @@ def save_fusions_cache(
     if output_file.exists():
         _logger.warning("Cached fusions file already exists. Overwriting with new file")
     with output_file.open("wb") as f:
-        pickle.dump(fusions_list, f)
+        pickle.dump(variants_list, f)

@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from fusor.config import config
 from fusor.models import (
     AbstractFusion,
+    AbstractTranscriptStructuralVariant,
     AnchoredReads,
     Assay,
     AssayedFusion,
@@ -19,6 +20,7 @@ from fusor.models import (
     EventType,
     FunctionalDomain,
     GeneElement,
+    InternalTandemDuplication,
     LinkerElement,
     MultiplePossibleGenesElement,
     ReadData,
@@ -804,7 +806,7 @@ def test_regulatory_element(regulatory_elements, gene_examples):
     )
 
 
-def test_fusion(
+def test_fusion_itd(
     functional_domains,
     transcript_segments,
     templated_sequence_elements,
@@ -813,8 +815,8 @@ def test_fusion(
     regulatory_elements,
     unknown_element,
 ):
-    """Test that Fusion object initializes correctly"""
-    # test valid object
+    """Test that Fusion and ITD object initializes correctly"""
+    # test valid Fusion object
     fusion = CategoricalFusion(
         readingFramePreserved=True,
         criticalFunctionalDomains=[functional_domains[0]],
@@ -925,8 +927,18 @@ def test_fusion(
     msg = "Value error, 5' TranscriptSegmentElement fusion partner must contain ending exon position"
     check_validation_error(exc_info, msg)
 
+    # Test valid ITD
+    itd = InternalTandemDuplication(
+        readingFramePreserved=True,
+        criticalFunctionalDomains=[functional_domains[0]],
+        structure=[transcript_segments[1], transcript_segments[1]],
+        regulatoryElement=regulatory_elements[0],
+    )
+    assert itd.structure[0].transcript == "refseq:NM_034348.3"
+    assert itd.structure[1].transcript == "refseq:NM_034348.3"
 
-def test_fusion_element_count(
+
+def test_fusion_itd_element_count(
     functional_domains,
     regulatory_elements,
     unknown_element,
@@ -934,7 +946,7 @@ def test_fusion_element_count(
     transcript_segments,
     gene_examples,
 ):
-    """Test fusion element count requirements."""
+    """Test fusion element and ITD element count requirements."""
     # elements are mandatory
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
@@ -943,10 +955,21 @@ def test_fusion_element_count(
             regulatoryElement=[regulatory_elements[0]],
         )
     element_ct_msg = (
-        "Value error, Fusions must contain >= 2 structural elements, or >=1 structural element "
+        "Value error, Fusions must contain >= 2 structural elements, or >= 1 structural element "
         "and a regulatory element"
     )
     check_validation_error(exc_info, element_ct_msg)
+    with pytest.raises(ValidationError) as exc_info:
+        assert InternalTandemDuplication(
+            functionalDomains=[functional_domains[1]],
+            causativeEvent="rearrangement",
+            regulatoryElement=[regulatory_elements[0]],
+        )
+    element_ct_msg_itd = (
+        "Value error, ITDs must contain >= 2 structural elements, or >= 1 structural element "
+        "and a regulatory element"
+    )
+    check_validation_error(exc_info, element_ct_msg_itd)
 
     # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
@@ -967,11 +990,17 @@ def test_fusion_element_count(
         )
     check_validation_error(exc_info, element_ct_msg)
 
-    # unique gene requirements
+    # unique gene requirements for fusions
     uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(structure=[gene_elements[0], gene_elements[0]])
     check_validation_error(exc_info, uq_gene_error_msg)
+
+    # same gene requirement for ITDs
+    same_gene_error_msg = "Value error, ITDs must be formed from only one unique gene."
+    with pytest.raises(ValidationError) as exc_info:
+        assert InternalTandemDuplication(structure=[gene_elements[0], gene_elements[1]])
+    check_validation_error(exc_info, same_gene_error_msg)
 
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(structure=[gene_elements[1], transcript_segments[0]])
@@ -1030,8 +1059,19 @@ def test_fusion_element_count(
         )
 
 
-def test_fusion_abstraction_validator(transcript_segments, linkers):
-    """Test that instantiation of abstract fusion fails."""
+def test_abstraction_validator(transcript_segments, linkers):
+    """Test that instantiation of AbstractTranscriptStructural variant
+    and AbstractFusion fails.
+    """
+    # can't create base AbstractTranscriptStructuralVariant
+    with pytest.raises(
+        TypeError,
+        match="Cannot instantiate AbstractTranscriptStructuralVariant abstract class",
+    ):
+        AbstractTranscriptStructuralVariant(
+            structure=[transcript_segments[2], linkers[0]]
+        )
+
     # can't create base fusion
     with pytest.raises(
         TypeError,
@@ -1061,6 +1101,7 @@ def test_model_examples():
         CausativeEvent,
         AssayedFusion,
         CategoricalFusion,
+        InternalTandemDuplication,
     ]
     for model in models:
         schema = model.model_config["json_schema_extra"]
@@ -1078,17 +1119,27 @@ def test_save_cache():
     categorical_fusion = CategoricalFusion(
         **CategoricalFusion.model_config["json_schema_extra"]["example"]
     )
+    itd = InternalTandemDuplication(
+        **InternalTandemDuplication.model_config["json_schema_extra"]["example"]
+    )
 
     # Test AssayedFusion
     save_fusions_cache(
-        fusions_list=[assayed_fusion],
+        variants_list=[assayed_fusion],
         cache_name="assayed_cache_test.pkl",
     )
     assert Path.exists(config.data_root / "assayed_cache_test.pkl")
 
     # Test CategoricalFusion
     save_fusions_cache(
-        fusions_list=[categorical_fusion],
+        variants_list=[categorical_fusion],
         cache_name="categorical_cache_test.pkl",
     )
     assert Path.exists(config.data_root / "categorical_cache_test.pkl")
+
+    # Test ITD
+    save_fusions_cache(
+        variants_list=[itd],
+        cache_name="itd_cache_test.pkl",
+    )
+    assert Path.exists(config.data_root / "itd_cache_test.pkl")

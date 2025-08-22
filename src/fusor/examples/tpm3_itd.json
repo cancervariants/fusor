@@ -1,0 +1,59 @@
+{
+  "type": "InternalTandemDuplication",
+  "structure": [
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_152263.3",
+      "strand": -1,
+      "exonEnd": 8,
+      "exonEndOffset": 0,
+      "gene": {
+        "primaryCoding": {
+            "id": "hgnc:12012",
+            "code": "HGNC:12012",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "TPM3"
+      },
+      "elementGenomicEnd": {
+        "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+        "type": "SequenceLocation",
+        "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+        "sequenceReference": {
+          "id": "refseq:NC_000001.11",
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        },
+        "start": 154170399
+      }
+    },
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_152263.3",
+      "strand": -1,
+      "exonEnd": 8,
+      "exonEndOffset": 0,
+      "gene": {
+        "primaryCoding": {
+            "id": "hgnc:12012",
+            "code": "HGNC:12012",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+        },
+        "conceptType": "Gene",
+        "name": "TPM3"
+      },
+      "elementGenomicEnd": {
+        "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+        "type": "SequenceLocation",
+        "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+        "sequenceReference": {
+          "id": "refseq:NC_000001.11",
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        },
+        "start": 154170399
+      }
+    }
+  ]
+}

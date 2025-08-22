@@ -6,10 +6,11 @@ import logging
 from abc import ABC
 from itertools import dropwhile
 from pathlib import Path
-from typing import Any, ClassVar, Generic, Literal, TextIO, TypeVar
+from typing import Annotated, Any, ClassVar, Generic, Literal, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from pydantic import Field
 from pydantic.dataclasses import dataclass
 from wags_tails import MoaData
 
@@ -26,7 +27,7 @@ from fusor.fusion_caller_models import (
     STARFusion,
 )
 from fusor.fusor import FUSOR
-from fusor.models import AssayedFusion, CategoricalFusion
+from fusor.models import AssayedFusion, CategoricalFusion, InternalTandemDuplication
 from fusor.translator import (
     ArribaTranslator,
     CiceroTranslator,
@@ -55,7 +56,13 @@ class FusionCallerRecord:
     """
 
     source: dict[str, Any]
-    annotated: AssayedFusion | CategoricalFusion | None
+    annotated: (
+        Annotated[
+            AssayedFusion | CategoricalFusion | InternalTandemDuplication,
+            Field(discriminator="type"),
+        ]
+        | None
+    )
     annotation_error: str | None
 
 
@@ -103,18 +110,18 @@ class FusionCallerHarvester(ABC, Generic[T]):
     async def load_records(
         self,
         fusion_path: Path,
-    ) -> list[AssayedFusion]:
-        """Convert rows of fusion caller output to AssayedFusion objects
+    ) -> list[AssayedFusion | InternalTandemDuplication]:
+        """Convert rows of fusion caller output to AssayedFusion and InternalTandemDuplication objects
 
         :param fusion_path: The path to the fusions file
         :raise ValueError: if the file does not exist at the specified path
-        :return: A list of translated fusions, represented as AssayedFusion objects
+        :return: A list of translated fusions, represented as AssayedFusion or InternalTandemDuplcation objects
         """
         records = await self.load_record_table(fusion_path)
         fusions = [
             record.annotated
             for record in records
-            if isinstance(record.annotated, AssayedFusion)
+            if isinstance(record.annotated, AssayedFusion | InternalTandemDuplication)
         ]
         self._count_dropped_fusions(records, fusions)
 
@@ -153,7 +160,9 @@ class FusionCallerHarvester(ABC, Generic[T]):
             fusion = self.fusion_caller(**filtered_row)
 
             error: str | None = None
-            translated_fusion: AssayedFusion | CategoricalFusion | None = None
+            translated_fusion: (
+                AssayedFusion | CategoricalFusion | InternalTandemDuplication | None
+            ) = None
             try:
                 translated_fusion = await self.translator.translate(
                     fusion, self.coordinate_type, self.assembly
