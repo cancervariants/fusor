@@ -6,7 +6,7 @@ import pytest
 import yaml
 from cool_seq_tool.schemas import Assembly
 
-from fusor.harvester import StarFusionHarvester
+from fusor.harvester import ArribaHarvester, StarFusionHarvester
 
 
 def _assert_subset(actual: dict, expected: dict) -> None:
@@ -40,10 +40,14 @@ async def test_fusion_matching(
 
     # Load STAR-Fusion records
     path = Path(fixture_data_dir / "star_fusion_test.tsv")
-    harvester = StarFusionHarvester(
-        fusor=fusor_instance, assembly=Assembly.GRCH38.value
-    )
+    harvester = StarFusionHarvester(fusor=fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
+
+    # Load in Arriba records
+    path = Path(fixture_data_dir / "fusions_arriba_test.tsv")
+    harvester = ArribaHarvester(fusor=fusor_instance, assembly=Assembly.GRCH37)
+    arriba_fusion = await harvester.load_records(path)
+    fusions_list.append(arriba_fusion[0])
 
     for case in test_cases:
         assayed_fusion = fusions_list[case["input_index"]]

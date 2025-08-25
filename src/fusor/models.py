@@ -26,6 +26,8 @@ from pydantic import (
     model_validator,
 )
 
+from fusor.config import config
+
 _logger = logging.getLogger(__name__)
 
 LINKER_REGEX = r"\|([atcg]+)\|"
@@ -161,7 +163,7 @@ class ContigSequence(BaseStructuralElement):
         StringConstraints(
             strip_whitespace=True,
             to_upper=True,
-            pattern=r"^(?:[^A-Za-z0-9]|[ACTGactg])*$",
+            pattern=r"^(?:[^A-Za-z0-9]|[ACTGNactgn])*$",
         ),
     ]
 
@@ -613,9 +615,9 @@ class AbstractFusion(BaseModel, ABC):
     @model_validator(mode="before")
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
-        if cls.__name__ == "AbstractFusion":
+        if cls is AbstractFusion:
             msg = "Cannot instantiate Fusion abstract class"
-            raise ValueError(msg)
+            raise TypeError(msg)
         return values
 
     @model_validator(mode="before")
@@ -851,6 +853,7 @@ class CategoricalFusion(AbstractFusion):
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: list[CategoricalFusionElement]
     civicMolecularProfiles: list[MolecularProfile] | None = None
+    moaAssertion: dict | None = None
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -952,19 +955,19 @@ Fusion = CategoricalFusion | AssayedFusion
 
 def save_fusions_cache(
     fusions_list: list[AssayedFusion | CategoricalFusion],
-    cache_dir: Path,
     cache_name: str,
+    cache_dir: Path | None = None,
 ) -> None:
     """Save a list of translated fusions as a cache
 
     :param fusions_list: A list of FUSOR-translated fusions
-    :param output_dir: The location to store the cached file. If this parameter is
-        not supplied, it will default to creating a `data` directory under
-        `src/fusor`
     :param cache_name: The name for the resultant cached file
+    :param cache_dir: The location to store the cached file. If this parameter is
+        not supplied, it will default to storing data in the `FUSOR_DATA_DIR`
+        directory
     """
-    if not Path.is_dir(cache_dir):
-        cache_dir = Path(__file__).resolve().parent / "data"
+    if not cache_dir:
+        cache_dir = config.data_root
     cache_dir.mkdir(parents=True, exist_ok=True)
     output_file = cache_dir / cache_name
     if output_file.exists():

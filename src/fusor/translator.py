@@ -84,6 +84,7 @@ class Translator(ABC):
         linker_sequence: LinkerElement | None = None,
         reads: ReadData | None = None,
         molecular_profiles: list[MolecularProfile] | None = None,
+        moa_assertion: dict | None = None,
     ) -> AssayedFusion | CategoricalFusion:
         """Format classes to create AssayedFusion objects
 
@@ -99,6 +100,7 @@ class Translator(ABC):
         :param linker_sequence: The non-template linker sequence
         :param reads: The read data
         :param molecular_profiles: A list of CIViC Molecular Profiles
+        :param moa_assertion: The MOA assertion, represented as a dictionary
         :return AssayedFusion or CategoricalFusion object
         """
         params = {
@@ -108,6 +110,7 @@ class Translator(ABC):
             "contig": contig,
             "readData": reads,
             "civicMolecularProfiles": molecular_profiles,
+            "moaAssertion": moa_assertion,
         }
         if not tr_5prime and not tr_3prime:
             params["structure"] = [gene_5prime, gene_3prime]
@@ -205,7 +208,7 @@ class Translator(ABC):
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
         alias_list, errors = sr.translate_identifier(
-            f"{build}:{chrom}", target_namespaces="refseq"
+            f"{build.value}:{chrom}", target_namespaces="refseq"
         )
         if errors:
             statement = f"Genomic accession for {chrom} could not be retrieved"
@@ -214,17 +217,23 @@ class Translator(ABC):
         return alias_list[0].split(":")[1]
 
     def _assess_gene_symbol(
-        self, gene: str, caller: Caller | KnowledgebaseList
-    ) -> tuple[GeneElement | UnknownGeneElement | MultiplePossibleGenesElement, str]:
+        self, gene: str | None, caller: Caller | KnowledgebaseList
+    ) -> (
+        tuple[GeneElement | UnknownGeneElement | MultiplePossibleGenesElement, str]
+        | None
+    ):
         """Determine if a gene symbol exists and return the corresponding
         GeneElement
 
-        :param gene: The gene symbol
+        :param gene: The gene symbol or None
         :param caller: The gene fusion caller or fusion knowledgebase
         :return A tuple containing a GeneElement or UnknownGeneElement and a string,
             representing the unknown fusion partner, or MultiplePossibleGenesElement
-            and a string, representing any possible fusion partner
+            and a string, representing any possible fusion partner or None if no gene
+            is provided
         """
+        if not gene:
+            return None
         if gene == "NA":
             return UnknownGeneElement(), "NA"
         if gene == "v":
@@ -931,10 +940,10 @@ class CIVICTranslator(Translator):
             isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
             and civic.five_prime_end_exon_coords.chromosome
         ):  # Process for cases where exon data is available for 5' transcript
-            rb = (
-                Assembly.GRCH37.value
+            rb: Assembly = (
+                Assembly.GRCH37
                 if civic.five_prime_end_exon_coords.reference_build == "GRCH37"
-                else Assembly.GRCH38.value
+                else Assembly.GRCH38
             )
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
@@ -955,10 +964,10 @@ class CIVICTranslator(Translator):
             isinstance(civic.three_prime_start_exon_coords, ExonCoordinate)
             and civic.three_prime_start_exon_coords.chromosome
         ):  # Process for case where exon data is available for 3' transcript
-            rb = (
-                Assembly.GRCH37.value
+            rb: Assembly = (
+                Assembly.GRCH37
                 if civic.three_prime_start_exon_coords.reference_build == "GRCH37"
-                else Assembly.GRCH38.value
+                else Assembly.GRCH38
             )
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
@@ -981,4 +990,39 @@ class CIVICTranslator(Translator):
             tr_5prime if isinstance(tr_5prime, TranscriptSegmentElement) else None,
             tr_3prime if isinstance(tr_3prime, TranscriptSegmentElement) else None,
             molecular_profiles=civic.molecular_profiles,
+        )
+
+
+class MOATranslator(Translator):
+    """Initialize MOATranslator"""
+
+    def translate(self, moa_assertion: dict) -> CategoricalFusion | None:
+        """Convert a MOA assertion to a CategoricalFusion object
+
+        :param moa_assertion: A dictionary representing a MOA assertion. To note, MOA fusions
+            do not report genomic breakpoints. Currently, we only support fusions
+            where both partners are listed, as we cannot definitively determine for
+            cases where one gene symbol is provided if it describes the 5' or 3'
+            partner.
+        :return: A CategoricalFusion object or None if both gene partners are not
+            provided.
+        """
+        bm = None
+        for biomarker in moa_assertion["proposition"]["biomarkers"]:
+            if (
+                "::" in biomarker["name"]
+            ):  # Extract CategoricalVariant describing fusion
+                bm = biomarker["name"]
+                break
+        moa_partners = bm.split("::")
+        gene_5prime = moa_partners[0]
+        gene_3prime = moa_partners[1]
+        fusion_partners = self._process_gene_symbols(
+            gene_5prime, gene_3prime, KnowledgebaseList.MOA
+        )
+        return self._format_fusion(
+            CategoricalFusion,
+            fusion_partners.gene_5prime_element,
+            fusion_partners.gene_3prime_element,
+            moa_assertion=moa_assertion,
         )
