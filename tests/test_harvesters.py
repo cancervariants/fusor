@@ -135,8 +135,8 @@ async def test_get_civic_records(fixture_data_dir, fusor_instance):
     assert len(fusions_list) == 5
 
 
-def test_get_moa_records(fusor_instance):
+def test_get_moa_records(fusor_instance, fixture_data_dir):
     """Test that MOAHarvester works correctly"""
-    harvester = MOAHarvester(fusor_instance)
+    harvester = MOAHarvester(fusor_instance, cache_dir=fixture_data_dir)
     fusions_list = harvester.load_records()
-    assert len(fusions_list) == 67
+    assert len(fusions_list) == 97
