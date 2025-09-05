@@ -425,3 +425,75 @@ tests:
             - gene:
                 name: "ABL1"
         match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "BCR"
+            - gene:
+                name: "ABL1"
+        match_type: "SHARED_GENES"
