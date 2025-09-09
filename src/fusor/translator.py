@@ -1092,17 +1092,20 @@ class CIVICTranslator(Translator):
             and not (coord.start and coord.stop)
         )
 
-    async def translate(self, civic: CIVIC) -> CategoricalFusion | None:
+    async def translate(self, civic: CIVIC) -> CategoricalFusion:
         """Convert CIViC record to Categorical Fusion
 
         :param civic A CIVIC object
         :return A CategoricalFusion object, if construction is successful
+        :raises: ValueError if a transcript accession and exon number is
+            provided without corresponding genomic breakpoints
         """
         if not (
             self._valid_exon_coords(civic.five_prime_end_exon_coords)
             and self._valid_exon_coords(civic.three_prime_start_exon_coords)
         ):
-            return None
+            msg = "Translation cannot proceed as GRCh37 transcripts and exons lacks genomic breakpoints"
+            raise ValueError(msg)
         fusion_partners = civic.vicc_compliant_name
         if fusion_partners.startswith("v::"):
             gene_5prime = "v"
@@ -1125,11 +1128,6 @@ class CIVICTranslator(Translator):
         fusion_partners = self._process_gene_symbols(
             gene_5prime, gene_3prime, KnowledgebaseList.CIVIC
         )
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None  # CIViC does not currently support ITDs
-
         tr_5prime = None
         if (
             isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
@@ -1191,7 +1189,7 @@ class CIVICTranslator(Translator):
 class MOATranslator(Translator):
     """Initialize MOATranslator"""
 
-    def translate(self, moa_assertion: dict) -> CategoricalFusion | None:
+    def translate(self, moa_assertion: dict) -> CategoricalFusion:
         """Convert a MOA assertion to a CategoricalFusion object
 
         :param moa_assertion: A dictionary representing a MOA assertion. To note, MOA fusions
@@ -1199,8 +1197,7 @@ class MOATranslator(Translator):
             where both partners are listed, as we cannot definitively determine for
             cases where one gene symbol is provided if it describes the 5' or 3'
             partner.
-        :return: A CategoricalFusion object or None if both gene partners are not
-            provided.
+        :return: A CategoricalFusion object
         """
         bm = None
         for biomarker in moa_assertion["proposition"]["biomarkers"]:
