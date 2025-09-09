@@ -38,6 +38,7 @@ from fusor.models import (
     ContigSequence,
     EventType,
     GeneElement,
+    InternalTandemDuplication,
     LinkerElement,
     MultiplePossibleGenesElement,
     ReadData,
@@ -46,6 +47,7 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
+from fusor.nomenclature import gene_nomenclature, tx_segment_nomenclature
 
 _logger = logging.getLogger(__name__)
 
@@ -71,9 +73,9 @@ class Translator(ABC):
         """
         self.fusor = fusor
 
-    def _format_fusion(
+    def _format_fusion_itd(
         self,
-        fusion_type: AssayedFusion | CategoricalFusion,
+        variant_type: AssayedFusion | CategoricalFusion | InternalTandemDuplication,
         gene_5prime: GeneElement | UnknownGeneElement | MultiplePossibleGenesElement,
         gene_3prime: GeneElement | UnknownGeneElement | MultiplePossibleGenesElement,
         tr_5prime: TranscriptSegmentElement | None = None,
@@ -86,10 +88,11 @@ class Translator(ABC):
         reads: ReadData | None = None,
         molecular_profiles: list[MolecularProfile] | None = None,
         moa_assertion: dict | None = None,
-    ) -> AssayedFusion | CategoricalFusion:
-        """Format classes to create AssayedFusion objects
+    ) -> AssayedFusion | CategoricalFusion | InternalTandemDuplication:
+        """Format classes to create Fusion and Internal Tandem Duplication (ITD) objects
 
-        :param fusion_type: If the fusion is an AssayedFusion or CategoricalFusion
+        :param variant_type: If the fusion is an AssayedFusion, CategoricalFusion, or
+            InternalTandemDuplication
         :param gene_5prime: 5'prime GeneElement or UnknownGeneElement or MultiplePossibleGenesElement
         :param gene_3prime: 3'prime GeneElement or UnknownGeneElement or MultiplePossibleGenesElement
         :param tr_5prime: 5'prime TranscriptSegmentElement
@@ -123,11 +126,23 @@ class Translator(ABC):
             params["structure"] = [tr_5prime, tr_3prime]
         if linker_sequence:
             params["structure"].insert(1, linker_sequence)
-        fusion = fusion_type(**params)
+        variant = variant_type(**params)
 
         # Assign VICC Nomenclature string to fusion event
-        fusion.viccNomenclature = self.fusor.generate_nomenclature(fusion)
-        return fusion
+        if not isinstance(variant, InternalTandemDuplication):
+            variant.viccNomenclature = self.fusor.generate_nomenclature(variant)
+        else:
+            variant.fivePrimeJunction = (
+                tx_segment_nomenclature(tr_5prime)
+                if tr_5prime
+                else gene_nomenclature(gene_5prime)
+            )
+            variant.threePrimeJunction = (
+                tx_segment_nomenclature(tr_3prime)
+                if tr_3prime
+                else gene_nomenclature(gene_3prime)
+            )
+        return variant
 
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
@@ -192,12 +207,7 @@ class Translator(ABC):
         :param gene_3prime: The 3' gene partner or UnknownGeneElement or MultiplePossibleGenesElement
         :return ``True`` if the gene symbols are different, ``False`` if not
         """
-        if gene_5prime != gene_3prime:
-            return True
-        _logger.error(
-            "The supplied fusion is not valid as the two fusion partners are the same"
-        )
-        return False
+        return gene_5prime != gene_3prime
 
     def _get_genomic_ac(self, chrom: str, build: Assembly) -> str:
         """Return a RefSeq genomic accession given a chromosome and a reference build
@@ -214,7 +224,7 @@ class Translator(ABC):
         if errors:
             statement = f"Genomic accession for {chrom} could not be retrieved"
             _logger.error(statement)
-            raise ValueError
+            raise ValueError(statement)
         return alias_list[0].split(":")[1]
 
     def _assess_gene_symbol(
@@ -277,7 +287,7 @@ class Translator(ABC):
     @abstractmethod
     async def translate(
         self, fusion_data: BaseModel, coordinate_type: CoordinateType, rb: Assembly
-    ) -> AssayedFusion | CategoricalFusion:
+    ) -> AssayedFusion | CategoricalFusion | InternalTandemDuplication:
         """Define abstract translate method
 
         :param fusion_data: The fusion data from a fusion caller
@@ -308,10 +318,13 @@ class JAFFATranslator(Translator):
         genes = jaffa.fusion_genes.split(":")
         fusion_partners = self._process_gene_symbols(genes[0], genes[1], Caller.JAFFA)
 
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         if not isinstance(fusion_partners.gene_5prime_element, UnknownGeneElement):
             tr_5prime = await self.fusor.transcript_segment_element(
@@ -328,7 +341,12 @@ class JAFFATranslator(Translator):
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 genomic_ac=self._get_genomic_ac(jaffa.chrom2, rb),
-                seg_start_genomic=jaffa.base2,
+                seg_start_genomic=jaffa.base2
+                if variant_type != InternalTandemDuplication
+                else None,
+                seg_end_genomic=jaffa.base2
+                if variant_type == InternalTandemDuplication
+                else None,
                 gene=fusion_partners.gene_3prime,
                 coordinate_type=coordinate_type,
                 starting_assembly=rb,
@@ -348,8 +366,8 @@ class JAFFATranslator(Translator):
             spanning=SpanningReads(spanningReads=jaffa.spanning_pairs),
         )
 
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -384,10 +402,13 @@ class STARFusionTranslator(Translator):
         gene2 = star_fusion.right_gene.split("^")[0]
 
         fusion_partners = self._process_gene_symbols(gene1, gene2, Caller.STAR_FUSION)
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         five_prime = star_fusion.left_breakpoint.split(":")
         three_prime = star_fusion.right_breakpoint.split(":")
@@ -405,7 +426,12 @@ class STARFusionTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
-            seg_start_genomic=int(three_prime[1]),
+            seg_start_genomic=int(three_prime[1])
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=int(three_prime[1])
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=fusion_partners.gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -420,8 +446,8 @@ class STARFusionTranslator(Translator):
             spanning=SpanningReads(spanningReads=star_fusion.spanning_frag_count),
         )
 
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -456,10 +482,13 @@ class FusionCatcherTranslator(Translator):
             fusion_catcher.three_prime_partner,
             Caller.FUSION_CATCHER,
         )
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         five_prime = fusion_catcher.five_prime_fusion_point.split(":")
         three_prime = fusion_catcher.three_prime_fusion_point.split(":")
@@ -477,7 +506,12 @@ class FusionCatcherTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
-            seg_start_genomic=int(three_prime[1]),
+            seg_start_genomic=int(three_prime[1])
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=int(three_prime[1])
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=fusion_partners.gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -493,8 +527,8 @@ class FusionCatcherTranslator(Translator):
         )
         contig = ContigSequence(contig=fusion_catcher.fusion_sequence)
 
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -527,8 +561,11 @@ class FusionMapTranslator(Translator):
         gene_5prime = self._get_gene_element(gene1, "fusion_map").gene.name
         gene_3prime = self._get_gene_element(gene2, "fusion_map").gene.name
 
-        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(gene_5prime, gene_3prime)
+            else InternalTandemDuplication
+        )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -547,7 +584,12 @@ class FusionMapTranslator(Translator):
             genomic_ac=self._get_genomic_ac(
                 fmap_row.get_column("Chromosome2").item(), rb
             ),
-            seg_start_genomic=int(fmap_row.get_column("Position2").item()),
+            seg_start_genomic=int(fmap_row.get_column("Position2").item())
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=int(fmap_row.get_column("Position2").item())
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -568,8 +610,8 @@ class FusionMapTranslator(Translator):
             descr,
         )
         rf = bool(fmap_row.get_column("FrameShiftClass").item() == "InFrame")
-        return self._format_fusion(
-            AssayedFusion, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
+        return self._format_fusion_itd(
+            variant_type, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
 
 
@@ -596,10 +638,13 @@ class ArribaTranslator(Translator):
             arriba.gene1, arriba.gene2, Caller.ARRIBA
         )
 
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         strand1 = arriba.strand1.split("/")[1]  # Determine strand that is transcribed
         strand2 = arriba.strand2.split("/")[1]  # Determine strand that is transcribed
@@ -670,8 +715,8 @@ class ArribaTranslator(Translator):
             else None
         )
 
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -703,6 +748,8 @@ class CiceroTranslator(Translator):
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
+        :raises RuntimeError: If CICERO annotations indicate the fusion is not
+            valid
         """
         # Check if gene symbols have valid formatting. CICERO can output two or more
         # gene symbols for `gene_5prime` or `gene_3prime`, which are separated by a comma. As
@@ -710,8 +757,8 @@ class CiceroTranslator(Translator):
         # these events
         if "," in cicero.gene_5prime or "," in cicero.gene_3prime:
             msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
-            _logger.warning(msg)
-            return msg
+            _logger.error(msg)
+            raise RuntimeError(msg)
 
         fusion_partners = self._process_gene_symbols(
             cicero.gene_5prime, cicero.gene_3prime, Caller.CICERO
@@ -721,13 +768,16 @@ class CiceroTranslator(Translator):
         # has biological meaning
         if cicero.sv_ort != ">":
             msg = "CICERO annotation indicates that this event does not have confident biological meaning"
-            _logger.warning(msg)
-            return msg
+            _logger.error(msg)
+            raise RuntimeError(msg)
 
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -744,7 +794,12 @@ class CiceroTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(cicero.chr_3prime, rb),
-            seg_start_genomic=cicero.pos_3prime,
+            seg_start_genomic=cicero.pos_3prime
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=cicero.pos_3prime
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=fusion_partners.gene_3prime,
             coverage=BreakpointCoverage(fragmentCoverage=cicero.coverage_3prime),
             reads=AnchoredReads(reads=cicero.reads_3prime),
@@ -765,8 +820,8 @@ class CiceroTranslator(Translator):
             )
         contig = ContigSequence(contig=cicero.contig)
 
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -800,8 +855,11 @@ class MapSpliceTranslator(Translator):
         gene_5prime = gene_5prime_element.gene.name
         gene_3prime = gene_3prime_element.gene.name
 
-        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(gene_5prime, gene_3prime)
+            else InternalTandemDuplication
+        )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -816,7 +874,12 @@ class MapSpliceTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[1], rb),
-            seg_start_genomic=int(mapsplice_row[2]),
+            seg_start_genomic=int(mapsplice_row[2])
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=int(mapsplice_row[2])
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -826,8 +889,8 @@ class MapSpliceTranslator(Translator):
         ce = self._get_causative_event(
             mapsplice_row[0].split("~")[0], mapsplice_row[0].split("~")[1]
         )
-        return self._format_fusion(
-            AssayedFusion, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce
+        return self._format_fusion_itd(
+            variant_type, gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce
         )
 
 
@@ -851,10 +914,13 @@ class EnFusionTranslator(Translator):
             enfusion.gene_5prime, enfusion.gene_3prime, Caller.ENFUSION
         )
 
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -869,7 +935,12 @@ class EnFusionTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(enfusion.chr_3prime, rb),
-            seg_start_genomic=enfusion.break_3prime,
+            seg_start_genomic=enfusion.break_3prime
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=enfusion.break_3prime
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=fusion_partners.gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -880,8 +951,8 @@ class EnFusionTranslator(Translator):
             enfusion.chr_5prime,
             enfusion.chr_3prime,
         )
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -914,10 +985,13 @@ class GenieTranslator(Translator):
             genie.site1_hugo, genie.site2_hugo, Caller.GENIE
         )
 
-        if not self._are_fusion_partners_different(
-            fusion_partners.gene_5prime, fusion_partners.gene_3prime
-        ):
-            return None
+        variant_type = (
+            AssayedFusion
+            if self._are_fusion_partners_different(
+                fusion_partners.gene_5prime, fusion_partners.gene_3prime
+            )
+            else InternalTandemDuplication
+        )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -932,7 +1006,12 @@ class GenieTranslator(Translator):
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(genie.site2_chrom, rb),
-            seg_start_genomic=genie.site2_pos,
+            seg_start_genomic=genie.site2_pos
+            if variant_type != InternalTandemDuplication
+            else None,
+            seg_end_genomic=genie.site2_pos
+            if variant_type == InternalTandemDuplication
+            else None,
             gene=fusion_partners.gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -945,8 +1024,8 @@ class GenieTranslator(Translator):
             genie.annot,
         )
         rf = bool(genie.reading_frame == "in frame")
-        return self._format_fusion(
-            AssayedFusion,
+        return self._format_fusion_itd(
+            variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
             tr_5prime
@@ -1049,7 +1128,7 @@ class CIVICTranslator(Translator):
         if not self._are_fusion_partners_different(
             fusion_partners.gene_5prime, fusion_partners.gene_3prime
         ):
-            return None
+            return None  # CIViC does not currently support ITDs
 
         tr_5prime = None
         if (
@@ -1099,7 +1178,7 @@ class CIVICTranslator(Translator):
             )
             tr_3prime = tr_3prime[0]
 
-        return self._format_fusion(
+        return self._format_fusion_itd(
             CategoricalFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
@@ -1136,7 +1215,7 @@ class MOATranslator(Translator):
         fusion_partners = self._process_gene_symbols(
             gene_5prime, gene_3prime, KnowledgebaseList.MOA
         )
-        return self._format_fusion(
+        return self._format_fusion_itd(
             CategoricalFusion,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
