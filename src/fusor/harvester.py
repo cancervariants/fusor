@@ -397,7 +397,11 @@ class MOAHarvester(FusionCallerHarvester):
     translator_class: MOATranslator
 
     def __init__(
-        self, fusor: FUSOR, cache_dir: Path | None = None, force_refresh: bool = False
+        self,
+        fusor: FUSOR,
+        cache_dir: Path | None = None,
+        force_refresh: bool = False,
+        use_local: bool = False,
     ) -> None:
         """Initialize MOAHarvester class
 
@@ -407,13 +411,17 @@ class MOAHarvester(FusionCallerHarvester):
             stored in the `FUSOR_DATA_DIR` directory.
         :paran force_refresh: A boolean indicating if the MOA assertions
             file should be regenerated. By default, this is set to ``False``.
+        :param use_local: A boolean indicating if the latest local available
+            file should be use. By default, this is set to ``False``.
         """
         self.translator = MOATranslator(fusor)
         if not cache_dir:
             cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
-        moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]
+        moa_file = moa_downloader.get_latest(
+            force_refresh=force_refresh, from_local=use_local
+        )[0]
         with moa_file.open("rb") as f:
             moa_assertions = json.load(f)
             self.assertions = moa_assertions["content"]
