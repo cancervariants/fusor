@@ -7,9 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from civicpy.civic import MolecularProfile
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.models import MappableConcept
+from ga4gh.core.models import Extension, MappableConcept
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
@@ -881,8 +880,7 @@ class CategoricalFusion(AbstractFusion):
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: list[CategoricalFusionElement]
-    civicMolecularProfiles: list[MolecularProfile] | None = None
-    moaAssertion: dict | None = None
+    evidence: list[Extension] | None = None
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -1009,8 +1007,6 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
     contig: ContigSequence | None = None
     readData: ReadData | None = None
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
-    civicMolecularProfiles: list[MolecularProfile] | None = None
-    moaAssertion: dict | None = None
 
     @model_validator(mode="before")
     def enforce_itd_element_quantities(cls, values):

@@ -10,7 +10,7 @@ from enum import Enum
 import polars as pl
 from civicpy.civic import ExonCoordinate, MolecularProfile
 from cool_seq_tool.schemas import Assembly, CoordinateType
-from ga4gh.core.models import MappableConcept
+from ga4gh.core.models import Extension, MappableConcept
 from ga4gh.vrs.models import LiteralSequenceExpression
 from pydantic import BaseModel
 
@@ -113,8 +113,6 @@ class Translator(ABC):
             "assay": assay,
             "contig": contig,
             "readData": reads,
-            "civicMolecularProfiles": molecular_profiles,
-            "moaAssertion": moa_assertion,
         }
         if not tr_5prime and not tr_3prime:
             params["structure"] = [gene_5prime, gene_3prime]
@@ -126,6 +124,16 @@ class Translator(ABC):
             params["structure"] = [tr_5prime, tr_3prime]
         if linker_sequence:
             params["structure"].insert(1, linker_sequence)
+
+        evidence = [
+            Extension(name=name, value=value)
+            for name, value in [
+                ("civicMolecularProfiles", molecular_profiles),
+                ("moaAssertion", moa_assertion),
+            ]
+            if value
+        ]
+        params["evidence"] = evidence
         variant = variant_type(**params)
 
         # Assign VICC Nomenclature string to fusion event
