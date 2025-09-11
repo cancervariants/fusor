@@ -4,13 +4,13 @@ import csv
 import json
 import logging
 from abc import ABC
+from collections.abc import AsyncGenerator
 from itertools import dropwhile
 from pathlib import Path
-from typing import Annotated, Any, ClassVar, Generic, Literal, TextIO, TypeVar
+from typing import Any, ClassVar, Generic, Literal, TextIO, TypeVar
 
 from civicpy import civic
 from cool_seq_tool.schemas import Assembly, CoordinateType
-from pydantic import Field
 from pydantic.dataclasses import dataclass
 from wags_tails import MoaData
 
@@ -27,7 +27,12 @@ from fusor.fusion_caller_models import (
     STARFusion,
 )
 from fusor.fusor import FUSOR
-from fusor.models import AssayedFusion, CategoricalFusion, InternalTandemDuplication
+from fusor.models import (
+    AbstractTranscriptStructuralVariant,
+    AssayedFusion,
+    CategoricalFusion,
+    InternalTandemDuplication,
+)
 from fusor.translator import (
     ArribaTranslator,
     CiceroTranslator,
@@ -56,13 +61,7 @@ class FusionCallerRecord:
     """
 
     source: dict[str, Any]
-    annotated: (
-        Annotated[
-            AssayedFusion | CategoricalFusion | InternalTandemDuplication,
-            Field(discriminator="type"),
-        ]
-        | None
-    )
+    annotated: AbstractTranscriptStructuralVariant | None
     annotation_error: str | None
 
 
@@ -140,33 +139,12 @@ class FusionCallerHarvester(ABC, Generic[T]):
         :raise ValueError: if the file does not exist at the specified path
         :return: A list of fusion caller records
         """
-        if not fusion_path.exists():
-            msg = f"{fusion_path!s} does not exist"
-            raise ValueError(msg)
-
-        fields_to_keep = self.fusion_caller.__annotations__
-        reader = self._get_records(fusion_path.open())
         records: list[FusionCallerRecord] = []
-
-        for row in reader:
-            raw_row = {}
-            filtered_row = {}
-            for key, value in row.items():
-                renamed_key = self.column_rename.get(key, key)
-                raw_row[renamed_key] = value
-                if renamed_key in fields_to_keep:
-                    filtered_row[renamed_key] = value
-
-            fusion = self.fusion_caller(**filtered_row)
-
+        async for raw_row, fusion in self.harvest_records(fusion_path):
             error: str | None = None
-            translated_fusion: (
-                AssayedFusion | CategoricalFusion | InternalTandemDuplication | None
-            ) = None
+            translated_fusion: AbstractTranscriptStructuralVariant | None = None
             try:
-                translated_fusion = await self.translator.translate(
-                    fusion, self.coordinate_type, self.assembly
-                )
+                translated_fusion = await self.translate(fusion)
             except Exception as exc:
                 _logger.exception(
                     "Error encountered while loading records from %s", fusion_path
@@ -182,6 +160,51 @@ class FusionCallerHarvester(ABC, Generic[T]):
             )
 
         return records
+
+    async def translate(
+        self, fusion: FusionCaller
+    ) -> AbstractTranscriptStructuralVariant:
+        """Call the translator for this fusion.
+
+        :param fusion: The fusion call entry.
+        :return: The translated fusion call. Usually an AssayedFusion.
+        """
+        return await self.translator.translate(
+            fusion, self.coordinate_type, self.assembly
+        )
+
+    async def harvest_records(
+        self,
+        fusion_path: Path,
+    ) -> AsyncGenerator[tuple[dict, FusionCaller], None]:
+        """Convert rows of fusion caller output to FusionCallerRecord objects.
+
+        Each entry in the returned list includes the raw fusion caller output row, as well as the
+        annotated fusion model. Any errors encountered when annotating fusions are captured and returned per fusion.
+
+        :param fusion_path: The path to the fusions file
+        :raise ValueError: if the file does not exist at the specified path
+        :return: A generator of raw fusion rows, and fusion call outputs.
+        """
+        if not fusion_path.exists():
+            msg = f"{fusion_path!s} does not exist"
+            raise ValueError(msg)
+
+        fields_to_keep = self.fusion_caller.__annotations__
+        reader = self._get_records(fusion_path.open())
+
+        for row in reader:
+            raw_row = {}
+            filtered_row = {}
+            for key, value in row.items():
+                renamed_key = self.column_rename.get(key, key)
+                raw_row[renamed_key] = value
+                if renamed_key in fields_to_keep:
+                    filtered_row[renamed_key] = value
+
+            fusion = self.fusion_caller(**filtered_row)
+
+            yield (raw_row, fusion)
 
 
 class JAFFAHarvester(FusionCallerHarvester):
@@ -402,7 +425,11 @@ class MOAHarvester(FusionCallerHarvester):
     translator_class: MOATranslator
 
     def __init__(
-        self, fusor: FUSOR, cache_dir: Path | None = None, force_refresh: bool = False
+        self,
+        fusor: FUSOR,
+        cache_dir: Path | None = None,
+        force_refresh: bool = False,
+        use_local: bool = False,
     ) -> None:
         """Initialize MOAHarvester class
 
@@ -412,13 +439,17 @@ class MOAHarvester(FusionCallerHarvester):
             stored in the `FUSOR_DATA_DIR` directory.
         :paran force_refresh: A boolean indicating if the MOA assertions
             file should be regenerated. By default, this is set to ``False``.
+        :param use_local: A boolean indicating if the latest local available
+            file should be use. By default, this is set to ``False``.
         """
         self.translator = MOATranslator(fusor)
         if not cache_dir:
             cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
-        moa_file = moa_downloader.get_latest(force_refresh=force_refresh)[0]
+        moa_file = moa_downloader.get_latest(
+            force_refresh=force_refresh, from_local=use_local
+        )[0]
         with moa_file.open("rb") as f:
             moa_assertions = json.load(f)
             self.assertions = moa_assertions["content"]
