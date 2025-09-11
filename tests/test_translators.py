@@ -433,6 +433,16 @@ def fusion_data_example_categorical_nonzerooffset():
     return _create_base_fixture
 
 
+def assert_fusion_equivalence(fusor_output, expected):
+    """Check that fusor output and expected are equal on specific fields"""
+    assert fusor_output.structure == expected.structure
+    assert fusor_output.viccNomenclature == expected.viccNomenclature
+    if hasattr(expected, "contig"):
+        assert fusor_output.contig == expected.contig
+    if hasattr(expected, "readData"):
+        assert fusor_output.readData == expected.readData
+
+
 @pytest.mark.asyncio
 async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, fusor_instance
@@ -464,9 +474,7 @@ async def test_jaffa(
             split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
         )
     )
-    assert jaffa_fusor.structure == fusion_data_example.structure
-    assert jaffa_fusor.readData == fusion_data_example.readData
-    assert jaffa_fusor.viccNomenclature == fusion_data_example.viccNomenclature
+    assert_fusion_equivalence(jaffa_fusor, fusion_data_example)
 
     # Test non-exonic breakpoint
     jaffa.base1 = 154173079
@@ -482,12 +490,7 @@ async def test_jaffa(
             split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
         )
     )
-    assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
-    assert jaffa_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
-    assert (
-        jaffa_fusor_nonexonic.viccNomenclature
-        == fusion_data_example_nonexonic.viccNomenclature
-    )
+    assert_fusion_equivalence(jaffa_fusor_nonexonic, fusion_data_example_nonexonic)
 
     # Test unknown partner
     jaffa.fusion_genes = "NA:PDGFRB"
@@ -531,9 +534,7 @@ async def test_star_fusion(
             split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
         )
     )
-    assert star_fusion_fusor.structure == fusion_data_example.structure
-    assert star_fusion_fusor.readData == fusion_data_example.readData
-    assert star_fusion_fusor.viccNomenclature == fusion_data_example.viccNomenclature
+    assert_fusion_equivalence(star_fusion_fusor, fusion_data_example)
 
     # Test non-exonic breakpoints
     star_fusion.left_breakpoint = "chr1:154173079:-"
@@ -549,15 +550,8 @@ async def test_star_fusion(
             split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
         )
     )
-    assert (
-        star_fusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
-    )
-    assert (
-        star_fusion_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
-    )
-    assert (
-        star_fusion_fusor_nonexonic.viccNomenclature
-        == fusion_data_example_nonexonic.viccNomenclature
+    assert_fusion_equivalence(
+        star_fusion_fusor_nonexonic, fusion_data_example_nonexonic
     )
 
     # Test unknown partners
@@ -611,12 +605,7 @@ async def test_fusion_catcher(
         ),
         contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
     )
-    assert fusion_catcher_fusor.structure == fusion_data_example.structure
-    assert fusion_catcher_fusor.readData == fusion_data_example.readData
-    assert fusion_catcher_fusor.contig == fusion_catcher_fusor.contig
-    assert (
-        fusion_catcher_fusor.viccNomenclature == fusion_catcher_fusor.viccNomenclature
-    )
+    assert_fusion_equivalence(fusion_catcher_fusor, fusion_data_example)
 
     # Test non-exonic breakpoints
     fusion_catcher.five_prime_fusion_point = "1:154173079:-"
@@ -633,18 +622,8 @@ async def test_fusion_catcher(
         ),
         contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
     )
-    assert (
-        fusion_catcher_fusor_nonexonic.structure
-        == fusion_data_example_nonexonic.structure
-    )
-    assert (
-        fusion_catcher_fusor_nonexonic.readData
-        == fusion_data_example_nonexonic.readData
-    )
-    assert fusion_catcher_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
-    assert (
-        fusion_catcher_fusor_nonexonic.viccNomenclature
-        == fusion_catcher_fusor_nonexonic.viccNomenclature
+    assert_fusion_equivalence(
+        fusion_catcher_fusor_nonexonic, fusion_data_example_nonexonic
     )
 
     # Test unknown partners
@@ -754,10 +733,7 @@ async def test_arriba(
     fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
     fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
     fusion_data_example.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert arriba_fusor.structure == fusion_data_example.structure
-    assert arriba_fusor.readData == fusion_data_example.readData
-    assert arriba_fusor.contig == fusion_data_example.contig
-    assert arriba_fusor.viccNomenclature == fusion_data_example.viccNomenclature
+    assert_fusion_equivalence(arriba_fusor, fusion_data_example)
 
     # Test non-exonic breakpoint
     arriba.breakpoint1 = "1:154173079"
@@ -780,13 +756,7 @@ async def test_arriba(
         fragmentCoverage=190
     )
     fusion_data_example_nonexonic.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
-    assert arriba_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
-    assert arriba_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
-    assert (
-        arriba_fusor_nonexonic.viccNomenclature
-        == fusion_data_example_nonexonic.viccNomenclature
-    )
+    assert_fusion_equivalence(arriba_fusor_nonexonic, fusion_data_example_nonexonic)
 
     # Test Linker Sequence
     arriba_linker = arriba.model_copy(deep=True)
@@ -853,10 +823,7 @@ async def test_cicero(
     fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
     fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
     fusion_data_example.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert cicero_fusor.structure == fusion_data_example.structure
-    assert cicero_fusor.readData == fusion_data_example.readData
-    assert cicero_fusor.contig == fusion_data_example.contig
-    assert cicero_fusor.viccNomenclature == fusion_data_example.viccNomenclature
+    assert_fusion_equivalence(cicero_fusor, fusion_data_example)
 
     # Test non-exonic breakpoint
     cicero.pos_5prime = 154173079
@@ -878,13 +845,7 @@ async def test_cicero(
         fragmentCoverage=190
     )
     fusion_data_example_nonexonic.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
-    assert cicero_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
-    assert cicero_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
-    assert (
-        cicero_fusor_nonexonic.viccNomenclature
-        == cicero_fusor_nonexonic.viccNomenclature
-    )
+    assert_fusion_equivalence(cicero_fusor_nonexonic, fusion_data_example_nonexonic)
 
     # Test case where the called fusion does not have confident biological meaning
     cicero.sv_ort = "?"
@@ -948,8 +909,7 @@ async def test_enfusion(
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert enfusion_fusor.structure == fusion_data_example().structure
-    assert enfusion_fusor.viccNomenclature == fusion_data_example().viccNomenclature
+    assert_fusion_equivalence(enfusion_fusor, fusion_data_example())
 
     # Test non-exonic breakpoint
     enfusion.break_5prime = 154173079
@@ -960,13 +920,7 @@ async def test_enfusion(
         CoordinateType.RESIDUE,
         Assembly.GRCH38,
     )
-    assert (
-        enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
-    )
-    assert (
-        enfusion_fusor_nonexonic.viccNomenclature
-        == fusion_data_example_nonexonic().viccNomenclature
-    )
+    assert_fusion_equivalence(enfusion_fusor_nonexonic, fusion_data_example_nonexonic())
 
     # Test unknown partner
     enfusion.gene_5prime = "NA"
@@ -1007,8 +961,7 @@ async def test_genie(
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert genie_fusor.structure == fusion_data_example().structure
-    assert genie_fusor.viccNomenclature == fusion_data_example().viccNomenclature
+    assert_fusion_equivalence(genie_fusor, fusion_data_example())
 
     # Test non-exonic breakpoint
     genie.site1_pos = 154173079
@@ -1019,11 +972,7 @@ async def test_genie(
         CoordinateType.RESIDUE,
         Assembly.GRCH38,
     )
-    assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
-    assert (
-        genie_fusor_nonexonic.viccNomenclature
-        == fusion_data_example_nonexonic().viccNomenclature
-    )
+    assert_fusion_equivalence(genie_fusor_nonexonic, fusion_data_example_nonexonic())
 
     # Test unknown partner
     genie.site1_hugo = "NA"
@@ -1065,11 +1014,7 @@ async def test_civic(
         molecular_profiles=fusions_list[0].molecular_profiles,
     )
     civic_fusor = await translator.translate(test_fusion)
-    assert civic_fusor.structure == fusion_data_example_categorical().structure
-    assert (
-        civic_fusor.viccNomenclature
-        == fusion_data_example_categorical().viccNomenclature
-    )
+    assert_fusion_equivalence(civic_fusor, fusion_data_example_categorical())
     assert len(civic_fusor.civicMolecularProfiles) == 64
 
     # Test case where one partner is a MultiplePossibleGenesElement object
@@ -1082,11 +1027,7 @@ async def test_civic(
         molecular_profiles=fusions_list[1].molecular_profiles,
     )
     civic_fusor = await translator.translate(test_fusion)
-    assert civic_fusor.structure == fusion_data_example_categorical_mpge().structure
-    assert (
-        civic_fusor.viccNomenclature
-        == fusion_data_example_categorical_mpge().viccNomenclature
-    )
+    assert_fusion_equivalence(civic_fusor, fusion_data_example_categorical_mpge())
     assert len(civic_fusor.civicMolecularProfiles) == 1
 
     # Test case where there is a non-zero offset
@@ -1099,21 +1040,22 @@ async def test_civic(
         molecular_profiles=fusions_list[2].molecular_profiles,
     )
     civic_fusor = await translator.translate(test_fusion)
-    assert (
-        civic_fusor.structure
-        == fusion_data_example_categorical_nonzerooffset().structure
-    )
-    assert (
-        civic_fusor.viccNomenclature
-        == fusion_data_example_categorical_nonzerooffset().viccNomenclature
+    assert_fusion_equivalence(
+        civic_fusor, fusion_data_example_categorical_nonzerooffset()
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
+
+
+def assert_itd_equivalence(fusor_output, expected):
+    """Check that fusor output and expected are equal on specific fields for ITDs"""
+    assert fusor_output.structure == expected.structure
+    assert fusor_output.fivePrimeJunction == expected.fivePrimeJunction
+    assert fusor_output.threePrimeJunction == expected.threePrimeJunction
 
 
 @pytest.mark.asyncio
 async def test_itds(itd_example, fusor_instance):
     """Test ITD example across all fusion callers and sources"""
-    dup_string = "NM_152263.4(TPM3):e.8-66"
     translator = JAFFATranslator(fusor=fusor_instance)
     jaffa = JAFFA(
         fusion_genes="TPM3:TPM3",
@@ -1133,9 +1075,7 @@ async def test_itds(itd_example, fusor_instance):
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert jaffa_fusor.structure == itd_example().structure
-    assert jaffa_fusor.fivePrimeJunction == dup_string
-    assert jaffa_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(jaffa_fusor, itd_example())
 
     translator = STARFusionTranslator(fusor=fusor_instance)
     star_fusion = STARFusion(
@@ -1153,9 +1093,7 @@ async def test_itds(itd_example, fusor_instance):
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert star_fusion_fusor.structure == itd_example().structure
-    assert star_fusion_fusor.fivePrimeJunction == dup_string
-    assert star_fusion_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(star_fusion_fusor, itd_example())
 
     fusion_catcher = FusionCatcher(
         five_prime_partner="TPM3",
@@ -1174,9 +1112,7 @@ async def test_itds(itd_example, fusor_instance):
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert fusion_catcher_fusor.structure == itd_example().structure
-    assert fusion_catcher_fusor.fivePrimeJunction == dup_string
-    assert fusion_catcher_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(fusion_catcher_fusor, itd_example())
 
     translator = FusionMapTranslator(fusor=fusor_instance)
     fusion_map_data = pl.DataFrame(
@@ -1195,9 +1131,7 @@ async def test_itds(itd_example, fusor_instance):
     fusion_map_fusor = await translator.translate(
         fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
     )
-    assert fusion_map_fusor.structure == itd_example().structure
-    assert fusion_map_fusor.fivePrimeJunction == dup_string
-    assert fusion_map_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(fusion_map_fusor, itd_example())
 
     translator = CiceroTranslator(fusor=fusor_instance)
     cicero = Cicero(
@@ -1226,9 +1160,7 @@ async def test_itds(itd_example, fusor_instance):
     itd_example_cicero.structure[0].anchoredReads = AnchoredReads(reads=100)
     itd_example_cicero.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
     itd_example_cicero.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert cicero_fusor.structure == itd_example_cicero.structure
-    assert cicero_fusor.fivePrimeJunction == dup_string
-    assert cicero_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(cicero_fusor, itd_example_cicero)
 
     translator = EnFusionTranslator(fusor=fusor_instance)
     enfusion = EnFusion(
@@ -1245,9 +1177,7 @@ async def test_itds(itd_example, fusor_instance):
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert enfusion_fusor.structure == itd_example().structure
-    assert enfusion_fusor.fivePrimeJunction == dup_string
-    assert enfusion_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(enfusion_fusor, itd_example())
 
     translator = GenieTranslator(fusor=fusor_instance)
     genie = Genie(
@@ -1266,9 +1196,7 @@ async def test_itds(itd_example, fusor_instance):
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert genie_fusor.structure == itd_example().structure
-    assert genie_fusor.fivePrimeJunction == dup_string
-    assert genie_fusor.threePrimeJunction == dup_string
+    assert_itd_equivalence(genie_fusor, itd_example())
 
 
 def test_moa(fusor_instance):
