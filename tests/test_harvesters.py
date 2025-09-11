@@ -73,6 +73,12 @@ async def test_get_arriba_records(fixture_data_dir, fusor_instance):
     records = await harvester.load_record_table(path)
     assert len(records) == 1
 
+    # Test ITD example
+    path = Path(fixture_data_dir / "arriba_fusions_itd.tsv")
+    harvester = ArribaHarvester(fusor_instance, assembly=Assembly.GRCH38)
+    itd_list = await harvester.load_record_table(path)
+    assert len(itd_list) == 1
+
     path = Path(fixture_data_dir / "fusionss_arriba_test.tsv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert await harvester.load_records(path)
@@ -135,8 +141,8 @@ async def test_get_civic_records(fixture_data_dir, fusor_instance):
     assert len(fusions_list) == 5
 
 
-def test_get_moa_records(fusor_instance):
+def test_get_moa_records(fusor_instance, fixture_data_dir):
     """Test that MOAHarvester works correctly"""
-    harvester = MOAHarvester(fusor_instance)
+    harvester = MOAHarvester(fusor_instance, cache_dir=fixture_data_dir, use_local=True)
     fusions_list = harvester.load_records()
-    assert len(fusions_list) == 67
+    assert len(fusions_list) == 97
