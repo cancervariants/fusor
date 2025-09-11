@@ -16,7 +16,6 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
-from fusor.tools import translate_identifier
 
 
 def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
@@ -42,9 +41,13 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     elif element.featureLocation:
         feature_location = element.featureLocation
         sequence_id = feature_location.sequenceReference.id
-        refseq_id = str(translate_identifier(sr, sequence_id, "refseq")).split(":")[1]
+        refseq_id = sr.translate_identifier(
+            identifier=sequence_id, target_namespaces="refseq"
+        )[0].split(":")[1]
         try:
-            chrom = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
+            chrom = sr.translate_identifier(
+                identifier=sequence_id, target_namespaces="GRCh38"
+            )[0].split(":")[1]
         except IDTranslationException as e:
             raise ValueError from e
         feature_string += f"_{refseq_id}(chr {chrom}):g.{feature_location.start}_{feature_location.end}"
@@ -105,16 +108,18 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
         sequence_reference = element.region.sequenceReference
         if isinstance(sequence_reference, SequenceReference):
             sequence_id = str(sequence_reference.id)
-            refseq_id = str(translate_identifier(sr, sequence_id, "refseq"))
+            refseq_id = sr.translate_identifier(
+                identifier=sequence_id, target_namespaces="refseq"
+            )[0].split(":")[1]
             start = region.start
             end = region.end
             try:
-                chrom = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[
-                    1
-                ]
+                chrom = sr.translate_identifier(
+                    identifier=sequence_id, target_namespaces="GRCh38"
+                )[0].split(":")[1]
             except IDTranslationException as e:
                 raise ValueError from e
-            return f"{refseq_id.split(':')[1]}(chr {chrom}):g.{start}_{end}({strand_value})"
+            return f"{refseq_id}(chr {chrom}):g.{start}_{end}({strand_value})"
         raise ValueError
     raise ValueError
 
