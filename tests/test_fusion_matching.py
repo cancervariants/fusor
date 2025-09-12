@@ -6,7 +6,8 @@ import pytest
 import yaml
 from cool_seq_tool.schemas import Assembly
 
-from fusor.harvester import ArribaHarvester, StarFusionHarvester
+from fusor.fusion_matching import MatchType
+from fusor.harvester import StarFusionHarvester
 
 
 def _assert_subset(actual: dict, expected: dict) -> None:
@@ -42,15 +43,10 @@ async def test_fusion_matching(
     path = Path(fixture_data_dir / "star_fusion_test.tsv")
     harvester = StarFusionHarvester(fusor=fusor_instance, assembly=Assembly.GRCH38)
     fusions_list = await harvester.load_records(path)
-
-    # Load in Arriba records
-    path = Path(fixture_data_dir / "fusions_arriba_test.tsv")
-    harvester = ArribaHarvester(fusor=fusor_instance, assembly=Assembly.GRCH37)
-    arriba_fusion = await harvester.load_records(path)
-    fusions_list.append(arriba_fusion[0])
+    test_list = fusions_list[-2:]
 
     for case in test_cases:
-        assayed_fusion = fusions_list[case["input_index"]]
+        assayed_fusion = test_list[case["input_index"]]
         fusion_matching_instance.assayed_fusions = [assayed_fusion]
         matches = await fusion_matching_instance.match_fusion()
 
@@ -60,9 +56,9 @@ async def test_fusion_matching(
 
         matches = matches[0]
         for i, expected in enumerate(case["expected_matches"]):
-            fusion, score = matches[i]
+            fusion, match_type = matches[i]
             expected_fusion = expected["fields"]
-            expected_score = expected["score"]
+            expected_match_type = MatchType[expected["match_type"]]
 
             fusion = fusion.model_dump(exclude_none=True)
             for field, expected_value in expected_fusion.items():
@@ -71,4 +67,4 @@ async def test_fusion_matching(
                 else:
                     assert fusion[field] == expected_value
 
-            assert score == expected_score
+            assert match_type == expected_match_type
