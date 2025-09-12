@@ -4,6 +4,8 @@ import pickle
 from enum import Enum, unique
 from pathlib import Path
 
+from pydantic import BaseModel
+
 from fusor.config import config
 from fusor.models import (
     AssayedFusion,
@@ -46,68 +48,89 @@ class MatchType(str, Enum):
         }[self]
 
 
-class MatchInformation:
+class PartnerMatch(BaseModel):
+    """Class for describing matching fields for a fusion partner"""
+
+    gene: bool = False
+    transcript: bool = False
+    exon: bool = False
+    exon_offset: bool = False
+    breakpoint: bool = False
+
+    @property
+    def partner_match(self) -> bool:
+        """Check that all values are set to True
+
+        :return: ``True`` if all fields are True, ``False`` if not
+        """
+        return all(self.__dict__.values())
+
+
+class MatchInformation(BaseModel):
     """Helper for reporting matching information based off of MatchType"""
 
-    five_prime_gene: bool = False
-    five_prime_transcript: bool = False
-    five_prime_exon: bool = False
-    five_prime_exon_offset: bool = False
-    five_prime_breakpoint: bool = False
+    five_prime_match_info: PartnerMatch
     linker: bool | None = None
-    three_prime_gene: bool = False
-    three_prime_transcript: bool = False
-    three_prime_exon: bool = False
-    three_prime_exon_offset: bool = False
-    three_prime_breakpoint: bool = False
+    three_prime_match_info: PartnerMatch
 
     def determine_match(self) -> MatchType | None:
         """Determine match type based on fields in MatchInformation class
 
         :return: A MatchType object, or None if no match exists
         """
-        five_prime = [
-            self.five_prime_gene,
-            self.five_prime_transcript,
-            self.five_prime_exon,
-            self.five_prime_exon_offset,
-            self.five_prime_breakpoint,
-        ]
-        three_prime = [
-            self.three_prime_gene,
-            self.three_prime_transcript,
-            self.three_prime_exon,
-            self.three_prime_exon_offset,
-            self.three_prime_breakpoint,
-        ]
+        five_prime_match = self.five_prime_match_info.partner_match
+        three_prime_match = self.three_prime_match_info.partner_match
 
         # Define and return match criteria
         if (
-            all(five_prime)
-            and all(three_prime)
+            five_prime_match
+            and three_prime_match
             and self.linker is None  # Consider exact match if linker is not provided
         ):
             return MatchType.EXACT
-        if all(five_prime) and all(three_prime) and self.linker:
+        if five_prime_match and three_prime_match and self.linker:
             return MatchType.EXACT
-        if all(five_prime) and self.three_prime_gene and not all(three_prime):
-            return MatchType.SHARED_GENES_FIVE_PRIME_EXACT
-        if all(three_prime) and self.five_prime_gene and not all(five_prime):
-            return MatchType.SHARED_GENES_THREE_PRIME_EXACT
+
         if (
-            self.five_prime_gene
-            and self.three_prime_gene
-            and not all(five_prime)
-            and not all(three_prime)
+            five_prime_match
+            and self.three_prime_match_info.gene
+            and not three_prime_match
+        ):
+            return MatchType.SHARED_GENES_FIVE_PRIME_EXACT
+
+        if (
+            three_prime_match
+            and self.five_prime_match_info.gene
+            and not five_prime_match
+        ):
+            return MatchType.SHARED_GENES_THREE_PRIME_EXACT
+
+        if (
+            self.five_prime_match_info.gene
+            and self.three_prime_match_info.gene
+            and not five_prime_match
+            and not three_prime_match
         ):
             return MatchType.SHARED_GENES
-        if all(five_prime) and not all(three_prime):
+
+        if five_prime_match and not three_prime_match:
             return MatchType.FIVE_PRIME_EXACT
-        if all(three_prime) and not all(five_prime):
+
+        if three_prime_match and not five_prime_match:
             return MatchType.THREE_PRIME_EXACT
-        if self.five_prime_gene and not all(five_prime) and not all(three_prime):
+
+        if (
+            self.five_prime_match_info.gene
+            and not five_prime_match
+            and not three_prime_match
+        ):
             return MatchType.FIVE_PRIME_GENE
-        if self.three_prime_gene and not all(three_prime) and not all(five_prime):
+
+        if (
+            self.three_prime_match_info.gene
+            and not three_prime_match
+            and not five_prime_match
+        ):
             return MatchType.THREE_PRIME_GENE
         return None
 
@@ -267,9 +290,9 @@ class FusionMatcher:
         # Compare gene partners first
         if assayed_element.gene == comparator_element.gene:
             if is_five_prime_partner:
-                mi.five_prime_gene = True
+                mi.five_prime_match_info.gene = True
             else:
-                mi.three_prime_gene = True
+                mi.three_prime_match_info.gene = True
 
         # Then compare transcript partners if transcript data exists
         if isinstance(assayed_element, TranscriptSegmentElement) and isinstance(
@@ -277,9 +300,9 @@ class FusionMatcher:
         ):
             if assayed_element.transcript == comparator_element.transcript:
                 if is_five_prime_partner:
-                    mi.five_prime_transcript = True
+                    mi.five_prime_match_info.transcript = True
                 else:
-                    mi.three_prime_transcript = True
+                    mi.three_prime_match_info.transcript = True
 
             start_or_end = "End" if is_five_prime_partner else "Start"
             fields_to_compare = [
@@ -294,9 +317,9 @@ class FusionMatcher:
                     comparator_element, element_field
                 ):
                     if is_five_prime_partner:
-                        setattr(mi, f"five_prime_{mi_field}", True)
+                        setattr(mi.five_prime_match_info, mi_field, True)
                     else:
-                        setattr(mi, f"three_prime_{mi_field}", True)
+                        setattr(mi.three_prime_match_info, mi_field, True)
 
     def _compare_fusion(
         self,
@@ -314,7 +337,9 @@ class FusionMatcher:
         """
         assayed_fusion_structure = assayed_fusion.structure
         comparator_fusion_structure = comparator_fusion.structure
-        match_info = MatchInformation()
+        match_info = MatchInformation(
+            five_prime_match_info=PartnerMatch(), three_prime_match_info=PartnerMatch()
+        )
 
         # Check for linker elements first
         if len(assayed_fusion_structure) == len(comparator_fusion_structure) == 3:
