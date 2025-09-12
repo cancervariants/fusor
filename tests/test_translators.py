@@ -1070,7 +1070,7 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical().viccNomenclature
     )
-    assert len(civic_fusor.evidence[0].value) == 64
+    assert len(civic_fusor.clinicalAnnotations[0].value) == 64
 
     # Test case where one partner is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
@@ -1087,7 +1087,7 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical_mpge().viccNomenclature
     )
-    assert len(civic_fusor.evidence[0].value) == 1
+    assert len(civic_fusor.clinicalAnnotations[0].value) == 1
 
     # Test case where there is a non-zero offset
     test_fusion = CIVIC(
@@ -1107,7 +1107,7 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical_nonzerooffset().viccNomenclature
     )
-    assert len(civic_fusor.evidence[0].value) == 1
+    assert len(civic_fusor.clinicalAnnotations[0].value) == 1
 
 
 @pytest.mark.asyncio
@@ -1480,7 +1480,7 @@ def test_moa(fusor_instance):
     moa_fusion = translator.translate(moa_assertion_example_bcr_abl)
     assert moa_fusion.structure[0] == fusor_instance.gene_element("BCR")[0]
     assert moa_fusion.structure[1] == fusor_instance.gene_element("ABL1")[0]
-    assert moa_fusion.evidence[0].value == moa_assertion_example_bcr_abl
+    assert moa_fusion.clinicalAnnotations[0].value == moa_assertion_example_bcr_abl
 
     # Test v::ALK example
     moa_assertion_example_v_alk = {
@@ -1647,4 +1647,4 @@ def test_moa(fusor_instance):
     moa_fusion = translator.translate(moa_assertion_example_v_alk)
     assert moa_fusion.structure[0] == fusor_instance.multiple_possible_genes_element()
     assert moa_fusion.structure[1] == fusor_instance.gene_element("ALK")[0]
-    assert moa_fusion.evidence[0].value == moa_assertion_example_v_alk
+    assert moa_fusion.clinicalAnnotations[0].value == moa_assertion_example_v_alk
