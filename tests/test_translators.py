@@ -1109,6 +1109,28 @@ async def test_civic(
     )
     assert len(civic_fusor.civicMolecularProfiles) == 1
 
+    # Test case where genomic breakpoint is not provided given transcript and
+    # exon number
+    fusions_list[0].five_prime_end_exon_coordinates.start = None
+    fusions_list[0].five_prime_end_exon_coordinates.end = None
+    fusions_list[0].three_prime_start_exon_coordinates.start = None
+    fusions_list[0].three_prime_start_exon_coordinates.start = None
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[0].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[0].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            0
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[0].molecular_profiles,
+    )
+    with pytest.raises(
+        ValueError,
+        match="Translation cannot proceed as GRCh37 transcripts and exons lacks genomic breakpoints",
+    ):
+        await translator.translate(
+            test_fusion,
+        )
+
 
 @pytest.mark.asyncio
 async def test_itds(itd_example, fusor_instance):
