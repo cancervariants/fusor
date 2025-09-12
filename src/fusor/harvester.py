@@ -410,7 +410,7 @@ class CIVICHarvester(FusionCallerHarvester):
                 cat_fusion = await self.translator.translate(civic=fusion)
             except ValueError as e:
                 err_msg = f"Cannot translate fusion: {fusion.vicc_compliant_name} due to the following reason: {e!s}"
-                _logger.error(err_msg)  # noqa: TRY400
+                _logger.exception(err_msg)
                 continue
             if cat_fusion:
                 translated_fusions.append(cat_fusion)
