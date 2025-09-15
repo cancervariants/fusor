@@ -50,7 +50,7 @@ from fusor.models import (
     UnknownGeneElement,
 )
 from fusor.nomenclature import generate_nomenclature
-from fusor.tools import get_error_message, translate_identifier
+from fusor.tools import get_error_message
 
 _logger = logging.getLogger(__name__)
 
@@ -571,7 +571,9 @@ class FUSOR:
             sequence_id, seq_id_target_namespace
         )
 
-        refget_accession = translate_identifier(self.seqrepo, sequence_id)
+        refget_accession = self.seqrepo.translate_identifier(
+            identifier=sequence_id, target_namespaces="ga4gh"
+        )[0]
 
         sequence_location = SequenceLocation(
             start=start,
@@ -653,15 +655,16 @@ class FUSOR:
 
         if seq_id_target_namespace:
             try:
-                seq_id = translate_identifier(
-                    self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
-                )
-            except IDTranslationException:
+                seq_id = self.seqrepo.translate_identifier(
+                    identifier=sequence_id, target_namespaces=seq_id_target_namespace
+                )[0]
+            except KeyError as e:
                 _logger.warning(
                     "Unable to translate %s using %s as the target namespace",
                     sequence_id,
                     seq_id_target_namespace,
                 )
+                raise IDTranslationException from e
             else:
                 sequence_id = seq_id
         return sequence_id
