@@ -1,27 +1,6 @@
 tests:
-  - name: "KIF5B::RET"
-    input_index: 0
-    expected_matches:
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "KIF5B"
-              exonEnd: 24
-              exonEndOffset: 0
-              transcript: "refseq:NM_004521.3"
-              elementGenomicEnd:
-                start: 32017142
-            - gene:
-                name: "RET"
-              exonStart: 11
-              exonStartOffset: 0
-              transcript: "refseq:NM_020975.6"
-              elementGenomicStart:
-                  start: 43114479
-        score: 10
   - name: "EML4::ALK"
-    input_index: 1
+    input_index: 0
     expected_matches:
       - fields:
           type: "CategoricalFusion"
@@ -40,7 +19,61 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        score: 10
+        match_type: "EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 20
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42325554
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "SHARED_GENES_THREE_PRIME_EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 2
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42245687
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "SHARED_GENES_THREE_PRIME_EXACT"
+      - fields:
+          type: "CategoricalFusion"
+          structure:
+            - gene:
+                name: "EML4"
+              exonEnd: 6
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42264731
+            - gene:
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "SHARED_GENES_THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
@@ -52,252 +85,201 @@ tests:
               transcript: "refseq:NM_004304.5"
               elementGenomicStart:
                 end: 29223528
-        score: 5
-  - name: "INVALID"
-    input_index: 2
-    expected_matches: []
-  - name: "BCR::ABL1"
-    input_index: 3
-    expected_matches:
+        match_type: "THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
-              exonEnd: 14
+                name: "NPM1"
+              exonEnd: 4
               exonEndOffset: 0
-              transcript: "refseq:NM_004327.4"
+              transcript: "refseq:NM_002520.7"
               elementGenomicEnd:
-                end: 23290413
+                end: 171391799
             - gene:
-                name: "ABL1"
-              exonStart: 2
+                name: "ALK"
+              exonStart: 20
               exonStartOffset: 0
-              transcript: "refseq:NM_005157.6"
+              transcript: "refseq:NM_004304.5"
               elementGenomicStart:
-                start: 130854063
-        score: 10
+                end: 29223528
+        match_type: "THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "RANBP2"
+              exonEnd: 18
+              exonEndOffset: 0
+              transcript: "refseq:NM_006267.5"
+              elementGenomicEnd:
+                end: 108758548
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "CLTC"
+              exonEnd: 31
+              exonEndOffset: 0
+              transcript: "refseq:NM_004859.4"
+              elementGenomicEnd:
+                end: 59690711
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "STRN"
+              exonEnd: 3
+              exonEndOffset: 0
+              transcript: "refseq:NM_003162.4"
+              elementGenomicEnd:
+                start: 36916077
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "CAD"
+              exonEnd: 35
+              exonEndOffset: 0
+              transcript: "refseq:NM_004341.5"
+              elementGenomicEnd:
+                end: 27240361
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+              exonStart: 20
+              exonStartOffset: 0
+              transcript: "refseq:NM_004304.5"
+              elementGenomicStart:
+                end: 29223528
+        match_type: "THREE_PRIME_EXACT"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "EML4"
+              exonEnd: 2
+              exonEndOffset: 0
+              transcript: "refseq:NM_019063.5"
+              elementGenomicEnd:
+                end: 42245687
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "NTRK3"
+              exonStart: 14
+              exonStartOffset: 0
+              transcript: "refseq:NM_001012338.3"
+              elementGenomicStart:
+                end: 88033045
+        match_type: "FIVE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "KANK4"
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
             - gene:
-                name: "BCR"
+                name: "HIP1"
             - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
       - fields:
           type: "CategoricalFusion"
           structure:
+            - type: "MultiplePossibleGenesElement"
             - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
-      - fields:
-          type: "CategoricalFusion"
-          structure:
-            - gene:
-                name: "BCR"
-            - gene:
-                name: "ABL1"
-        score: 2
+                name: "ALK"
+        match_type: "THREE_PRIME_GENE"
+  - name: "INVALID"
+    input_index: 1
+    expected_matches: []
