@@ -125,7 +125,7 @@ class Translator(ABC):
         if linker_sequence:
             params["structure"].insert(1, linker_sequence)
 
-        clinical_annotations = [
+        extensions = [
             Extension(name=name, value=value)
             for name, value in [
                 ("civicMolecularProfiles", molecular_profiles),
@@ -133,7 +133,7 @@ class Translator(ABC):
             ]
             if value
         ]
-        params["clinicalAnnotations"] = clinical_annotations
+        params["extensions"] = extensions
         variant = variant_type(**params)
 
         # Assign VICC Nomenclature string to fusion event

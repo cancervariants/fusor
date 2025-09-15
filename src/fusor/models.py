@@ -880,7 +880,7 @@ class CategoricalFusion(AbstractFusion):
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: list[CategoricalFusionElement]
-    clinicalAnnotations: list[Extension] | None = None
+    extensions: list[Extension] | None = None
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
