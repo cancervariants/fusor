@@ -14,10 +14,8 @@ class Caller(str, Enum):
     JAFFA = "JAFFA"
     STAR_FUSION = "STAR-Fusion"
     FUSION_CATCHER = "FusionCatcher"
-    FUSION_MAP = "FusionMap"
     ARRIBA = "Arriba"
     CICERO = "CICERO"
-    MAPSPLICE = "MapSplice"
     ENFUSION = "EnFusion"
     GENIE = "GENIE"
 
