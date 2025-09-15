@@ -1030,7 +1030,7 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical().viccNomenclature
     )
-    assert len(civic_fusor.civicMolecularProfiles) == 64
+    assert len(civic_fusor.extensions[0].value) == 64
 
     # Test case where one partner is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
@@ -1047,7 +1047,7 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical_mpge().viccNomenclature
     )
-    assert len(civic_fusor.civicMolecularProfiles) == 1
+    assert len(civic_fusor.extensions[0].value) == 1
 
     # Test case where there is a non-zero offset
     test_fusion = CIVIC(
@@ -1067,7 +1067,29 @@ async def test_civic(
         civic_fusor.viccNomenclature
         == fusion_data_example_categorical_nonzerooffset().viccNomenclature
     )
-    assert len(civic_fusor.civicMolecularProfiles) == 1
+    assert len(civic_fusor.extensions[0].value) == 1
+
+    # Test case where genomic breakpoint is not provided given transcript and
+    # exon number
+    fusions_list[0].five_prime_end_exon_coordinates.start = None
+    fusions_list[0].five_prime_end_exon_coordinates.end = None
+    fusions_list[0].three_prime_start_exon_coordinates.start = None
+    fusions_list[0].three_prime_start_exon_coordinates.start = None
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[0].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[0].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            0
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[0].molecular_profiles,
+    )
+    with pytest.raises(
+        ValueError,
+        match="Translation cannot proceed as GRCh37 transcripts and exons lacks genomic breakpoints",
+    ):
+        await translator.translate(
+            test_fusion,
+        )
 
 
 @pytest.mark.asyncio
@@ -1419,7 +1441,7 @@ def test_moa(fusor_instance):
     moa_fusion = translator.translate(moa_assertion_example_bcr_abl)
     assert moa_fusion.structure[0] == fusor_instance.gene_element("BCR")[0]
     assert moa_fusion.structure[1] == fusor_instance.gene_element("ABL1")[0]
-    assert moa_fusion.moaAssertion == moa_assertion_example_bcr_abl
+    assert moa_fusion.extensions[0].value == moa_assertion_example_bcr_abl
 
     # Test v::ALK example
     moa_assertion_example_v_alk = {
@@ -1586,4 +1608,4 @@ def test_moa(fusor_instance):
     moa_fusion = translator.translate(moa_assertion_example_v_alk)
     assert moa_fusion.structure[0] == fusor_instance.multiple_possible_genes_element()
     assert moa_fusion.structure[1] == fusor_instance.gene_element("ALK")[0]
-    assert moa_fusion.moaAssertion == moa_assertion_example_v_alk
+    assert moa_fusion.extensions[0].value == moa_assertion_example_v_alk

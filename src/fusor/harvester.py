@@ -408,7 +408,12 @@ class CIVICHarvester(FusionCallerHarvester):
                 "?" in fusion.vicc_compliant_name
             ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
                 continue
-            cat_fusion = await self.translator.translate(civic=fusion)
+            try:
+                cat_fusion = await self.translator.translate(civic=fusion)
+            except ValueError as e:
+                err_msg = f"Cannot translate fusion: {fusion.vicc_compliant_name} due to the following reason: {e!s}"
+                _logger.exception(err_msg)
+                continue
             if cat_fusion:
                 translated_fusions.append(cat_fusion)
         self._count_dropped_fusions(processed_fusions, translated_fusions)
