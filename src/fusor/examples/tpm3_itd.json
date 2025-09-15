@@ -25,7 +25,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 154170399
+        "start": 154170399,
+        "extensions": [{"name": "is_exonic", "value": true}]
       }
     },
     {
@@ -52,7 +53,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 154170399
+        "start": 154170399,
+        "extensions": [{"name": "is_exonic", "value": true}]
       }
     }
   ]

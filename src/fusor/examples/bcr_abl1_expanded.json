@@ -203,7 +203,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ"
         },
-        "end": 23254162
+        "end": 23254162,
+        "extensions": [{"name": "is_exonic", "value": true}]
       }
     },
     {
@@ -427,7 +428,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
         },
-        "start": 130853890
+        "start": 130853890,
+        "extensions": [{"name": "is_exonic", "value": true}]
       }
     }
   ],

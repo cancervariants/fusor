@@ -113,6 +113,7 @@ def sequence_locations():
             },
             "start": 15455,
             "end": 15456,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
         {
             "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
@@ -124,6 +125,7 @@ def sequence_locations():
             },
             "start": 15565,
             "end": 15566,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
         {
             "id": "ga4gh:SL.PPQ-aYd6dsSj7ulUEeqK8xZJP-yPrfdP",
@@ -135,6 +137,7 @@ def sequence_locations():
             },
             "start": 1,
             "end": 2,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
         {
             "id": "ga4gh:SL.OBeSv2B0pURlocL7viFiRwajew_GYGqN",
@@ -146,6 +149,7 @@ def sequence_locations():
             },
             "start": 2,
             "end": 3,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
         {
             "id": "ga4gh:SL.OBeSv2B0pURlocL7viFiRwajew_GYGqN",
