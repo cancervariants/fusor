@@ -3,7 +3,6 @@
 import logging
 from collections import namedtuple
 
-from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.resources.status import check_status as check_cst_status
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
@@ -19,12 +18,11 @@ FusorDataResourceStatus = namedtuple(
 
 async def check_data_resources(
     gene_database: GeneDatabase | None = None,
-    cool_seq_tool: CoolSeqTool | None = None,
 ) -> FusorDataResourceStatus:
     """Perform basic status checks on known data requirements.
 
     Mirroring the input structure of the :py:class:`fusor.fusor.FUSOR` class, existing
-    instances of the Gene Normalizer database and Cool-Seq-Tool can be passed as
+    instances of the Gene Normalizer database can be passed as
     arguments. Otherwise, resource construction is attempted in the same manner as it
     would be with the FUSOR class, relying on environment variables and defaults.
 
@@ -37,12 +35,9 @@ async def check_data_resources(
     logged as ``logging.ERROR`` by respective upstream libraries.
 
     :param gene_database: gene normalizer DB instance
-    :param cool_seq_tool: Cool-Seq-Tool instance
     :return: namedtuple describing whether Cool-Seq-Tool and Gene Normalizer resources
         are all available
     """
-    if cool_seq_tool is None:
-        cool_seq_tool = CoolSeqTool()
     cst_status = await check_cst_status()
 
     gene_status = False
