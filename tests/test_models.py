@@ -93,7 +93,7 @@ def gene_examples():
                 "code": "HGNC:1097",
                 "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
             },
-            "type": "Gene",
+            "conceptType": "Gene",
             "name": "BRAF",
         },
     ]
@@ -232,6 +232,7 @@ def transcript_segments(sequence_locations, gene_examples):
             "elementGenomicEnd": sequence_locations[3],
             "coverage": BreakpointCoverage(fragmentCoverage=100),
             "anchoredReads": AnchoredReads(reads=85),
+            "type": "TranscriptSegmentElement",
         },
         {
             "type": "TranscriptSegmentElement",
@@ -419,7 +420,7 @@ def test_functional_domain(functional_domains, gene_examples):
     check_validation_error(exc_info, msg)
 
 
-def test_transcript_segment_element(transcript_segments):
+def test_transcript_segment_element(transcript_segments, sequence_locations):
     """Test TranscriptSegmentElement object initializes correctly"""
     test_element = TranscriptSegmentElement(**transcript_segments[0])
     assert test_element.transcript == "refseq:NM_152263.3"
@@ -514,10 +515,10 @@ def test_transcript_segment_element(transcript_segments):
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentElement(
             element_type="templated_sequence",
-            transcript="NM_152263.3",
+            transcript="refseq:NM_152263.3",
             strand="-1",
-            exonStart="1",
-            exonStartOffset="-9",
+            exonStart=1,
+            exonStartOffset=-9,
             gene={
                 "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
                 "name": "G1",
@@ -530,28 +531,16 @@ def test_transcript_segment_element(transcript_segments):
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentElement(
             type="TranscriptSegmentElement",
-            transcript="NM_152263.3",
+            transcript="refseq:NM_152263.3",
             strand="-1",
-            exonStartOffset="-9",
-            exonEndOffset="7",
+            exonStartOffset=-9,
+            exonEndOffset=7,
             gene={
                 "primaryCoding": {"id": "test:1", "code": "test:1", "system": "test"},
                 "name": "G1",
             },
-            elementGenomicStart={
-                "location": {
-                    "species_id": "taxonomy:9606",
-                    "chr": "12",
-                    "interval": {"start": "p12.1", "end": "p12.2"},
-                }
-            },
-            elementGenomicEnd={
-                "location": {
-                    "species_id": "taxonomy:9606",
-                    "chr": "12",
-                    "interval": {"start": "p12.2", "end": "p12.2"},
-                }
-            },
+            elementGenomicStart=sequence_locations[0],
+            elementGenomicEnd=sequence_locations[1],
         )
     msg = "Value error, Must give values for either `exonStart`, `exonEnd`, or both"
     check_validation_error(exc_info, msg)
@@ -950,9 +939,10 @@ def test_fusion_itd_element_count(
     # elements are mandatory
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
+            structure=[],
             functionalDomains=[functional_domains[1]],
-            causativeEvent="rearrangement",
-            regulatoryElement=[regulatory_elements[0]],
+            causativeEvent={"eventType": "rearrangement"},
+            regulatoryElement=regulatory_elements[0],
         )
     element_ct_msg = (
         "Value error, Fusions must contain >= 2 structural elements, or >= 1 structural element "
@@ -962,8 +952,9 @@ def test_fusion_itd_element_count(
     with pytest.raises(ValidationError) as exc_info:
         assert InternalTandemDuplication(
             functionalDomains=[functional_domains[1]],
-            causativeEvent="rearrangement",
-            regulatoryElement=[regulatory_elements[0]],
+            causativeEvent={"eventType": "rearrangement"},
+            regulatoryElement=regulatory_elements[0],
+            structure=[],
         )
     element_ct_msg_itd = (
         "Value error, ITDs must contain >= 2 structural elements, or >= 1 structural element "
@@ -978,7 +969,7 @@ def test_fusion_itd_element_count(
             causativeEvent={
                 "type": "CausativeEvent",
                 "eventType": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+                "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             },
             assay={
                 "type": "Assay",

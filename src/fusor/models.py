@@ -7,9 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from civicpy.civic import MolecularProfile
 from cool_seq_tool.schemas import Strand
-from ga4gh.core.models import MappableConcept
+from ga4gh.core.models import Extension, MappableConcept
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
@@ -257,7 +256,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
     coverage: BreakpointCoverage | None = None
     anchoredReads: AnchoredReads | None = None
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     def check_exons(cls, values):
         """Check that at least one of {``exonStart``, ``exonEnd``} is set.
         If set, check that the corresponding ``elementGenomic`` field is set.
@@ -265,24 +264,24 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
         """
         msg = "Must give values for either `exonStart`, `exonEnd`, or both"
-        exon_start = values.get("exonStart")
-        exon_end = values.get("exonEnd")
+        exon_start = values.exonStart
+        exon_end = values.exonEnd
         if (exon_start is None) and (exon_end is None):
             raise ValueError(msg)
 
         if exon_start:
-            if not values.get("elementGenomicStart"):
+            if not values.elementGenomicStart:
                 msg = "Must give `elementGenomicStart` if `exonStart` is given"
                 raise ValueError(msg)
         else:
-            values["exonStartOffset"] = None
+            values.exonStartOffset = None
 
         if exon_end:
-            if not values.get("elementGenomicEnd"):
+            if not values.elementGenomicEnd:
                 msg = "Must give `elementGenomicEnd` if `exonEnd` is given"
                 raise ValueError(msg)
         else:
-            values["exonEndOffset"] = None
+            values.exonEndOffset = None
         return values
 
     model_config = ConfigDict(
@@ -501,14 +500,14 @@ class RegulatoryElement(BaseModel):
     associatedGene: MappableConcept | None = None
     featureLocation: SequenceLocation | None = None
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     def ensure_min_values(cls, values):
         """Ensure that one of {`featureId`, `featureLocation`}, and/or
         `associatedGene` is set.
         """
-        if not (
-            bool(values.get("featureId")) ^ bool(values.get("featureLocation"))
-        ) and not (values.get("associatedGene")):
+        if not (bool(values.featureId) ^ bool(values.featureLocation)) and not (
+            values.associatedGene
+        ):
             msg = (
                 "Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
             )
@@ -649,7 +648,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             raise TypeError(msg)
         return values
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     def enforce_element_quantities(cls, values):
         """Ensure minimum # of elements, and require > 1 unique genes.
 
@@ -662,11 +661,11 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             "Fusions must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
-        structure = values.get("structure", [])
+        structure = values.structure
         if not structure:
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
-        reg_element = values.get("regulatoryElement")
+        reg_element = values.regulatoryElement
         if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
@@ -881,8 +880,7 @@ class CategoricalFusion(AbstractFusion):
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: list[CategoricalFusionElement]
-    civicMolecularProfiles: list[MolecularProfile] | None = None
-    moaAssertion: dict | None = None
+    extensions: list[Extension] | None = None
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -1009,10 +1007,8 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
     contig: ContigSequence | None = None
     readData: ReadData | None = None
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
-    civicMolecularProfiles: list[MolecularProfile] | None = None
-    moaAssertion: dict | None = None
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     def enforce_itd_element_quantities(cls, values):
         """Ensure minimum # of elements for InternalTandemDuplications (ITDs)
 
@@ -1025,11 +1021,11 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
             "ITDs must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
-        structure = values.get("structure", [])
+        structure = values.structure
         if not structure:
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
-        reg_element = values.get("regulatoryElement")
+        reg_element = values.regulatoryElement
         if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 

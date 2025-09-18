@@ -5,7 +5,6 @@ import re
 from typing import Annotated
 
 from bioutils.accessions import coerce_namespace
-from civicpy.civic import MolecularProfile
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
@@ -51,7 +50,7 @@ from fusor.models import (
     UnknownGeneElement,
 )
 from fusor.nomenclature import generate_nomenclature
-from fusor.tools import get_error_message, translate_identifier
+from fusor.tools import get_error_message
 
 _logger = logging.getLogger(__name__)
 
@@ -129,7 +128,6 @@ class FUSOR:
             categorical_attributes = any(
                 [
                     "critical_functional_domains" in kwargs,
-                    "civic_molecular_profiles" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
                     ),
@@ -166,7 +164,6 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         critical_functional_domains: list[FunctionalDomain] | None = None,
         reading_frame_preserved: bool | None = None,
-        civic_molecular_profiles: list[MolecularProfile] | None = None,
     ) -> CategoricalFusion:
         """Construct a CategoricalFusion object
 
@@ -175,7 +172,6 @@ class FUSOR:
         :param critical_functional_domains: lost or preserved functional domains
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
-        :param civic_molecular_profiles: A list of MolecularProfile objects
         :return: CategoricalFusion if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
@@ -185,7 +181,6 @@ class FUSOR:
                 criticalFunctionalDomains=critical_functional_domains,
                 readingFramePreserved=reading_frame_preserved,
                 regulatoryElement=regulatory_element,
-                civic_molecular_profiles=civic_molecular_profiles,
             )
         except ValidationError as e:
             error_message = get_error_message(e)
@@ -232,7 +227,6 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         reading_frame_preserved: bool | None = None,
         critical_functional_domains: list[FunctionalDomain] | None = None,
-        civic_molecular_profiles: list[MolecularProfile] | None = None,
     ) -> InternalTandemDuplication:
         """Construct an InternalTandemDuplication (ITD) object
 
@@ -243,7 +237,6 @@ class FUSOR:
         :param critical_functional_domains: lost or preserved functional domains
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
-        :param civic_molecular_profiles: A list of MolecularProfile objects
         :return: InternalTandemDuplication if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
@@ -255,7 +248,6 @@ class FUSOR:
                 assay=assay,
                 readingFramePreserved=reading_frame_preserved,
                 criticalFunctionalDomains=critical_functional_domains,
-                civicMolecularProfiles=civic_molecular_profiles,
             )
         except ValidationError as e:
             error_message = get_error_message(e)
@@ -579,7 +571,9 @@ class FUSOR:
             sequence_id, seq_id_target_namespace
         )
 
-        refget_accession = translate_identifier(self.seqrepo, sequence_id)
+        refget_accession = self.seqrepo.translate_identifier(
+            identifier=sequence_id, target_namespaces="ga4gh"
+        )[0]
 
         sequence_location = SequenceLocation(
             start=start,
@@ -661,15 +655,16 @@ class FUSOR:
 
         if seq_id_target_namespace:
             try:
-                seq_id = translate_identifier(
-                    self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
-                )
-            except IDTranslationException:
+                seq_id = self.seqrepo.translate_identifier(
+                    identifier=sequence_id, target_namespaces=seq_id_target_namespace
+                )[0]
+            except KeyError as e:
                 _logger.warning(
                     "Unable to translate %s using %s as the target namespace",
                     sequence_id,
                     seq_id_target_namespace,
                 )
+                raise IDTranslationException from e
             else:
                 sequence_id = seq_id
         return sequence_id

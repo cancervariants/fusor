@@ -3,7 +3,6 @@
 import pickle
 from pathlib import Path
 
-import polars as pl
 import pytest
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
@@ -35,7 +34,6 @@ from fusor.translator import (
     CIVICTranslator,
     EnFusionTranslator,
     FusionCatcherTranslator,
-    FusionMapTranslator,
     GenieTranslator,
     JAFFATranslator,
     MOATranslator,
@@ -646,54 +644,6 @@ async def test_fusion_catcher(
 
 
 @pytest.mark.asyncio
-async def test_fusion_map(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
-    """Test Fusion Map translator"""
-    translator = FusionMapTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    fusion_map_data = pl.DataFrame(
-        {
-            "KnownGene1": "TPM3",
-            "KnownGene2": "PDGFRB",
-            "Chromosome1": "1",
-            "Position1": "154170465",
-            "Chromosome2": "5",
-            "Position2": "150126612",
-            "FusionGene": "TPM3->PDGFRB",
-            "SplicePatternClass": "CanonicalPattern[Major]",
-            "FrameShiftClass": "InFrame",
-        }
-    )
-    fusion_map_fusor = await translator.translate(
-        fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
-    )
-    assert fusion_map_fusor.structure == fusion_data_example().structure
-
-    # Test non-exonic breakpoint
-    fusion_map_data_nonexonic = pl.DataFrame(
-        {
-            "KnownGene1": "TPM3",
-            "KnownGene2": "PDGFRB",
-            "Chromosome1": "1",
-            "Position1": "154173079",
-            "Chromosome2": "5",
-            "Position2": "150127173",
-            "FusionGene": "TPM3->PDGFRB",
-            "SplicePatternClass": "CanonicalPattern[Major]",
-            "FrameShiftClass": "InFrame",
-        }
-    )
-    fusion_map_fusor_nonexonic = await translator.translate(
-        fusion_map_data_nonexonic, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert (
-        fusion_map_fusor_nonexonic.structure
-        == fusion_data_example_nonexonic().structure
-    )
-
-
-@pytest.mark.asyncio
 async def test_arriba(
     fusion_data_example, fusion_data_example_nonexonic, fusor_instance
 ):
@@ -1043,7 +993,29 @@ async def test_civic(
     assert_fusion_equivalence(
         civic_fusor, fusion_data_example_categorical_nonzerooffset()
     )
-    assert len(civic_fusor.civicMolecularProfiles) == 1
+    assert len(civic_fusor.extensions[0].value) == 1
+
+    # Test case where genomic breakpoint is not provided given transcript and
+    # exon number
+    fusions_list[0].five_prime_end_exon_coordinates.start = None
+    fusions_list[0].five_prime_end_exon_coordinates.end = None
+    fusions_list[0].three_prime_start_exon_coordinates.start = None
+    fusions_list[0].three_prime_start_exon_coordinates.start = None
+    test_fusion = CIVIC(
+        vicc_compliant_name=fusions_list[0].vicc_compliant_name,
+        five_prime_end_exon_coords=fusions_list[0].five_prime_end_exon_coordinates,
+        three_prime_start_exon_coords=fusions_list[
+            0
+        ].three_prime_start_exon_coordinates,
+        molecular_profiles=fusions_list[0].molecular_profiles,
+    )
+    with pytest.raises(
+        ValueError,
+        match="Translation cannot proceed as GRCh37 transcripts and exons lacks genomic breakpoints",
+    ):
+        await translator.translate(
+            test_fusion,
+        )
 
 
 def assert_itd_equivalence(fusor_output, expected):
@@ -1113,25 +1085,6 @@ async def test_itds(itd_example, fusor_instance):
         Assembly.GRCH38,
     )
     assert_itd_equivalence(fusion_catcher_fusor, itd_example())
-
-    translator = FusionMapTranslator(fusor=fusor_instance)
-    fusion_map_data = pl.DataFrame(
-        {
-            "KnownGene1": "TPM3",
-            "KnownGene2": "TPM3",
-            "Chromosome1": "1",
-            "Position1": "154170465",
-            "Chromosome2": "1",
-            "Position2": "154170465",
-            "FusionGene": "TPM3->PDGFRB",
-            "SplicePatternClass": "CanonicalPattern[Major]",
-            "FrameShiftClass": "InFrame",
-        }
-    )
-    fusion_map_fusor = await translator.translate(
-        fusion_map_data, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
-    )
-    assert_itd_equivalence(fusion_map_fusor, itd_example())
 
     translator = CiceroTranslator(fusor=fusor_instance)
     cicero = Cicero(
@@ -1408,7 +1361,7 @@ def test_moa(fusor_instance):
     moa_fusion = translator.translate(moa_assertion_example_bcr_abl)
     assert moa_fusion.structure[0] == fusor_instance.gene_element("BCR")[0]
     assert moa_fusion.structure[1] == fusor_instance.gene_element("ABL1")[0]
-    assert moa_fusion.moaAssertion == moa_assertion_example_bcr_abl
+    assert moa_fusion.extensions[0].value == moa_assertion_example_bcr_abl
 
     # Test v::ALK example
     moa_assertion_example_v_alk = {
@@ -1575,4 +1528,4 @@ def test_moa(fusor_instance):
     moa_fusion = translator.translate(moa_assertion_example_v_alk)
     assert moa_fusion.structure[0] == fusor_instance.multiple_possible_genes_element()
     assert moa_fusion.structure[1] == fusor_instance.gene_element("ALK")[0]
-    assert moa_fusion.moaAssertion == moa_assertion_example_v_alk
+    assert moa_fusion.extensions[0].value == moa_assertion_example_v_alk
