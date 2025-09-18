@@ -41,152 +41,142 @@ from fusor.translator import (
 )
 
 
-@pytest.fixture(scope="module")
-def fusion_data_example():
+def fusion_data_example(**kwargs):
     """Create example assayed fusion for TPM3::PDGFRB with exonic breakpoints"""
-
-    def _create_base_fixture(**kwargs):
-        params = {
-            "type": "AssayedFusion",
-            "structure": [
-                {
-                    "type": "TranscriptSegmentElement",
-                    "transcript": "refseq:NM_152263.4",
-                    "strand": -1,
-                    "exonEnd": 8,
-                    "exonEndOffset": -66,
-                    "gene": {
-                        "primaryCoding": {
-                            "id": "hgnc:12012",
-                            "code": "HGNC:12012",
-                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                        },
-                        "conceptType": "Gene",
-                        "name": "TPM3",
+    params = {
+        "type": "AssayedFusion",
+        "structure": [
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_152263.4",
+                "strand": -1,
+                "exonEnd": 8,
+                "exonEndOffset": -66,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
                     },
-                    "elementGenomicEnd": {
-                        "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                        "type": "SequenceLocation",
-                        "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                        "sequenceReference": {
-                            "id": "refseq:NC_000001.11",
-                            "type": "SequenceReference",
-                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        },
-                        "start": 154170465,
-                    },
+                    "conceptType": "Gene",
+                    "name": "TPM3",
                 },
-                {
-                    "type": "TranscriptSegmentElement",
-                    "transcript": "refseq:NM_002609.4",
-                    "strand": -1,
-                    "exonStart": 11,
-                    "exonStartOffset": 2,
-                    "gene": {
-                        "primaryCoding": {
-                            "id": "hgnc:8804",
-                            "code": "HGNC:8804",
-                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                        },
-                        "conceptType": "Gene",
-                        "name": "PDGFRB",
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "type": "SequenceLocation",
+                    "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
-                    "elementGenomicStart": {
-                        "id": "ga4gh:SL.Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
-                        "type": "SequenceLocation",
-                        "digest": "Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
-                        "sequenceReference": {
-                            "id": "refseq:NC_000005.10",
-                            "type": "SequenceReference",
-                            "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
-                        },
-                        "end": 150126612,
-                    },
+                    "start": 154170465,
                 },
-            ],
-            "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
-            "r_frame_preserved": True,
-            "assay": None,
-            "viccNomenclature": "NM_152263.4(TPM3):e.8-66::NM_002609.4(PDGFRB):e.11+2",
-        }
-        assayed_fusion = AssayedFusion(**params)
-        return assayed_fusion.model_copy(update=kwargs)
+            },
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_002609.4",
+                "strand": -1,
+                "exonStart": 11,
+                "exonStartOffset": 2,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:8804",
+                        "code": "HGNC:8804",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "PDGFRB",
+                },
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
+                    "type": "SequenceLocation",
+                    "digest": "Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000005.10",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+                    },
+                    "end": 150126612,
+                },
+            },
+        ],
+        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+        "r_frame_preserved": True,
+        "assay": None,
+        "viccNomenclature": "NM_152263.4(TPM3):e.8-66::NM_002609.4(PDGFRB):e.11+2",
+    }
+    assayed_fusion = AssayedFusion(**params)
+    return assayed_fusion.model_copy(update=kwargs)
 
-    return _create_base_fixture
 
-
-@pytest.fixture(scope="module")
-def fusion_data_example_nonexonic():
+def fusion_data_example_nonexonic(**kwargs):
     """Create example assayed fusion for TPM3::PDGFRB with non-exonic breakpoints"""
-
-    def _create_base_fixture(**kwargs):
-        params = {
-            "type": "AssayedFusion",
-            "structure": [
-                {
-                    "type": "TranscriptSegmentElement",
-                    "transcript": "refseq:NM_152263.4",
-                    "strand": -1,
-                    "exonEnd": 4,
-                    "exonEndOffset": 5,
-                    "gene": {
-                        "primaryCoding": {
-                            "id": "hgnc:12012",
-                            "code": "HGNC:12012",
-                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                        },
-                        "conceptType": "Gene",
-                        "name": "TPM3",
+    params = {
+        "type": "AssayedFusion",
+        "structure": [
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_152263.4",
+                "strand": -1,
+                "exonEnd": 4,
+                "exonEndOffset": 5,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
                     },
-                    "elementGenomicEnd": {
-                        "id": "ga4gh:SL.O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
-                        "type": "SequenceLocation",
-                        "digest": "O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
-                        "sequenceReference": {
-                            "id": "refseq:NC_000001.11",
-                            "type": "SequenceReference",
-                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        },
-                        "start": 154173078,
-                    },
+                    "conceptType": "Gene",
+                    "name": "TPM3",
                 },
-                {
-                    "type": "TranscriptSegmentElement",
-                    "transcript": "refseq:NM_002609.4",
-                    "strand": -1,
-                    "exonStart": 11,
-                    "exonStartOffset": -559,
-                    "gene": {
-                        "primaryCoding": {
-                            "id": "hgnc:8804",
-                            "code": "HGNC:8804",
-                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                        },
-                        "conceptType": "Gene",
-                        "name": "PDGFRB",
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
+                    "type": "SequenceLocation",
+                    "digest": "O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
-                    "elementGenomicStart": {
-                        "id": "ga4gh:SL.GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
-                        "type": "SequenceLocation",
-                        "digest": "GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
-                        "sequenceReference": {
-                            "id": "refseq:NC_000005.10",
-                            "type": "SequenceReference",
-                            "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
-                        },
-                        "end": 150127173,
-                    },
+                    "start": 154173078,
                 },
-            ],
-            "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
-            "r_frame_preserved": True,
-            "assay": None,
-            "viccNomenclature": "NM_152263.4(TPM3):e.4+5::NM_002609.4(PDGFRB):e.11-559",
-        }
-        assayed_fusion = AssayedFusion(**params)
-        return assayed_fusion.model_copy(update=kwargs)
-
-    return _create_base_fixture
+            },
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_002609.4",
+                "strand": -1,
+                "exonStart": 11,
+                "exonStartOffset": -559,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:8804",
+                        "code": "HGNC:8804",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "PDGFRB",
+                },
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
+                    "type": "SequenceLocation",
+                    "digest": "GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000005.10",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+                    },
+                    "end": 150127173,
+                },
+            },
+        ],
+        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+        "r_frame_preserved": True,
+        "assay": None,
+        "viccNomenclature": "NM_152263.4(TPM3):e.4+5::NM_002609.4(PDGFRB):e.11-559",
+    }
+    assayed_fusion = AssayedFusion(**params)
+    return assayed_fusion.model_copy(update=kwargs)
 
 
 @pytest.fixture(scope="module")
@@ -441,10 +431,155 @@ def assert_fusion_equivalence(fusor_output, expected):
         assert fusor_output.readData == expected.readData
 
 
+jaffa_base = JAFFA(
+    fusion_genes="TPM3:PDGFRB",
+    chrom1="chr1",
+    base1=154170465,
+    chrom2="chr5",
+    base2=150126612,
+    rearrangement=True,
+    classification="HighConfidence",
+    inframe=True,
+    spanning_reads=100,
+    spanning_pairs=80,
+)
+star_fusion = STARFusion(
+    left_gene="TPM3^ENSG00000143549.19",
+    right_gene="PDGFRB^ENSG00000113721",
+    left_breakpoint="chr1:154170465:-",
+    right_breakpoint="chr5:150126612:-",
+    annots='["INTERCHROMOSOMAL]',
+    junction_read_count=100,
+    spanning_frag_count=80,
+)
+fusion_catcher = FusionCatcher(
+    five_prime_partner="TPM3",
+    three_prime_partner="PDGFRB",
+    five_prime_fusion_point="1:154170465:-",
+    three_prime_fusion_point="5:150126612:-",
+    predicted_effect="exonic(no-known-CDS)/exonic(no-known-CDS)",
+    spanning_unique_reads=100,
+    spanning_reads=80,
+    fusion_sequence="CTAGATGAC*TACTACTA",
+)
+enfusion = EnFusion(
+    gene_5prime="TPM3",
+    gene_3prime="PDGFRB",
+    chr_5prime=1,
+    chr_3prime=5,
+    break_5prime=154170465,
+    break_3prime=150126612,
+)
+genie = Genie(
+    site1_hugo="TPM3",
+    site2_hugo="PDGFRB",
+    site1_chrom=1,
+    site2_chrom=5,
+    site1_pos=154170465,
+    site2_pos=150126612,
+    annot="TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
+    reading_frame="In_frame",
+)
+exonic_test_data = [
+    (
+        jaffa_base,
+        JAFFATranslator,
+        fusion_data_example(
+            readData=ReadData(
+                split=SplitReads(splitReads=100),
+                spanning=SpanningReads(spanningReads=80),
+            )
+        ),
+    ),
+    (
+        star_fusion,
+        STARFusionTranslator,
+        fusion_data_example(
+            readData=ReadData(
+                split=SplitReads(splitReads=100),
+                spanning=SpanningReads(spanningReads=80),
+            )
+        ),
+    ),
+    (
+        fusion_catcher,
+        FusionCatcherTranslator,
+        fusion_data_example(
+            readData=ReadData(
+                split=SplitReads(splitReads=100),
+                spanning=SpanningReads(spanningReads=80),
+            ),
+            contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
+        ),
+    ),
+    (enfusion, EnFusionTranslator, fusion_data_example()),
+    (genie, GenieTranslator, fusion_data_example()),
+]
+
+
 @pytest.mark.asyncio
-async def test_jaffa(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+@pytest.mark.parametrize(("model", "translator_cls", "expected"), exonic_test_data)
+async def test_exonic_breakpoint(model, translator_cls, expected, fusor_instance):
+    translator = translator_cls(fusor=fusor_instance)
+    fusor_output = await translator.translate(
+        model,
+        CoordinateType.INTER_RESIDUE,
+        Assembly.GRCH38,
+    )
+    assert_fusion_equivalence(fusor_output, expected)
+
+
+non_exonic_test_data = [
+    (
+        jaffa_base.model_copy(update={"base1": 154173079, "base2": 150127173}),
+        JAFFATranslator,
+        fusion_data_example_nonexonic(
+            readData=ReadData(
+                split=SplitReads(splitReads=100),
+                spanning=SpanningReads(spanningReads=80),
+            )
+        ),
+    ),
+    (
+        star_fusion,
+        STARFusionTranslator,
+        fusion_data_example_nonexonic(
+            readData=ReadData(
+                split=SplitReads(splitReads=100),
+                spanning=SpanningReads(spanningReads=80),
+            )
+        ),
+    ),
+    (
+        fusion_catcher,
+        FusionCatcherTranslator,
+        fusion_data_example_nonexonic(
+            readData=ReadData(
+                split=SplitReads(splitReads=100),
+                spanning=SpanningReads(spanningReads=80),
+            ),
+            contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
+        ),
+    ),
+    (enfusion, EnFusionTranslator, fusion_data_example_nonexonic()),
+    (genie, GenieTranslator, fusion_data_example_nonexonic()),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("model", "translator_cls", "expected"), non_exonic_test_data)
+async def test_nonexonic_breakpoint(model, translator_cls, expected, fusor_instance):
+    translator = translator_cls(fusor=fusor_instance)
+    fusor_output = await translator.translate(
+        model,
+        CoordinateType.RESIDUE,
+        Assembly.GRCH38,
+    )
+    assert_fusion_equivalence(fusor_output, expected)
+
+
+@pytest.mark.asyncio
+async def test_jaffa(fusion_data_example_nonexonic, fusor_instance):
     """Test JAFFA translator"""
     translator = JAFFATranslator(fusor=fusor_instance)
     # Test exonic breakpoint
@@ -460,19 +595,6 @@ async def test_jaffa(
         spanning_reads=100,
         spanning_pairs=80,
     )
-
-    jaffa_fusor = await translator.translate(
-        jaffa,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-
-    fusion_data_example = fusion_data_example(
-        readData=ReadData(
-            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
-        )
-    )
-    assert_fusion_equivalence(jaffa_fusor, fusion_data_example)
 
     # Test non-exonic breakpoint
     jaffa.base1 = 154173079
@@ -506,9 +628,7 @@ async def test_jaffa(
 
 
 @pytest.mark.asyncio
-async def test_star_fusion(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+async def test_star_fusion(fusion_data_example_nonexonic, fusor_instance):
     """Test STAR-Fusion translator"""
     translator = STARFusionTranslator(fusor=fusor_instance)
     # Test exonic breakpoints
@@ -521,18 +641,6 @@ async def test_star_fusion(
         junction_read_count=100,
         spanning_frag_count=80,
     )
-
-    star_fusion_fusor = await translator.translate(
-        star_fusion,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    fusion_data_example = fusion_data_example(
-        readData=ReadData(
-            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
-        )
-    )
-    assert_fusion_equivalence(star_fusion_fusor, fusion_data_example)
 
     # Test non-exonic breakpoints
     star_fusion.left_breakpoint = "chr1:154173079:-"
@@ -575,9 +683,7 @@ async def test_star_fusion(
 
 
 @pytest.mark.asyncio
-async def test_fusion_catcher(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+async def test_fusion_catcher(fusion_data_example_nonexonic, fusor_instance):
     """Test Fusion Catcher translator"""
     translator = FusionCatcherTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
@@ -591,19 +697,6 @@ async def test_fusion_catcher(
         spanning_reads=80,
         fusion_sequence="CTAGATGAC*TACTACTA",
     )
-
-    fusion_catcher_fusor = await translator.translate(
-        fusion_catcher,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    fusion_data_example = fusion_data_example(
-        readData=ReadData(
-            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
-        ),
-        contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
-    )
-    assert_fusion_equivalence(fusion_catcher_fusor, fusion_data_example)
 
     # Test non-exonic breakpoints
     fusion_catcher.five_prime_fusion_point = "1:154173079:-"
@@ -839,9 +932,7 @@ async def test_cicero(
 
 
 @pytest.mark.asyncio
-async def test_enfusion(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+async def test_enfusion(fusion_data_example_nonexonic, fusor_instance):
     """Test EnFusion translator"""
     translator = EnFusionTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
@@ -853,13 +944,6 @@ async def test_enfusion(
         break_5prime=154170465,
         break_3prime=150126612,
     )
-
-    enfusion_fusor = await translator.translate(
-        enfusion,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_fusion_equivalence(enfusion_fusor, fusion_data_example())
 
     # Test non-exonic breakpoint
     enfusion.break_5prime = 154173079
@@ -889,9 +973,7 @@ async def test_enfusion(
 
 
 @pytest.mark.asyncio
-async def test_genie(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+async def test_genie(fusion_data_example_nonexonic, fusor_instance):
     """Test GENIE Translator"""
     translator = GenieTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
@@ -905,13 +987,6 @@ async def test_genie(
         annot="TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
         reading_frame="In_frame",
     )
-
-    genie_fusor = await translator.translate(
-        genie,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_fusion_equivalence(genie_fusor, fusion_data_example())
 
     # Test non-exonic breakpoint
     genie.site1_pos = 154173079
