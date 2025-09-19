@@ -581,16 +581,25 @@ class ArribaTranslator(Translator):
             else InternalTandemDuplication
         )
 
-        strand1 = arriba.strand1.split("/")[1]  # Determine strand that is transcribed
-        strand2 = arriba.strand2.split("/")[1]  # Determine strand that is transcribed
-        if strand1 == "+":
-            gene1_seg_start = arriba.direction1 == "upstream"
+        if variant_type is InternalTandemDuplication:
+            # Assume breakpoint describes segment end if the event is an ITD
+            gene1_seg_start = False
+            gene2_seg_start = False
         else:
-            gene1_seg_start = arriba.direction1 == "downstream"
-        if strand2 == "+":
-            gene2_seg_start = arriba.direction2 == "upstream"
-        else:
-            gene2_seg_start = arriba.direction2 == "downstream"
+            strand1 = arriba.strand1.split("/")[
+                1
+            ]  # Determine strand that is transcribed
+            strand2 = arriba.strand2.split("/")[
+                1
+            ]  # Determine strand that is transcribed
+            if strand1 == "+":
+                gene1_seg_start = arriba.direction1 == "upstream"
+            else:
+                gene1_seg_start = arriba.direction1 == "downstream"
+            if strand2 == "+":
+                gene2_seg_start = arriba.direction2 == "upstream"
+            else:
+                gene2_seg_start = arriba.direction2 == "downstream"
 
         breakpoint1 = arriba.breakpoint1.split(":")
         breakpoint2 = arriba.breakpoint2.split(":")
