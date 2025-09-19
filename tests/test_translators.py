@@ -475,6 +475,40 @@ genie = Genie(
     annot="TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
     reading_frame="In_frame",
 )
+arriba = Arriba(
+    gene1="TPM3",
+    gene2="PDGFRB",
+    strand1="-/-",
+    strand2="-/-",
+    breakpoint1="1:154170465",
+    breakpoint2="5:150126612",
+    event_type="translocation",
+    confidence="high",
+    direction1="upstream",
+    direction2="downstream",
+    rf="in-frame",
+    split_reads1=100,
+    split_reads2=95,
+    discordant_mates=30,
+    coverage1=200,
+    coverage2=190,
+    fusion_transcript="CTAGATGAC_TACTACTA|GTACTACT",
+)
+cicero = Cicero(
+    gene_5prime="TPM3",
+    gene_3prime="PDGFRB",
+    chr_5prime="1",
+    chr_3prime="5",
+    pos_5prime=154170465,
+    pos_3prime=150126612,
+    sv_ort=">",
+    event_type="CTX",
+    reads_5prime=100,
+    reads_3prime=95,
+    coverage_5prime=200,
+    coverage_3prime=190,
+    contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
+)
 exonic_test_data = [
     (
         jaffa_base,
@@ -509,6 +543,19 @@ exonic_test_data = [
     ),
     (enfusion, EnFusionTranslator, fusion_data_example()),
     (genie, GenieTranslator, fusion_data_example()),
+    (
+        arriba,
+        ArribaTranslator,
+        fusion_data_example(
+            readData=ReadData(spanning=SpanningReads(spanningReads=30)),
+            contig=ContigSequence(contig=arriba.fusion_transcript),
+        ),
+    ),
+    (
+        cicero,
+        CiceroTranslator,
+        fusion_data_example(contig=ContigSequence(contig=cicero.contig)),
+    ),
 ]
 
 
@@ -522,6 +569,11 @@ async def test_exonic_breakpoint(model, translator_cls, expected, fusor_instance
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
+    if translator_cls is ArribaTranslator or translator_cls is CiceroTranslator:
+        expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+        expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+        expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+        expected.structure[1].anchoredReads = AnchoredReads(reads=95)
     assert_fusion_equivalence(fusor_output, expected)
 
 
@@ -583,6 +635,21 @@ non_exonic_test_data = [
         GenieTranslator,
         fusion_data_example_nonexonic(),
     ),
+    (
+        arriba.model_copy(
+            update=({"breakpoint1": "1:154173079", "breakpoint2": "5:150127173"})
+        ),
+        ArribaTranslator,
+        fusion_data_example_nonexonic(
+            readData=ReadData(spanning=SpanningReads(spanningReads=30)),
+            contig=ContigSequence(contig=arriba.fusion_transcript),
+        ),
+    ),
+    (
+        cicero.model_copy(update=({"pos_5prime": 154173079, "pos_3prime": 150127173})),
+        CiceroTranslator,
+        fusion_data_example_nonexonic(contig=ContigSequence(contig=cicero.contig)),
+    ),
 ]
 
 
@@ -596,6 +663,11 @@ async def test_nonexonic_breakpoint(model, translator_cls, expected, fusor_insta
         CoordinateType.RESIDUE,
         Assembly.GRCH38,
     )
+    if translator_cls is ArribaTranslator or translator_cls is CiceroTranslator:
+        expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+        expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+        expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+        expected.structure[1].anchoredReads = AnchoredReads(reads=95)
     assert_fusion_equivalence(fusor_output, expected)
 
 
@@ -620,6 +692,8 @@ five_prime_unknown_test_data = [
         genie.model_copy(update=({"site1_hugo": "NA"})),
         GenieTranslator,
     ),
+    (arriba.model_copy(update=({"gene1": "NA"})), ArribaTranslator),
+    (cicero.model_copy(update=({"gene_5prime": "NA"})), CiceroTranslator),
 ]
 
 
@@ -658,6 +732,8 @@ three_prime_unknown_test_data = [
         genie.model_copy(update=({"site2_hugo": "NA"})),
         GenieTranslator,
     ),
+    (arriba.model_copy(update=({"gene2": "NA"})), ArribaTranslator),
+    (cicero.model_copy(update=({"gene_3prime": "NA"})), CiceroTranslator),
 ]
 
 
@@ -676,145 +752,27 @@ async def test_three_prime_unknown(model, translator_cls, fusor_instance):
 
 
 @pytest.mark.asyncio
-async def test_arriba(fusor_instance):
-    """Test Arriba translator"""
+async def test_arriba_linker(fusor_instance):
+    """Test Arriba translator for linker example"""
     translator = ArribaTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    arriba = Arriba(
-        gene1="TPM3",
-        gene2="PDGFRB",
-        strand1="-/-",
-        strand2="-/-",
-        breakpoint1="1:154170465",
-        breakpoint2="5:150126612",
-        event_type="translocation",
-        confidence="high",
-        direction1="upstream",
-        direction2="downstream",
-        rf="in-frame",
-        split_reads1=100,
-        split_reads2=95,
-        discordant_mates=30,
-        coverage1=200,
-        coverage2=190,
-        fusion_transcript="CTAGATGAC_TACTACTA|GTACTACT",
-    )
-
-    arriba_fusor = await translator.translate(
-        arriba,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    expected = fusion_data_example(
-        readData=ReadData(spanning=SpanningReads(spanningReads=30)),
-        contig=ContigSequence(contig=arriba.fusion_transcript),
-    )
-    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
-    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    expected.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert_fusion_equivalence(arriba_fusor, expected)
-
-    # Test non-exonic breakpoint
-    arriba.breakpoint1 = "1:154173079"
-    arriba.breakpoint2 = "5:150127173"
-
-    arriba_fusor_nonexonic = await translator.translate(
-        arriba,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    expected = fusion_data_example_nonexonic(
-        readData=ReadData(spanning=SpanningReads(spanningReads=30)),
-        contig=ContigSequence(contig=arriba.fusion_transcript),
-    )
-    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
-    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    expected.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert_fusion_equivalence(arriba_fusor_nonexonic, expected)
-
-    # Test Linker Sequence
     arriba_linker = arriba.model_copy(deep=True)
     arriba_linker.fusion_transcript = "ATAGAT|atatacgat|TATGAT"
     arriba_fusor_linker = await translator.translate(
-        arriba_linker, CoordinateType.RESIDUE, Assembly.GRCH38
+        arriba_linker, CoordinateType.INTER_RESIDUE, Assembly.GRCH38
     )
     linker_element = arriba_fusor_linker.structure[1]
     assert linker_element
     assert linker_element.linkerSequence.sequence.root == "ATATACGAT"
     assert (
         arriba_fusor_linker.viccNomenclature
-        == "NM_152263.4(TPM3):e.4+5::ATATACGAT::NM_002609.4(PDGFRB):e.11-559"
+        == "NM_152263.4(TPM3):e.8-66::ATATACGAT::NM_002609.4(PDGFRB):e.11+2"
     )
-
-    # Test unknown partners
-    arriba.gene1 = "NA"
-    arriba_fusor_unknown = await translator.translate(
-        arriba, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert arriba_fusor_unknown.structure[0] == UnknownGeneElement()
-    assert arriba_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
-    arriba.gene1 = "TPM3"
-    arriba.gene2 = "NA"
-    arriba_fusor_unknown = await translator.translate(
-        arriba, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert arriba_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert arriba_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio
-async def test_cicero(fusor_instance):
-    """Test CICERO translator"""
+async def test_cicero_error(fusor_instance):
+    """Test error handling for CICERO translator"""
     translator = CiceroTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    cicero = Cicero(
-        gene_5prime="TPM3",
-        gene_3prime="PDGFRB",
-        chr_5prime="1",
-        chr_3prime="5",
-        pos_5prime=154170466,
-        pos_3prime=150126612,
-        sv_ort=">",
-        event_type="CTX",
-        reads_5prime=100,
-        reads_3prime=90,
-        coverage_5prime=200,
-        coverage_3prime=190,
-        contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
-    )
-
-    cicero_fusor = await translator.translate(
-        cicero,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    expected = fusion_data_example(contig=ContigSequence(contig=cicero.contig))
-    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
-    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    expected.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert_fusion_equivalence(cicero_fusor, expected)
-
-    # Test non-exonic breakpoint
-    cicero.pos_5prime = 154173079
-    cicero.pos_3prime = 150127173
-
-    cicero_fusor_nonexonic = await translator.translate(
-        cicero,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    expected = fusion_data_example_nonexonic(
-        contig=ContigSequence(contig=cicero.contig)
-    )
-    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
-    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    expected.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert_fusion_equivalence(cicero_fusor_nonexonic, expected)
-
     # Test case where the called fusion does not have confident biological meaning
     cicero.sv_ort = "?"
     with pytest.raises(
@@ -837,23 +795,6 @@ async def test_cicero(fusor_instance):
             CoordinateType.RESIDUE,
             Assembly.GRCH38,
         )
-
-    # Test unknown partners
-    cicero.sv_ort = ">"
-    cicero.gene_5prime = "NA"
-    cicero.gene_3prime = "PDGFRB"
-    cicero_fusor_unknown = await translator.translate(
-        cicero, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert cicero_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
-    assert cicero_fusor_unknown.structure[0] == UnknownGeneElement()
-    cicero.gene_5prime = "TPM3"
-    cicero.gene_3prime = "NA"
-    cicero_fusor_unknown = await translator.translate(
-        cicero, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert cicero_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert cicero_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
 
 
 @pytest.mark.asyncio
@@ -993,88 +934,56 @@ itd_test_data = [
         GenieTranslator,
         itd_example(),
     ),
+    (
+        arriba.model_copy(
+            update=(
+                {
+                    "gene2": "TPM3",
+                    "strand2": "-/-",
+                    "breakpoint2": "1:154170465",
+                    "event_type": "ITD",
+                }
+            )
+        ),
+        ArribaTranslator,
+        itd_example(
+            readData=ReadData(spanning=SpanningReads(spanningReads=30)),
+            contig=ContigSequence(contig=arriba.fusion_transcript),
+        ),
+    ),
+    (
+        cicero.model_copy(
+            update=(
+                {
+                    "gene_3prime": "TPM3",
+                    "chr_3prime": "1",
+                    "pos_3prime": 154170465,
+                    "event_type": "Internal_dup",
+                }
+            )
+        ),
+        CiceroTranslator,
+        itd_example(contig=ContigSequence(contig=cicero.contig)),
+    ),
 ]
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("model", "translator_cls", "expected"), itd_test_data)
-async def test_itds_shared(model, translator_cls, expected, fusor_instance):
-    """Test ITD example across shared callers"""
+async def test_itds(model, translator_cls, expected, fusor_instance):
+    """Test ITDs across callers"""
     translator = translator_cls(fusor=fusor_instance)
     fusor_output = await translator.translate(
         model,
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
+    if translator_cls is ArribaTranslator or translator_cls is CiceroTranslator:
+        expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+        expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+        expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+        expected.structure[1].anchoredReads = AnchoredReads(reads=95)
     assert_itd_equivalence(fusor_output, expected)
-
-
-@pytest.mark.asyncio
-async def test_itds_cicero_arriba(fusor_instance):
-    """Test ITD example across Cicero and Arriba"""
-    translator = CiceroTranslator(fusor=fusor_instance)
-    cicero = Cicero(
-        gene_5prime="TPM3",
-        gene_3prime="TPM3",
-        chr_5prime="1",
-        chr_3prime="1",
-        pos_5prime=154170465,
-        pos_3prime=154170465,
-        sv_ort=">",
-        event_type="Internal_dup",
-        reads_5prime=100,
-        reads_3prime=90,
-        coverage_5prime=200,
-        coverage_3prime=190,
-        contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
-    )
-
-    cicero_fusor = await translator.translate(
-        cicero,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    itd_example_cicero = itd_example(contig=ContigSequence(contig=cicero.contig))
-    itd_example_cicero.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    itd_example_cicero.structure[0].anchoredReads = AnchoredReads(reads=100)
-    itd_example_cicero.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    itd_example_cicero.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert_itd_equivalence(cicero_fusor, itd_example_cicero)
-
-    translator = ArribaTranslator(fusor=fusor_instance)
-    arriba = Arriba(
-        gene1="TPM3",
-        gene2="TPM3",
-        strand1="-/-",
-        strand2="-/-",
-        breakpoint1="1:154170465",
-        breakpoint2="1:154170465",
-        event_type="ITD",
-        confidence="high",
-        direction1="upstream",
-        direction2="downstream",
-        rf="in-frame",
-        split_reads1=100,
-        split_reads2=95,
-        discordant_mates=30,
-        coverage1=200,
-        coverage2=190,
-        fusion_transcript="CTAGATGAC_TACTACTA|GTACTACT",
-    )
-    arriba_fusor = await translator.translate(
-        arriba,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    itd_data_example = itd_example(
-        readData=ReadData(spanning=SpanningReads(spanningReads=30)),
-        contig=ContigSequence(contig=arriba.fusion_transcript),
-    )
-    itd_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    itd_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
-    itd_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    itd_data_example.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert_itd_equivalence(arriba_fusor, itd_data_example)
 
 
 def test_moa(fusor_instance):
