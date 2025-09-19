@@ -179,81 +179,76 @@ def fusion_data_example_nonexonic(**kwargs):
     return assayed_fusion.model_copy(update=kwargs)
 
 
-@pytest.fixture(scope="module")
-def itd_example():
+def itd_example(**kwargs):
     """Create test fixture for ITD events, using a duplication of TPM3, exons 1-8,
     with an offset of 66
     """
-
-    def _create_base_fixture(**kwargs):
-        params = {
-            "type": "InternalTandemDuplication",
-            "structure": [
-                {
-                    "type": "TranscriptSegmentElement",
-                    "transcript": "refseq:NM_152263.4",
-                    "strand": -1,
-                    "exonEnd": 8,
-                    "exonEndOffset": -66,
-                    "gene": {
-                        "primaryCoding": {
-                            "id": "hgnc:12012",
-                            "code": "HGNC:12012",
-                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                        },
-                        "conceptType": "Gene",
-                        "name": "TPM3",
+    params = {
+        "type": "InternalTandemDuplication",
+        "structure": [
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_152263.4",
+                "strand": -1,
+                "exonEnd": 8,
+                "exonEndOffset": -66,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
                     },
-                    "elementGenomicEnd": {
-                        "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                        "type": "SequenceLocation",
-                        "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                        "sequenceReference": {
-                            "id": "refseq:NC_000001.11",
-                            "type": "SequenceReference",
-                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        },
-                        "start": 154170465,
-                    },
+                    "conceptType": "Gene",
+                    "name": "TPM3",
                 },
-                {
-                    "type": "TranscriptSegmentElement",
-                    "transcript": "refseq:NM_152263.4",
-                    "strand": -1,
-                    "exonEnd": 8,
-                    "exonEndOffset": -66,
-                    "gene": {
-                        "primaryCoding": {
-                            "id": "hgnc:12012",
-                            "code": "HGNC:12012",
-                            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                        },
-                        "conceptType": "Gene",
-                        "name": "TPM3",
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "type": "SequenceLocation",
+                    "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
-                    "elementGenomicEnd": {
-                        "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                        "type": "SequenceLocation",
-                        "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                        "sequenceReference": {
-                            "id": "refseq:NC_000001.11",
-                            "type": "SequenceReference",
-                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        },
-                        "start": 154170465,
-                    },
+                    "start": 154170465,
                 },
-            ],
-            "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
-            "fivePrimeJunction": "NM_152263.4(TPM3):e.8-66",
-            "threePrimeJunction": "NM_152263.4(TPM3):e.8-66",
-            "r_frame_preserved": True,
-            "assay": None,
-        }
-        itd = InternalTandemDuplication(**params)
-        return itd.model_copy(update=kwargs)
-
-    return _create_base_fixture
+            },
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_152263.4",
+                "strand": -1,
+                "exonEnd": 8,
+                "exonEndOffset": -66,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:12012",
+                        "code": "HGNC:12012",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "TPM3",
+                },
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "type": "SequenceLocation",
+                    "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    },
+                    "start": 154170465,
+                },
+            },
+        ],
+        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+        "fivePrimeJunction": "NM_152263.4(TPM3):e.8-66",
+        "threePrimeJunction": "NM_152263.4(TPM3):e.8-66",
+        "r_frame_preserved": True,
+        "assay": None,
+    }
+    itd = InternalTandemDuplication(**params)
+    return itd.model_copy(update=kwargs)
 
 
 @pytest.fixture(scope="module")
@@ -520,6 +515,7 @@ exonic_test_data = [
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("model", "translator_cls", "expected"), exonic_test_data)
 async def test_exonic_breakpoint(model, translator_cls, expected, fusor_instance):
+    """Test exonic breakpoint across shared callers"""
     translator = translator_cls(fusor=fusor_instance)
     fusor_output = await translator.translate(
         model,
@@ -541,7 +537,14 @@ non_exonic_test_data = [
         ),
     ),
     (
-        star_fusion,
+        star_fusion.model_copy(
+            update=(
+                {
+                    "left_breakpoint": "chr1:154173079:-",
+                    "right_breakpoint": "chr5:150127173:-",
+                }
+            )
+        ),
         STARFusionTranslator,
         fusion_data_example_nonexonic(
             readData=ReadData(
@@ -551,7 +554,14 @@ non_exonic_test_data = [
         ),
     ),
     (
-        fusion_catcher,
+        fusion_catcher.model_copy(
+            update=(
+                {
+                    "five_prime_fusion_point": "1:154173079:-",
+                    "three_prime_fusion_point": "5:150127173:-",
+                }
+            )
+        ),
         FusionCatcherTranslator,
         fusion_data_example_nonexonic(
             readData=ReadData(
@@ -561,14 +571,25 @@ non_exonic_test_data = [
             contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
         ),
     ),
-    (enfusion, EnFusionTranslator, fusion_data_example_nonexonic()),
-    (genie, GenieTranslator, fusion_data_example_nonexonic()),
+    (
+        enfusion.model_copy(
+            update=({"break_5prime": 154173079, "break_3prime": 150127173})
+        ),
+        EnFusionTranslator,
+        fusion_data_example_nonexonic(),
+    ),
+    (
+        genie.model_copy(update=({"site1_pos": 154173079, "site2_pos": 150127173})),
+        GenieTranslator,
+        fusion_data_example_nonexonic(),
+    ),
 ]
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(("model", "translator_cls", "expected"), non_exonic_test_data)
 async def test_nonexonic_breakpoint(model, translator_cls, expected, fusor_instance):
+    """Test non-exonic breakpoint across shared callers"""
     translator = translator_cls(fusor=fusor_instance)
     fusor_output = await translator.translate(
         model,
@@ -578,168 +599,84 @@ async def test_nonexonic_breakpoint(model, translator_cls, expected, fusor_insta
     assert_fusion_equivalence(fusor_output, expected)
 
 
-@pytest.mark.asyncio
-async def test_jaffa(fusion_data_example_nonexonic, fusor_instance):
-    """Test JAFFA translator"""
-    translator = JAFFATranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    jaffa = JAFFA(
-        fusion_genes="TPM3:PDGFRB",
-        chrom1="chr1",
-        base1=154170465,
-        chrom2="chr5",
-        base2=150126612,
-        rearrangement=True,
-        classification="HighConfidence",
-        inframe=True,
-        spanning_reads=100,
-        spanning_pairs=80,
-    )
-
-    # Test non-exonic breakpoint
-    jaffa.base1 = 154173079
-    jaffa.base2 = 150127173
-
-    jaffa_fusor_nonexonic = await translator.translate(
-        jaffa,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
-        readData=ReadData(
-            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
-        )
-    )
-    assert_fusion_equivalence(jaffa_fusor_nonexonic, fusion_data_example_nonexonic)
-
-    # Test unknown partner
-    jaffa.fusion_genes = "NA:PDGFRB"
-    jaffa_fusor_unknown = await translator.translate(
-        jaffa, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert jaffa_fusor_unknown.structure[0] == UnknownGeneElement()
-    assert jaffa_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
-    jaffa.fusion_genes = "TPM3:NA"
-    jaffa_fusor_unknown = await translator.translate(
-        jaffa, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert jaffa_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert jaffa_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
+five_prime_unknown_test_data = [
+    (
+        jaffa_base.model_copy(update=({"fusion_genes": "NA:PDGFRB"})),
+        JAFFATranslator,
+    ),
+    (
+        star_fusion.model_copy(update=({"left_gene": "NA"})),
+        STARFusionTranslator,
+    ),
+    (
+        fusion_catcher.model_copy(update=({"five_prime_partner": "NA"})),
+        FusionCatcherTranslator,
+    ),
+    (
+        enfusion.model_copy(update=({"gene_5prime": "NA"})),
+        EnFusionTranslator,
+    ),
+    (
+        genie.model_copy(update=({"site1_hugo": "NA"})),
+        GenieTranslator,
+    ),
+]
 
 
 @pytest.mark.asyncio
-async def test_star_fusion(fusion_data_example_nonexonic, fusor_instance):
-    """Test STAR-Fusion translator"""
-    translator = STARFusionTranslator(fusor=fusor_instance)
-    # Test exonic breakpoints
-    star_fusion = STARFusion(
-        left_gene="TPM3^ENSG00000143549.19",
-        right_gene="PDGFRB^ENSG00000113721",
-        left_breakpoint="chr1:154170465:-",
-        right_breakpoint="chr5:150126612:-",
-        annots='["INTERCHROMOSOMAL]',
-        junction_read_count=100,
-        spanning_frag_count=80,
-    )
-
-    # Test non-exonic breakpoints
-    star_fusion.left_breakpoint = "chr1:154173079:-"
-    star_fusion.right_breakpoint = "chr5:150127173:-"
-
-    star_fusion_fusor_nonexonic = await translator.translate(
-        star_fusion,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
-        readData=ReadData(
-            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
-        )
-    )
-    assert_fusion_equivalence(
-        star_fusion_fusor_nonexonic, fusion_data_example_nonexonic
-    )
-
-    # Test unknown partners
-    star_fusion.left_gene = "NA"
-    star_fusion_fusor_unknown = await translator.translate(
-        star_fusion,
+@pytest.mark.parametrize(("model", "translator_cls"), five_prime_unknown_test_data)
+async def test_five_prime_unknown(model, translator_cls, fusor_instance):
+    """Test 5' unknown partner across shared callers"""
+    translator = translator_cls(fusor=fusor_instance)
+    fusor_output = await translator.translate(
+        model,
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert star_fusion_fusor_unknown.structure[0] == UnknownGeneElement()
-    assert (
-        star_fusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
-    )
-    star_fusion.left_gene = "TPM3"
-    star_fusion.right_gene = "NA"
-    star_fusion_fusor_unknown = await translator.translate(
-        star_fusion,
+    assert fusor_output.structure[0] == UnknownGeneElement()
+    assert fusor_output.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11+2"
+
+
+three_prime_unknown_test_data = [
+    (
+        jaffa_base.model_copy(update=({"fusion_genes": "TPM3:NA"})),
+        JAFFATranslator,
+    ),
+    (
+        star_fusion.model_copy(update=({"right_gene": "NA"})),
+        STARFusionTranslator,
+    ),
+    (
+        fusion_catcher.model_copy(update=({"three_prime_partner": "NA"})),
+        FusionCatcherTranslator,
+    ),
+    (
+        enfusion.model_copy(update=({"gene_3prime": "NA"})),
+        EnFusionTranslator,
+    ),
+    (
+        genie.model_copy(update=({"site2_hugo": "NA"})),
+        GenieTranslator,
+    ),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("model", "translator_cls"), three_prime_unknown_test_data)
+async def test_three_prime_unknown(model, translator_cls, fusor_instance):
+    """Test 3' unknown partner across shared callers"""
+    translator = translator_cls(fusor=fusor_instance)
+    fusor_output = await translator.translate(
+        model,
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert star_fusion_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert star_fusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+4::?"
+    assert fusor_output.structure[1] == UnknownGeneElement()
+    assert fusor_output.viccNomenclature == "NM_152263.4(TPM3):e.8-66::?"
 
 
 @pytest.mark.asyncio
-async def test_fusion_catcher(fusion_data_example_nonexonic, fusor_instance):
-    """Test Fusion Catcher translator"""
-    translator = FusionCatcherTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    fusion_catcher = FusionCatcher(
-        five_prime_partner="TPM3",
-        three_prime_partner="PDGFRB",
-        five_prime_fusion_point="1:154170465:-",
-        three_prime_fusion_point="5:150126612:-",
-        predicted_effect="exonic(no-known-CDS)/exonic(no-known-CDS)",
-        spanning_unique_reads=100,
-        spanning_reads=80,
-        fusion_sequence="CTAGATGAC*TACTACTA",
-    )
-
-    # Test non-exonic breakpoints
-    fusion_catcher.five_prime_fusion_point = "1:154173079:-"
-    fusion_catcher.three_prime_fusion_point = "5:150127173:-"
-
-    fusion_catcher_fusor_nonexonic = await translator.translate(
-        fusion_catcher,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
-        readData=ReadData(
-            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
-        ),
-        contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
-    )
-    assert_fusion_equivalence(
-        fusion_catcher_fusor_nonexonic, fusion_data_example_nonexonic
-    )
-
-    # Test unknown partners
-    fusion_catcher.five_prime_partner = "NA"
-    fusion_catcher_fusor_unknown = await translator.translate(
-        fusion_catcher, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert fusion_catcher_fusor_unknown.structure[0] == UnknownGeneElement()
-    assert (
-        fusion_catcher_fusor_unknown.viccNomenclature
-        == "?::NM_002609.4(PDGFRB):e.11-559"
-    )
-    fusion_catcher.five_prime_partner = "TPM3"
-    fusion_catcher.three_prime_partner = "NA"
-    fusion_catcher_fusor_unknown = await translator.translate(
-        fusion_catcher, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert fusion_catcher_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert fusion_catcher_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
-
-
-@pytest.mark.asyncio
-async def test_arriba(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+async def test_arriba(fusor_instance):
     """Test Arriba translator"""
     translator = ArribaTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
@@ -768,15 +705,15 @@ async def test_arriba(
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    fusion_data_example = fusion_data_example(
+    expected = fusion_data_example(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
         contig=ContigSequence(contig=arriba.fusion_transcript),
     )
-    fusion_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
-    fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    fusion_data_example.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert_fusion_equivalence(arriba_fusor, fusion_data_example)
+    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    expected.structure[1].anchoredReads = AnchoredReads(reads=95)
+    assert_fusion_equivalence(arriba_fusor, expected)
 
     # Test non-exonic breakpoint
     arriba.breakpoint1 = "1:154173079"
@@ -787,19 +724,15 @@ async def test_arriba(
         CoordinateType.RESIDUE,
         Assembly.GRCH38,
     )
-    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+    expected = fusion_data_example_nonexonic(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
         contig=ContigSequence(contig=arriba.fusion_transcript),
     )
-    fusion_data_example_nonexonic.structure[0].coverage = BreakpointCoverage(
-        fragmentCoverage=200
-    )
-    fusion_data_example_nonexonic.structure[0].anchoredReads = AnchoredReads(reads=100)
-    fusion_data_example_nonexonic.structure[1].coverage = BreakpointCoverage(
-        fragmentCoverage=190
-    )
-    fusion_data_example_nonexonic.structure[1].anchoredReads = AnchoredReads(reads=95)
-    assert_fusion_equivalence(arriba_fusor_nonexonic, fusion_data_example_nonexonic)
+    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    expected.structure[1].anchoredReads = AnchoredReads(reads=95)
+    assert_fusion_equivalence(arriba_fusor_nonexonic, expected)
 
     # Test Linker Sequence
     arriba_linker = arriba.model_copy(deep=True)
@@ -832,9 +765,7 @@ async def test_arriba(
 
 
 @pytest.mark.asyncio
-async def test_cicero(
-    fusion_data_example, fusion_data_example_nonexonic, fusor_instance
-):
+async def test_cicero(fusor_instance):
     """Test CICERO translator"""
     translator = CiceroTranslator(fusor=fusor_instance)
     # Test exonic breakpoint
@@ -859,14 +790,12 @@ async def test_cicero(
         CoordinateType.RESIDUE,
         Assembly.GRCH38,
     )
-    fusion_data_example = fusion_data_example(
-        contig=ContigSequence(contig=cicero.contig)
-    )
-    fusion_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
-    fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
-    fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
-    fusion_data_example.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert_fusion_equivalence(cicero_fusor, fusion_data_example)
+    expected = fusion_data_example(contig=ContigSequence(contig=cicero.contig))
+    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    expected.structure[1].anchoredReads = AnchoredReads(reads=90)
+    assert_fusion_equivalence(cicero_fusor, expected)
 
     # Test non-exonic breakpoint
     cicero.pos_5prime = 154173079
@@ -877,18 +806,14 @@ async def test_cicero(
         CoordinateType.RESIDUE,
         Assembly.GRCH38,
     )
-    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+    expected = fusion_data_example_nonexonic(
         contig=ContigSequence(contig=cicero.contig)
     )
-    fusion_data_example_nonexonic.structure[0].coverage = BreakpointCoverage(
-        fragmentCoverage=200
-    )
-    fusion_data_example_nonexonic.structure[0].anchoredReads = AnchoredReads(reads=100)
-    fusion_data_example_nonexonic.structure[1].coverage = BreakpointCoverage(
-        fragmentCoverage=190
-    )
-    fusion_data_example_nonexonic.structure[1].anchoredReads = AnchoredReads(reads=90)
-    assert_fusion_equivalence(cicero_fusor_nonexonic, fusion_data_example_nonexonic)
+    expected.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    expected.structure[0].anchoredReads = AnchoredReads(reads=100)
+    expected.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    expected.structure[1].anchoredReads = AnchoredReads(reads=90)
+    assert_fusion_equivalence(cicero_fusor_nonexonic, expected)
 
     # Test case where the called fusion does not have confident biological meaning
     cicero.sv_ort = "?"
@@ -932,90 +857,6 @@ async def test_cicero(
 
 
 @pytest.mark.asyncio
-async def test_enfusion(fusion_data_example_nonexonic, fusor_instance):
-    """Test EnFusion translator"""
-    translator = EnFusionTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    enfusion = EnFusion(
-        gene_5prime="TPM3",
-        gene_3prime="PDGFRB",
-        chr_5prime=1,
-        chr_3prime=5,
-        break_5prime=154170465,
-        break_3prime=150126612,
-    )
-
-    # Test non-exonic breakpoint
-    enfusion.break_5prime = 154173079
-    enfusion.break_3prime = 150127173
-
-    enfusion_fusor_nonexonic = await translator.translate(
-        enfusion,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_fusion_equivalence(enfusion_fusor_nonexonic, fusion_data_example_nonexonic())
-
-    # Test unknown partner
-    enfusion.gene_5prime = "NA"
-    enfusion_fusor_unknown = await translator.translate(
-        enfusion, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert enfusion_fusor_unknown.structure[0] == UnknownGeneElement()
-    assert enfusion_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
-    enfusion.gene_5prime = "TPM3"
-    enfusion.gene_3prime = "NA"
-    enfusion_fusor_unknown = await translator.translate(
-        enfusion, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert enfusion_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert enfusion_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
-
-
-@pytest.mark.asyncio
-async def test_genie(fusion_data_example_nonexonic, fusor_instance):
-    """Test GENIE Translator"""
-    translator = GenieTranslator(fusor=fusor_instance)
-    # Test exonic breakpoint
-    genie = Genie(
-        site1_hugo="TPM3",
-        site2_hugo="PDGFRB",
-        site1_chrom=1,
-        site2_chrom=5,
-        site1_pos=154170465,
-        site2_pos=150126612,
-        annot="TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
-        reading_frame="In_frame",
-    )
-
-    # Test non-exonic breakpoint
-    genie.site1_pos = 154173079
-    genie.site2_pos = 150127173
-
-    genie_fusor_nonexonic = await translator.translate(
-        genie,
-        CoordinateType.RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_fusion_equivalence(genie_fusor_nonexonic, fusion_data_example_nonexonic())
-
-    # Test unknown partner
-    genie.site1_hugo = "NA"
-    genie_fusor_unknown = await translator.translate(
-        genie, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert genie_fusor_unknown.structure[0] == UnknownGeneElement()
-    assert genie_fusor_unknown.viccNomenclature == "?::NM_002609.4(PDGFRB):e.11-559"
-    genie.site1_hugo = "TPM3"
-    genie.site2_hugo = "NA"
-    genie_fusor_unknown = await translator.translate(
-        genie, CoordinateType.RESIDUE, Assembly.GRCH38
-    )
-    assert genie_fusor_unknown.structure[1] == UnknownGeneElement()
-    assert genie_fusor_unknown.viccNomenclature == "NM_152263.4(TPM3):e.4+5::?"
-
-
-@pytest.mark.asyncio
 async def test_civic(
     fusion_data_example_categorical,
     fusion_data_example_categorical_mpge,
@@ -1040,7 +881,7 @@ async def test_civic(
     )
     civic_fusor = await translator.translate(test_fusion)
     assert_fusion_equivalence(civic_fusor, fusion_data_example_categorical())
-    assert len(civic_fusor.civicMolecularProfiles) == 64
+    assert len(civic_fusor.extensions[0].value) == 64
 
     # Test case where one partner is a MultiplePossibleGenesElement object
     test_fusion = CIVIC(
@@ -1053,7 +894,7 @@ async def test_civic(
     )
     civic_fusor = await translator.translate(test_fusion)
     assert_fusion_equivalence(civic_fusor, fusion_data_example_categorical_mpge())
-    assert len(civic_fusor.civicMolecularProfiles) == 1
+    assert len(civic_fusor.extensions[0].value) == 1
 
     # Test case where there is a non-zero offset
     test_fusion = CIVIC(
@@ -1100,67 +941,77 @@ def assert_itd_equivalence(fusor_output, expected):
     assert fusor_output.threePrimeJunction == expected.threePrimeJunction
 
 
+itd_test_data = [
+    (
+        jaffa_base.model_copy(
+            update={"fusion_genes": "TPM3:TPM3", "chrom2": 1, "base2": 154170465}
+        ),
+        JAFFATranslator,
+        itd_example(),
+    ),
+    (
+        star_fusion.model_copy(
+            update=(
+                {
+                    "right_gene": "TPM3^ENSG00000143549.19",
+                    "right_breakpoint": "chr1:154170465:-",
+                }
+            )
+        ),
+        STARFusionTranslator,
+        itd_example(),
+    ),
+    (
+        fusion_catcher.model_copy(
+            update=(
+                {
+                    "three_prime_partner": "TPM3",
+                    "three_prime_fusion_point": "1:154170465:-",
+                }
+            )
+        ),
+        FusionCatcherTranslator,
+        itd_example(),
+    ),
+    (
+        enfusion.model_copy(
+            update=({"gene_3prime": "TPM3", "chr_3prime": 1, "break_3prime": 154170465})
+        ),
+        EnFusionTranslator,
+        itd_example(),
+    ),
+    (
+        genie.model_copy(
+            update=(
+                {
+                    "site2_hugo": "TPM3",
+                    "site2_chrom": 1,
+                    "site2_pos": 154170465,
+                }
+            )
+        ),
+        GenieTranslator,
+        itd_example(),
+    ),
+]
+
+
 @pytest.mark.asyncio
-async def test_itds(itd_example, fusor_instance):
-    """Test ITD example across all fusion callers and sources"""
-    translator = JAFFATranslator(fusor=fusor_instance)
-    jaffa = JAFFA(
-        fusion_genes="TPM3:TPM3",
-        chrom1="chr1",
-        base1=154170465,
-        chrom2="chr1",
-        base2=154170465,
-        rearrangement=True,
-        classification="HighConfidence",
-        inframe=True,
-        spanning_reads=100,
-        spanning_pairs=80,
-    )
-
-    jaffa_fusor = await translator.translate(
-        jaffa,
+@pytest.mark.parametrize(("model", "translator_cls", "expected"), itd_test_data)
+async def test_itds_shared(model, translator_cls, expected, fusor_instance):
+    """Test ITD example across shared callers"""
+    translator = translator_cls(fusor=fusor_instance)
+    fusor_output = await translator.translate(
+        model,
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert_itd_equivalence(jaffa_fusor, itd_example())
+    assert_itd_equivalence(fusor_output, expected)
 
-    translator = STARFusionTranslator(fusor=fusor_instance)
-    star_fusion = STARFusion(
-        left_gene="TPM3^ENSG00000143549.19",
-        right_gene="TPM3^ENSG00000143549.19",
-        left_breakpoint="chr1:154170465:-",
-        right_breakpoint="chr1:154170465:-",
-        annots='["INTERCHROMOSOMAL]',
-        junction_read_count=100,
-        spanning_frag_count=80,
-    )
 
-    star_fusion_fusor = await translator.translate(
-        star_fusion,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_itd_equivalence(star_fusion_fusor, itd_example())
-
-    fusion_catcher = FusionCatcher(
-        five_prime_partner="TPM3",
-        three_prime_partner="TPM3",
-        five_prime_fusion_point="1:154170465:-",
-        three_prime_fusion_point="1:154170465:-",
-        predicted_effect="exonic(no-known-CDS)/exonic(no-known-CDS)",
-        spanning_unique_reads=100,
-        spanning_reads=80,
-        fusion_sequence="CTAGATGAC*TACTACTA",
-    )
-
-    translator = FusionCatcherTranslator(fusor=fusor_instance)
-    fusion_catcher_fusor = await translator.translate(
-        fusion_catcher,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_itd_equivalence(fusion_catcher_fusor, itd_example())
-
+@pytest.mark.asyncio
+async def test_itds_cicero_arriba(fusor_instance):
+    """Test ITD example across Cicero and Arriba"""
     translator = CiceroTranslator(fusor=fusor_instance)
     cicero = Cicero(
         gene_5prime="TPM3",
@@ -1190,41 +1041,40 @@ async def test_itds(itd_example, fusor_instance):
     itd_example_cicero.structure[1].anchoredReads = AnchoredReads(reads=90)
     assert_itd_equivalence(cicero_fusor, itd_example_cicero)
 
-    translator = EnFusionTranslator(fusor=fusor_instance)
-    enfusion = EnFusion(
-        gene_5prime="TPM3",
-        gene_3prime="TPM3",
-        chr_5prime=1,
-        chr_3prime=1,
-        break_5prime=154170465,
-        break_3prime=154170465,
+    translator = ArribaTranslator(fusor=fusor_instance)
+    arriba = Arriba(
+        gene1="TPM3",
+        gene2="TPM3",
+        strand1="-/-",
+        strand2="-/-",
+        breakpoint1="1:154170465",
+        breakpoint2="1:154170465",
+        event_type="ITD",
+        confidence="high",
+        direction1="upstream",
+        direction2="downstream",
+        rf="in-frame",
+        split_reads1=100,
+        split_reads2=95,
+        discordant_mates=30,
+        coverage1=200,
+        coverage2=190,
+        fusion_transcript="CTAGATGAC_TACTACTA|GTACTACT",
     )
-
-    enfusion_fusor = await translator.translate(
-        enfusion,
+    arriba_fusor = await translator.translate(
+        arriba,
         CoordinateType.INTER_RESIDUE,
         Assembly.GRCH38,
     )
-    assert_itd_equivalence(enfusion_fusor, itd_example())
-
-    translator = GenieTranslator(fusor=fusor_instance)
-    genie = Genie(
-        site1_hugo="TPM3",
-        site2_hugo="TPM3",
-        site1_chrom=1,
-        site2_chrom=1,
-        site1_pos=154170465,
-        site2_pos=154170465,
-        annot="TMP3 (NM_152263.4) duplication",
-        reading_frame="In_frame",
+    itd_data_example = itd_example(
+        readData=ReadData(spanning=SpanningReads(spanningReads=30)),
+        contig=ContigSequence(contig=arriba.fusion_transcript),
     )
-
-    genie_fusor = await translator.translate(
-        genie,
-        CoordinateType.INTER_RESIDUE,
-        Assembly.GRCH38,
-    )
-    assert_itd_equivalence(genie_fusor, itd_example())
+    itd_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    itd_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
+    itd_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    itd_data_example.structure[1].anchoredReads = AnchoredReads(reads=95)
+    assert_itd_equivalence(arriba_fusor, itd_data_example)
 
 
 def test_moa(fusor_instance):
