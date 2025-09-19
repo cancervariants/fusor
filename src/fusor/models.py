@@ -313,6 +313,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
                     "end": 154192135,
+                    "extensions": [{"name": "is_exonic", "value": True}],
                 },
                 "elementGenomicEnd": {
                     "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -324,6 +325,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
                     "start": 154170399,
+                    "extensions": [{"name": "is_exonic", "value": True}],
                 },
                 "coverage": {
                     "type": "BreakpointCoverage",
@@ -933,6 +935,7 @@ class CategoricalFusion(AbstractFusion):
                                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                             },
                             "end": 154192135,
+                            "extensions": [{"name": "is_exonic", "value": True}],
                         },
                         "elementGenomicEnd": {
                             "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -944,6 +947,7 @@ class CategoricalFusion(AbstractFusion):
                                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                             },
                             "start": 154170399,
+                            "extensions": [{"name": "is_exonic", "value": True}],
                         },
                     },
                     {
@@ -1077,6 +1081,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
                                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                             },
                             "end": 154192135,
+                            "extensions": [{"name": "is_exonic", "value": True}],
                         },
                         "elementGenomicEnd": {
                             "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -1088,6 +1093,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
                                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                             },
                             "start": 154170399,
+                            "extensions": [{"name": "is_exonic", "value": True}],
                         },
                     },
                     {
@@ -1117,6 +1123,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
                                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                             },
                             "end": 154192135,
+                            "extensions": [{"name": "is_exonic", "value": True}],
                         },
                         "elementGenomicEnd": {
                             "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -1128,6 +1135,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
                                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                             },
                             "start": 154170399,
+                            "extensions": [{"name": "is_exonic", "value": True}],
                         },
                     },
                 ],

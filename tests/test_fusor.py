@@ -218,6 +218,7 @@ def transcript_segment_element():
                 "type": "SequenceReference",
             },
             "end": 154192135,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
         "elementGenomicEnd": {
             "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -229,6 +230,7 @@ def transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 154170399,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
     }
     return TranscriptSegmentElement(**params)
@@ -265,6 +267,7 @@ def mane_transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 9575887,
+            "extensions": [{"name": "is_exonic", "value": True}],
         },
     }
     return TranscriptSegmentElement(**params)

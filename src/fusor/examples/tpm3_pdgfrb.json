@@ -27,7 +27,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "end": 154192135
+        "end": 154192135,
+        "extensions": [{"name": "is_exonic", "value": true}]
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
@@ -38,7 +39,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 154170399
+        "start": 154170399,
+        "extensions": [{"name": "is_exonic", "value": true}]
       }
     },
     {
@@ -67,7 +69,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI"
         },
-        "end": 150126614
+        "end": 150126614,
+        "extensions": [{"name": "is_exonic", "value": true}]
       },
       "elementGenomicEnd": {
         "id": "ga4gh:SL.YJ7cXnaG52dPiu7uR60yUneqHaKHEkLP",
@@ -78,7 +81,8 @@
           "type": "SequenceReference",
           "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI"
         },
-        "start": 150117617
+        "start": 150117617,
+        "extensions": [{"name": "is_exonic", "value": true}]
       }
     }
   ],

@@ -700,7 +700,6 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
-                    "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "refseq:NC_000001.11",
@@ -708,12 +707,12 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                         "type": "SequenceReference",
                     },
                     "end": 154192135,
+                    "extensions": [{"name": "is_exonic", "value": True}],
                 },
                 "elementGenomicEnd": {
                     "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
-                    "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "refseq:NC_000001.11",
@@ -721,6 +720,7 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                         "type": "SequenceReference",
                     },
                     "start": 154170399,
+                    "extensions": [{"name": "is_exonic", "value": True}],
                 },
             },
             {
@@ -822,7 +822,6 @@ def fusion_example():
                     "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
-                    "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "refseq:NC_000001.11",
@@ -830,12 +829,12 @@ def fusion_example():
                         "type": "SequenceReference",
                     },
                     "end": 154192135,
+                    "extensions": [{"name": "is_exonic", "value": True}],
                 },
                 "elementGenomicEnd": {
                     "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
-                    "extensions": None,
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "refseq:NC_000001.11",
@@ -843,6 +842,7 @@ def fusion_example():
                         "type": "SequenceReference",
                     },
                     "start": 154170399,
+                    "extensions": [{"name": "is_exonic", "value": True}],
                 },
             },
             {
