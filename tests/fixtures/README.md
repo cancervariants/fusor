@@ -1,4 +1,4 @@
-# Fixtures README
+# Fixtures
 
 There are several files in the `fixtures` directory that were adapted from other repositories to test functionality in FUSOR. The adapted files include:
 
