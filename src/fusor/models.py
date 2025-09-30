@@ -516,6 +516,19 @@ class RegulatoryElement(BaseModel):
             raise ValueError(msg)
         return values
 
+    @model_validator(mode="after")
+    def validate_genomic_location(cls, values):
+        """Validate that featureLocation only describes genomic coordinates
+        if provided
+        """
+        if not bool(values.featureLocation):
+            return values
+        seq_id = values.featureLocation.sequenceReference.id
+        if "NC_" not in seq_id:
+            msg = "Only chromosomal coordinates can be provided to `featureLocations`"
+            raise ValueError(msg)
+        return values
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {

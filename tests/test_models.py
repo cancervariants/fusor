@@ -776,7 +776,7 @@ def test_event():
         CausativeEvent(eventType="combination")
 
 
-def test_regulatory_element(regulatory_elements, gene_examples):
+def test_regulatory_element(regulatory_elements, gene_examples, sequence_locations):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.regulatoryClass.value == "promoter"
@@ -796,6 +796,18 @@ def test_regulatory_element(regulatory_elements, gene_examples):
     assert (
         exc_info.value.errors()[0]["msg"]
         == "Value error, Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
+    )
+
+    # Require chromosomal build
+    with pytest.raises(ValidationError) as exc_info:
+        RegulatoryElement(
+            regulatoryClass="enhancer",
+            associatedGene=gene_examples[0],
+            featureLocation=sequence_locations[6],
+        )
+    assert (
+        exc_info.value.errors()[0]["msg"]
+        == "Value error, Only chromosomal coordinates can be provided to `featureLocations`"
     )
 
 
