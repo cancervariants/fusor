@@ -525,7 +525,6 @@ class FUSOR:
         regulatory_class: RegulatoryClass,
         gene: str,
         feature_id: str | None = None,
-        use_feature_location: bool = False,
         sequence_id: str | None = None,
         start: int | None = None,
         end: int | None = None,
@@ -559,8 +558,8 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
-        feat_location = None
-        if use_feature_location:
+        use_feat_location = any(var for var in (sequence_id, start, end))
+        if use_feat_location:
             if not sequence_id or not start or not end:
                 return (
                     None,
@@ -579,7 +578,7 @@ class FUSOR:
                     regulatoryClass=regulatory_class,
                     associatedGene=gene_descr,
                     featureId=feature_id,
-                    featureLocation=feat_location,
+                    featureLocation=feat_location if use_feat_location else None,
                 ),
                 None,
             )

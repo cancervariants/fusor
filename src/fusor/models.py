@@ -520,12 +520,14 @@ class RegulatoryElement(BaseModel):
     def validate_genomic_location(cls, values):
         """Validate that featureLocation only describes genomic coordinates
         if provided
+        :raises ValueError: If non-chromosomal coordinates are provided to
+            `featureLocation`
         """
         if not bool(values.featureLocation):
             return values
         seq_id = values.featureLocation.sequenceReference.id
         if "NC_" not in seq_id:
-            msg = "Only chromosomal coordinates can be provided to `featureLocations`"
+            msg = "Only chromosomal coordinates can be provided to `featureLocation`"
             raise ValueError(msg)
         return values
 
