@@ -537,7 +537,6 @@ class FUSOR:
         :param regulatory_class: one of {"promoter", "enhancer"}
         :param gene: gene term to fetch normalized gene object for
         :param feature_id: The feature ID for the regulatory element
-        :param use_feature_location: If the feature location field is being used
         :param sequence_id: Genomic sequence on which provided coordinates exist
         :param start: Start position on sequence
         :param end: Etart position on sequence
