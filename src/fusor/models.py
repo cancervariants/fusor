@@ -22,6 +22,7 @@ from pydantic import (
     StrictInt,
     StrictStr,
     StringConstraints,
+    field_validator,
     model_validator,
 )
 
@@ -57,6 +58,41 @@ class FUSORTypes(str, Enum):
     ASSAYED_FUSION = "AssayedFusion"
     INTERNAL_TANDEM_DUPLICATION = "InternalTandemDuplication"
     CAUSATIVE_EVENT = "CausativeEvent"
+
+
+class GenomicLocation(SequenceLocation):
+    """Define GenomicLocation class"""
+
+    name: str
+
+    @field_validator("name")
+    def validate_genomic_location(cls, value: str):
+        """Validate that featureLocation only describes genomic coordinates
+        if provided
+
+        :param value: The value for `name`
+        :raises ValueError: If non-chromosomal accessions are provided to
+            `name`
+        """
+        if not value.startswith("NC_"):
+            msg = "`name` must be a chromosomal accessions that starts with `NC_`"
+            raise ValueError(msg)
+        return value
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "id": "ga4gh:SL.9hqdPDfXC-m_t_bDH75FZHfaM6OKDtRw",
+                "name": "NC_000001.11",
+                "type": "SequenceLocation",
+                "sequenceReference": {
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                },
+                "start": 155593,
+                "end": 155610,
+            }
+        },
+    )
 
 
 class AdditionalFields(str, Enum):
@@ -500,7 +536,7 @@ class RegulatoryElement(BaseModel):
     regulatoryClass: RegulatoryClass
     featureId: str | None = None
     associatedGene: MappableConcept | None = None
-    featureLocation: SequenceLocation | None = None
+    featureLocation: GenomicLocation | None = None
 
     @model_validator(mode="after")
     def ensure_min_values(cls, values):
@@ -516,21 +552,6 @@ class RegulatoryElement(BaseModel):
             raise ValueError(msg)
         return values
 
-    @model_validator(mode="after")
-    def validate_genomic_location(cls, values):
-        """Validate that featureLocation only describes genomic coordinates
-        if provided
-        :raises ValueError: If non-chromosomal coordinates are provided to
-            `featureLocation`
-        """
-        if not bool(values.featureLocation):
-            return values
-        seq_id = values.featureLocation.sequenceReference.id
-        if "NC_" not in seq_id:
-            msg = "Only chromosomal coordinates can be provided to `featureLocation`"
-            raise ValueError(msg)
-        return values
-
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -538,6 +559,7 @@ class RegulatoryElement(BaseModel):
                 "regulatoryClass": "promoter",
                 "featureLocation": {
                     "id": "ga4gh:SL.9hqdPDfXC-m_t_bDH75FZHfaM6OKDtRw",
+                    "name": "NC_000001.11",
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "refseq:NC_000001.11",

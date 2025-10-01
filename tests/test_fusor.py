@@ -13,6 +13,7 @@ from fusor.models import (
     CategoricalFusion,
     FunctionalDomain,
     GeneElement,
+    GenomicLocation,
     InternalTandemDuplication,
     LinkerElement,
     MultiplePossibleGenesElement,
@@ -157,10 +158,11 @@ def regulatory_element(braf_gene_obj):
 
 
 @pytest.fixture(scope="module")
-def sequence_location_feature_location():
-    """Create sequence location for feature location. Adapted from models.py"""
+def genomic_location_feature_location():
+    """Create test genomic location for feature location. Adapted from models.py"""
     params = {
         "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
+        "name": "NC_000001.11",
         "type": "SequenceLocation",
         "sequenceReference": {
             "id": "refseq:NC_000001.11",
@@ -171,18 +173,18 @@ def sequence_location_feature_location():
         "end": 15456,
         "extensions": [{"name": "is_exonic", "value": True}],
     }
-    return SequenceLocation(**params)
+    return GenomicLocation(**params)
 
 
 @pytest.fixture(scope="module")
-def regulatory_element_full(tpm3_gene_obj_min, sequence_location_feature_location):
+def regulatory_element_full(tpm3_gene_obj_min, genomic_location_feature_location):
     """Create full regulatory element test fixture"""
     params = {
         "type": "RegulatoryElement",
         "regulatoryClass": "enhancer",
         "associatedGene": tpm3_gene_obj_min,
         "featureID": "EH12345",
-        "featureLocation": sequence_location_feature_location,
+        "featureLocation": genomic_location_feature_location,
     }
     return RegulatoryElement(**params)
 

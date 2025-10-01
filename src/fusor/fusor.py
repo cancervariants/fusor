@@ -38,6 +38,7 @@ from fusor.models import (
     Fusion,
     FusionType,
     GeneElement,
+    GenomicLocation,
     InternalTandemDuplication,
     InternalTandemDuplicationElements,
     LinkerElement,
@@ -570,6 +571,8 @@ class FUSOR:
                 sequence_id,
                 seq_id_target_namespace=seq_id_target_namespace,
             )
+            feat_location.name = sequence_id
+            feat_location = GenomicLocation(**feat_location.model_dump())
 
         try:
             return (

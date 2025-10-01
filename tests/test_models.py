@@ -176,6 +176,7 @@ def sequence_locations():
         {
             "id": "ga4gh:SL.VJLxl42yYoa-0ZMa8dfakhZfcP0nWgpl",
             "type": "SequenceLocation",
+            "name": "NP_001123617.1",
             "sequenceReference": {
                 "id": "refseq:NP_001123617.1",
                 "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
@@ -807,7 +808,7 @@ def test_regulatory_element(regulatory_elements, gene_examples, sequence_locatio
         )
     assert (
         exc_info.value.errors()[0]["msg"]
-        == "Value error, Only chromosomal coordinates can be provided to `featureLocation`"
+        == "Value error, `name` must be a chromosomal accessions that starts with `NC_`"
     )
 
 
