@@ -71,11 +71,11 @@ class GenomicLocation(SequenceLocation):
         if provided
 
         :param value: The value for `name`
-        :raises ValueError: If non-chromosomal accessions are provided to
+        :raises ValueError: If a non-chromosomal accession are provided to
             `name`
         """
         if not value.startswith("NC_"):
-            msg = "`name` must be a chromosomal accessions that starts with `NC_`"
+            msg = "`name` must be a chromosomal accession that starts with `NC_`"
             raise ValueError(msg)
         return value
 

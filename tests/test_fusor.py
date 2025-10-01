@@ -954,5 +954,20 @@ def test_regulatory_element(
     assert re[0] is None
     assert (
         re[1]
-        == "Sequence_id, start, and end must all be provided if using the feature_location field"
+        == "sequence_id, start, and end must all be provided to construct the feature_location"
+    )
+
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.ENHANCER,
+        gene="TPM3",
+        feature_id="EH12345",
+        sequence_id="NC_000001.11",
+        start=0,
+        end=15456,
+        coordinate_type=CoordinateType.RESIDUE,
+    )
+    assert re[0] is None
+    assert (
+        re[1]
+        == "start must exceed 0 if using residue coordinates and the feature_location field"
     )

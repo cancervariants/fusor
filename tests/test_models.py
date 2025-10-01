@@ -808,7 +808,7 @@ def test_regulatory_element(regulatory_elements, gene_examples, sequence_locatio
         )
     assert (
         exc_info.value.errors()[0]["msg"]
-        == "Value error, `name` must be a chromosomal accessions that starts with `NC_`"
+        == "Value error, `name` must be a chromosomal accession that starts with `NC_`"
     )
 
 
