@@ -558,13 +558,19 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
+        if start == 0 and not end and coordinate_type == CoordinateType.RESIDUE:
+            return (
+                None,
+                "start must exceed 0 if using residue coordinates and the feature_location field",
+            )
+        if end == 0 and not start and coordinate_type == CoordinateType.RESIDUE:
+            return (
+                None,
+                "end must exceed 0 if using residue coordinates and the feature_location field",
+            )
+
         use_feat_location = any(loc_var for loc_var in (sequence_id, start, end))
         if use_feat_location:
-            if start == 0 and coordinate_type == CoordinateType.RESIDUE:
-                return (
-                    None,
-                    "start must exceed 0 if using residue coordinates and the feature_location field",
-                )
             if not sequence_id or not start or not end:
                 return (
                     None,
