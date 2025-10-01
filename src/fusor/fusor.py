@@ -558,16 +558,17 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
-        if start == 0 and not end and coordinate_type == CoordinateType.RESIDUE:
-            return (
-                None,
-                "start must exceed 0 if using residue coordinates and the feature_location field",
-            )
-        if end == 0 and not start and coordinate_type == CoordinateType.RESIDUE:
-            return (
-                None,
-                "end must exceed 0 if using residue coordinates and the feature_location field",
-            )
+        if coordinate_type == CoordinateType.RESIDUE:
+            if start == 0:
+                return (
+                    None,
+                    "start must exceed 0 if using residue coordinates to construct the feature_location",
+                )
+            if end == 0:
+                return (
+                    None,
+                    "end must exceed 0 if using residue coordinates to construct the feature_location",
+                )
 
         use_feat_location = any(loc_var for loc_var in (sequence_id, start, end))
         if use_feat_location:
@@ -582,8 +583,8 @@ class FUSOR:
                 sequence_id,
                 seq_id_target_namespace=seq_id_target_namespace,
             )
-            feat_location = GenomicLocation.model_validate(
-                {**feat_location.model_dump(), "name": sequence_id}
+            feat_location = GenomicLocation(
+                **feat_location.model_dump(exclude="name"), name=sequence_id
             )
 
         try:

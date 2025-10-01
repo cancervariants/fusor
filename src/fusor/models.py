@@ -75,7 +75,7 @@ class GenomicLocation(SequenceLocation):
             `name`
         """
         if not value.startswith("NC_"):
-            msg = "`name` must be a chromosomal accession that starts with `NC_`"
+            msg = "`name` must be a RefSeq chromosomal accession that starts with `NC_`"
             raise ValueError(msg)
         return value
 

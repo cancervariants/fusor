@@ -968,7 +968,7 @@ def test_regulatory_element(
     assert re[0] is None
     assert (
         re[1]
-        == "start must exceed 0 if using residue coordinates and the feature_location field"
+        == "start must exceed 0 if using residue coordinates to construct the feature_location"
     )
 
     re = fusor_instance.regulatory_element(
@@ -982,5 +982,5 @@ def test_regulatory_element(
     assert re[0] is None
     assert (
         re[1]
-        == "end must exceed 0 if using residue coordinates and the feature_location field"
+        == "end must exceed 0 if using residue coordinates to construct the feature_location"
     )
