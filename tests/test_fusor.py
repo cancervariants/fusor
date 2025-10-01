@@ -13,6 +13,7 @@ from fusor.models import (
     CategoricalFusion,
     FunctionalDomain,
     GeneElement,
+    GenomicLocation,
     InternalTandemDuplication,
     LinkerElement,
     MultiplePossibleGenesElement,
@@ -34,6 +35,20 @@ def braf_gene_obj_min():
             system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
         ),
         name="BRAF",
+        conceptType="Gene",
+    )
+
+
+@pytest.fixture(scope="module")
+def tpm3_gene_obj_min():
+    """Create minimal gene object for TPM3"""
+    return MappableConcept(
+        primaryCoding=Coding(
+            id="hgnc:12012",
+            code="HGNC:12012",
+            system="https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        ),
+        name="TPM3",
         conceptType="Gene",
     )
 
@@ -138,6 +153,38 @@ def regulatory_element(braf_gene_obj):
         "type": "RegulatoryElement",
         "regulatoryClass": "promoter",
         "associatedGene": braf_gene_obj,
+    }
+    return RegulatoryElement(**params)
+
+
+@pytest.fixture(scope="module")
+def genomic_location_feature_location():
+    """Create test genomic location for feature location. Adapted from models.py"""
+    params = {
+        "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
+        "name": "NC_000001.11",
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "id": "refseq:NC_000001.11",
+            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+            "type": "SequenceReference",
+        },
+        "start": 15455,
+        "end": 15456,
+        "extensions": [{"name": "is_exonic", "value": True}],
+    }
+    return GenomicLocation(**params)
+
+
+@pytest.fixture(scope="module")
+def regulatory_element_full(tpm3_gene_obj_min, genomic_location_feature_location):
+    """Create full regulatory element test fixture"""
+    params = {
+        "type": "RegulatoryElement",
+        "regulatoryClass": "enhancer",
+        "associatedGene": tpm3_gene_obj_min,
+        "featureID": "EH12345",
+        "featureLocation": genomic_location_feature_location,
     }
     return RegulatoryElement(**params)
 
@@ -848,7 +895,9 @@ def test_functional_domain(
     )
 
 
-def test_regulatory_element(fusor_instance, regulatory_element, regulatory_element_min):
+def test_regulatory_element(
+    fusor_instance, regulatory_element, regulatory_element_min, regulatory_element_full
+):
     """Test regulatory_element method."""
 
     def compare_re(actual, expected):
@@ -860,9 +909,78 @@ def test_regulatory_element(fusor_instance, regulatory_element, regulatory_eleme
         assert actual.keys() == expected.keys()
         assert actual["type"] == expected["type"]
         compare_gene_obj(actual["associatedGene"], expected["associatedGene"])
+        if actual.get("featureID"):
+            assert actual["featureID"] == expected["featureID"]
+        if actual.get("featureLocation"):
+            assert actual["featureLocation"]["id"] == expected["featureLocation"]["id"]
+            assert (
+                actual["featureLocation"]["start"]
+                == expected["featureLocation"]["start"]
+            )
+            assert (
+                actual["featureLocation"]["end"] == expected["featureLocation"]["end"]
+            )
 
-    re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF")
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.PROMOTER,
+        gene="BRAF",
+    )
     compare_re(re, regulatory_element_min)
 
-    re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF", False)
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.PROMOTER, gene="BRAF", use_minimal_gene=False
+    )
     compare_re(re, regulatory_element)
+
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.ENHANCER,
+        gene="TPM3",
+        feature_id="EH12345",
+        sequence_id="NC_000001.11",
+        start=15455,
+        end=15456,
+        coordinate_type=CoordinateType.INTER_RESIDUE,
+    )
+    compare_re(re, regulatory_element_full)
+
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.ENHANCER,
+        gene="TPM3",
+        feature_id="EH12345",
+        sequence_id="NC_000001.11",
+        start=15455,
+        coordinate_type=CoordinateType.INTER_RESIDUE,
+    )
+    assert re[0] is None
+    assert (
+        re[1]
+        == "sequence_id, start, and end must all be provided to construct the feature_location"
+    )
+
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.ENHANCER,
+        gene="TPM3",
+        feature_id="EH12345",
+        sequence_id="NC_000001.11",
+        start=0,
+        coordinate_type=CoordinateType.RESIDUE,
+    )
+    assert re[0] is None
+    assert (
+        re[1]
+        == "start must exceed 0 if using residue coordinates to construct the feature_location"
+    )
+
+    re = fusor_instance.regulatory_element(
+        regulatory_class=RegulatoryClass.ENHANCER,
+        gene="TPM3",
+        feature_id="EH12345",
+        sequence_id="NC_000001.11",
+        end=0,
+        coordinate_type=CoordinateType.RESIDUE,
+    )
+    assert re[0] is None
+    assert (
+        re[1]
+        == "end must exceed 0 if using residue coordinates to construct the feature_location"
+    )

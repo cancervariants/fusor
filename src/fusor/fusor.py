@@ -38,6 +38,7 @@ from fusor.models import (
     Fusion,
     FusionType,
     GeneElement,
+    GenomicLocation,
     InternalTandemDuplication,
     InternalTandemDuplicationElements,
     LinkerElement,
@@ -524,15 +525,32 @@ class FUSOR:
         self,
         regulatory_class: RegulatoryClass,
         gene: str,
+        feature_id: str | None = None,
+        sequence_id: str | None = None,
+        start: int | None = None,
+        end: int | None = None,
+        seq_id_target_namespace: str | None = None,
+        coordinate_type: CoordinateType = CoordinateType.RESIDUE,
         use_minimal_gene: bool = True,
     ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
 
         :param regulatory_class: one of {"promoter", "enhancer"}
         :param gene: gene term to fetch normalized gene object for
+        :param feature_id: The feature ID for the regulatory element
+        :param sequence_id: Genomic sequence on which provided coordinates exist
+        :param start: Start position on sequence
+        :param end: Etart position on sequence
+        :param seq_id_target_namespace: If want to use digest for
+            ``sequence_id``, set this to the namespace you want the digest for.
+              Otherwise, leave as ``None``.
+        :param coordinate_type: The coordinate type that is being supplied
+            for ``start`` and ``end``. This is set to residue coordinates
+            by default
         :param use_minimal_gene: whether to use the minimal gene object
-        :return: Tuple with RegulatoryElement instance and None value for warnings if
-            successful, or a None value and warning message if unsuccessful
+        :return: Tuple with RegulatoryElement instance and None value for
+            warnings if successful, or a None value and warning message if
+            unsuccessful
         """
         gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene=use_minimal_gene
@@ -540,10 +558,42 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
+        if coordinate_type == CoordinateType.RESIDUE:
+            if start == 0:
+                return (
+                    None,
+                    "start must exceed 0 if using residue coordinates to construct the feature_location",
+                )
+            if end == 0:
+                return (
+                    None,
+                    "end must exceed 0 if using residue coordinates to construct the feature_location",
+                )
+
+        use_feat_location = any(loc_var for loc_var in (sequence_id, start, end))
+        if use_feat_location:
+            if not sequence_id or not start or not end:
+                return (
+                    None,
+                    "sequence_id, start, and end must all be provided to construct the feature_location",
+                )
+            feat_location = self._sequence_location(
+                start - 1 if coordinate_type == CoordinateType.RESIDUE else start,
+                end,
+                sequence_id,
+                seq_id_target_namespace=seq_id_target_namespace,
+            )
+            feat_location = GenomicLocation(
+                **feat_location.model_dump(exclude="name"), name=sequence_id
+            )
+
         try:
             return (
                 RegulatoryElement(
-                    regulatoryClass=regulatory_class, associatedGene=gene_descr
+                    regulatoryClass=regulatory_class,
+                    associatedGene=gene_descr,
+                    featureId=feature_id,
+                    featureLocation=feat_location if use_feat_location else None,
                 ),
                 None,
             )

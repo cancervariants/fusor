@@ -73,6 +73,7 @@ def reg_location_example():
             },
             "featureLocation": {
                 "type": "SequenceLocation",
+                "name": "NC_000023.11",
                 "id": "ga4gh:SL.KMHXvX8m5fD8PcGlQu2Vja3m7bt2iqfK",
                 "sequenceReference": {
                     "id": "refseq:NC_000023.11",
