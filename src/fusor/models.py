@@ -5,7 +5,7 @@ import pickle
 from abc import ABC
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Self
 
 from cool_seq_tool.schemas import Strand
 from ga4gh.core.models import Extension, MappableConcept
@@ -293,32 +293,32 @@ class TranscriptSegmentElement(BaseStructuralElement):
     anchoredReads: AnchoredReads | None = None
 
     @model_validator(mode="after")
-    def check_exons(cls, values):
+    def check_exons(self) -> Self:
         """Check that at least one of {``exonStart``, ``exonEnd``} is set.
         If set, check that the corresponding ``elementGenomic`` field is set.
         If not set, set corresponding offset to ``None``
 
         """
         msg = "Must give values for either `exonStart`, `exonEnd`, or both"
-        exon_start = values.exonStart
-        exon_end = values.exonEnd
+        exon_start = self.exonStart
+        exon_end = self.exonEnd
         if (exon_start is None) and (exon_end is None):
             raise ValueError(msg)
 
         if exon_start:
-            if not values.elementGenomicStart:
+            if not self.elementGenomicStart:
                 msg = "Must give `elementGenomicStart` if `exonStart` is given"
                 raise ValueError(msg)
         else:
-            values.exonStartOffset = None
+            self.exonStartOffset = None
 
         if exon_end:
-            if not values.elementGenomicEnd:
+            if not self.elementGenomicEnd:
                 msg = "Must give `elementGenomicEnd` if `exonEnd` is given"
                 raise ValueError(msg)
         else:
-            values.exonEndOffset = None
-        return values
+            self.exonEndOffset = None
+        return self
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -539,18 +539,18 @@ class RegulatoryElement(BaseModel):
     featureLocation: GenomicLocation | None = None
 
     @model_validator(mode="after")
-    def ensure_min_values(cls, values):
+    def ensure_min_values(self) -> Self:
         """Ensure that one of {`featureId`, `featureLocation`}, and/or
         `associatedGene` is set.
         """
-        if not (bool(values.featureId) ^ bool(values.featureLocation)) and not (
-            values.associatedGene
+        if not (bool(self.featureId) ^ bool(self.featureLocation)) and not (
+            self.associatedGene
         ):
             msg = (
                 "Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
             )
             raise ValueError(msg)
-        return values
+        return self
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -680,7 +680,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
     viccNomenclature: StrictStr | None = None
 
     @model_validator(mode="before")
-    def enforce_abc(cls, values):
+    def enforce_abc(cls, values) -> Self:
         """Ensure only subclasses can be instantiated."""
         if cls is AbstractFusion:
             msg = "Cannot instantiate Fusion abstract class"
@@ -688,7 +688,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
         return values
 
     @model_validator(mode="after")
-    def enforce_element_quantities(cls, values):
+    def enforce_element_quantities(self) -> Self:
         """Ensure minimum # of elements, and require > 1 unique genes.
 
         To validate the unique genes rule, we extract gene IDs from the elements that
@@ -700,25 +700,25 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             "Fusions must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
-        structure = values.structure
+        structure = self.structure
         if not structure:
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
-        reg_element = values.regulatoryElement
+        reg_element = self.regulatoryElement
         if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id_or_name(
+            gene_id = self._fetch_gene_id_or_name(
                 obj=reg_element, alt_field="associatedGene"
             )
             if gene_id:
                 gene_ids.append(gene_id)
 
         for element in structure:
-            gene_id = cls._fetch_gene_id_or_name(obj=element)
+            gene_id = self._fetch_gene_id_or_name(obj=element)
             if gene_id:
                 gene_ids.append(gene_id)
 
@@ -727,17 +727,17 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             num_structure + bool(reg_element)
         ):
             raise ValueError(uq_gene_msg)
-        return values
+        return self
 
     @model_validator(mode="after")
-    def structure_ends(cls, values):
+    def structure_ends(self) -> Self:
         """Ensure start/end elements are of legal types and have fields required by
         their position.
         """
-        elements = values.structure
+        elements = self.structure
         error_messages = []
         if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exonEnd is None and not values.regulatoryElement:
+            if elements[0].exonEnd is None and not self.regulatoryElement:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 error_messages.append(msg)
         elif isinstance(elements[0], LinkerElement):
@@ -758,7 +758,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             error_messages.append(msg)
         if error_messages:
             raise ValueError("\n".join(error_messages))
-        return values
+        return self
 
 
 class Evidence(str, Enum):
@@ -1050,7 +1050,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
 
     @model_validator(mode="after")
-    def enforce_itd_element_quantities(cls, values):
+    def enforce_itd_element_quantities(self) -> Self:
         """Ensure minimum # of elements for InternalTandemDuplications (ITDs)
 
         To validate the unique genes rule, we extract gene IDs from the elements that
@@ -1062,11 +1062,11 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
             "ITDs must contain >= 2 structural elements, or >= 1 structural element "
             "and a regulatory element"
         )
-        structure = values.structure
+        structure = self.structure
         if not structure:
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
-        reg_element = values.regulatoryElement
+        reg_element = self.regulatoryElement
         if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
@@ -1074,14 +1074,14 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
         gene_ids = []
 
         for element in structure:
-            gene_id = cls._fetch_gene_id_or_name(obj=element)
+            gene_id = self._fetch_gene_id_or_name(obj=element)
             if gene_id:
                 gene_ids.append(gene_id)
 
         unique_gene_ids = set(gene_ids)
         if len(unique_gene_ids) != 1:
             raise ValueError(uq_gene_msg)
-        return values
+        return self
 
     # Provided example is a duplication event of exons 1-8 of TPM3
     model_config = ConfigDict(
