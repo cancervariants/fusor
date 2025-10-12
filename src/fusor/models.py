@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Annotated, Any, Literal, Self
 
-from cool_seq_tool.schemas import Strand
+from cool_seq_tool.schemas import Strand, TranscriptPriority
 from ga4gh.core.models import Extension, MappableConcept
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
@@ -281,6 +281,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
     transcript: Annotated[str, StringConstraints(pattern=CURIE_REGEX)]
+    transcriptStatus: TranscriptPriority
     strand: Strand
     exonStart: StrictInt | None = None
     exonStartOffset: StrictInt | None = 0
@@ -325,6 +326,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
             "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
+                "transcriptStatus": "longest_compatible_remaining",
                 "strand": -1,
                 "exonStart": 1,
                 "exonStartOffset": 0,
@@ -948,6 +950,7 @@ class CategoricalFusion(AbstractFusion):
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
+                        "transcriptStatus": "longest_compatible_remaining",
                         "strand": -1,
                         "exonStart": 1,
                         "exonStartOffset": 0,
@@ -1094,6 +1097,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
+                        "transcriptStatus": "longest_compatible_remaining",
                         "strand": -1,
                         "exonStart": 1,
                         "exonStartOffset": 0,
@@ -1136,6 +1140,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
+                        "transcriptStatus": "longest_compatible_remaining",
                         "strand": -1,
                         "exonStart": 1,
                         "exonStartOffset": 0,

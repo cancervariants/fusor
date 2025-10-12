@@ -4,6 +4,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_004327.3",
+      "transcriptStatus": "longest_compatible_remaining",
       "strand": 1,
       "exonEnd": 2,
       "exonEndOffset": 182,
@@ -40,6 +41,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_005157.5",
+      "transcriptStatus": "longest_compatible_remaining",
       "strand": 1,
       "exonStart": 2,
       "exonStartOffset": -173,

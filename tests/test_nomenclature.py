@@ -1,6 +1,7 @@
 """Test nomenclature generation."""
 
 import pytest
+from cool_seq_tool.schemas import TranscriptPriority
 from ga4gh.core.models import Coding, MappableConcept
 
 from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
@@ -133,6 +134,7 @@ def exon_offset_example():
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_002529.3",
+                "transcriptStatus": "longest_compatible_remaining",
                 "strand": 1,
                 "exonStart": 2,
                 "exonStartOffset": 20,
@@ -166,6 +168,7 @@ def tx_seg_example():
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
+        transcriptStatus=TranscriptPriority.LONGEST_COMPATIBLE_REMAINING,
         strand=-1,
         exonStart=1,
         exonStartOffset=0,
@@ -209,6 +212,7 @@ def junction_example():
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
+        transcriptStatus=TranscriptPriority.LONGEST_COMPATIBLE_REMAINING,
         strand=-1,
         exonEnd=8,
         exonEndOffset=0,

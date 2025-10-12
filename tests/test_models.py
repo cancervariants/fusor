@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from cool_seq_tool.schemas import Strand
+from cool_seq_tool.schemas import Strand, TranscriptPriority
 from pydantic import ValidationError
 
 from fusor.config import config
@@ -227,6 +227,7 @@ def transcript_segments(sequence_locations, gene_examples):
     return [
         {
             "transcript": "refseq:NM_152263.3",
+            "transcriptStatus": "longest_compatible_remaining",
             "strand": -1,
             "exonStart": 1,
             "exonStartOffset": -9,
@@ -241,6 +242,7 @@ def transcript_segments(sequence_locations, gene_examples):
         },
         {
             "type": "TranscriptSegmentElement",
+            "transcriptStatus": "longest_compatible_remaining",
             "transcript": "refseq:NM_034348.3",
             "strand": 1,
             "exonStart": 1,
@@ -252,6 +254,7 @@ def transcript_segments(sequence_locations, gene_examples):
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
+            "transcriptStatus": "longest_compatible_remaining",
             "strand": 1,
             "exonStart": 7,
             "exonEnd": 14,
@@ -263,6 +266,7 @@ def transcript_segments(sequence_locations, gene_examples):
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
+            "transcriptStatus": "longest_compatible_remaining",
             "strand": 1,
             "exonStart": 7,
             "gene": gene_examples[4],
@@ -429,6 +433,9 @@ def test_transcript_segment_element(transcript_segments, sequence_locations):
     """Test TranscriptSegmentElement object initializes correctly"""
     test_element = TranscriptSegmentElement(**transcript_segments[0])
     assert test_element.transcript == "refseq:NM_152263.3"
+    assert (
+        test_element.transcriptStatus == TranscriptPriority.LONGEST_COMPATIBLE_REMAINING
+    )
     assert test_element.strand == -1
     assert test_element.exonStart == 1
     assert test_element.exonStartOffset == -9
@@ -445,6 +452,9 @@ def test_transcript_segment_element(transcript_segments, sequence_locations):
 
     test_element = TranscriptSegmentElement(**transcript_segments[3])
     assert test_element.transcript == "refseq:NM_938439.4"
+    assert (
+        test_element.transcriptStatus == TranscriptPriority.LONGEST_COMPATIBLE_REMAINING
+    )
     assert test_element.strand == 1
     assert test_element.exonStart == 7
     assert test_element.exonStartOffset == 0
@@ -457,6 +467,7 @@ def test_transcript_segment_element(transcript_segments, sequence_locations):
     with pytest.raises(ValidationError) as exc_info:
         TranscriptSegmentElement(
             transcript="NM_152263.3",
+            transcriptStatus=TranscriptPriority.LONGEST_COMPATIBLE_REMAINING,
             strand="-1",
             exonStart="1",
             exonStartOffset="-9",
@@ -489,6 +500,7 @@ def test_transcript_segment_element(transcript_segments, sequence_locations):
         assert TranscriptSegmentElement(
             type="TemplatedSequenceElement",
             transcript="NM_152263.3",
+            transcriptStatus=TranscriptPriority.LONGEST_COMPATIBLE_REMAINING,
             strand="-1",
             exonStart="1",
             exonStartOffset="-9",
@@ -521,6 +533,7 @@ def test_transcript_segment_element(transcript_segments, sequence_locations):
         assert TranscriptSegmentElement(
             element_type="templated_sequence",
             transcript="refseq:NM_152263.3",
+            transcriptStatus=TranscriptPriority.LONGEST_COMPATIBLE_REMAINING,
             strand="-1",
             exonStart=1,
             exonStartOffset=-9,
@@ -537,6 +550,7 @@ def test_transcript_segment_element(transcript_segments, sequence_locations):
         assert TranscriptSegmentElement(
             type="TranscriptSegmentElement",
             transcript="refseq:NM_152263.3",
+            transcriptStatus=TranscriptPriority.LONGEST_COMPATIBLE_REMAINING,
             strand="-1",
             exonStartOffset=-9,
             exonEndOffset=7,
