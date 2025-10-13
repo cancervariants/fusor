@@ -49,6 +49,7 @@ def fusion_data_example(**kwargs):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.4",
+                "transcriptStatus": "mane_select",
                 "strand": -1,
                 "exonEnd": 8,
                 "exonEndOffset": -66,
@@ -77,6 +78,7 @@ def fusion_data_example(**kwargs):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_002609.4",
+                "transcriptStatus": "mane_select",
                 "strand": -1,
                 "exonStart": 11,
                 "exonStartOffset": 2,
@@ -120,6 +122,7 @@ def fusion_data_example_nonexonic(**kwargs):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.4",
+                "transcriptStatus": "mane_select",
                 "strand": -1,
                 "exonEnd": 4,
                 "exonEndOffset": 5,
@@ -148,6 +151,7 @@ def fusion_data_example_nonexonic(**kwargs):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_002609.4",
+                "transcriptStatus": "mane_select",
                 "strand": -1,
                 "exonStart": 11,
                 "exonStartOffset": -559,
@@ -193,6 +197,7 @@ def itd_example(**kwargs):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.4",
+                "transcriptStatus": "mane_select",
                 "strand": -1,
                 "exonEnd": 8,
                 "exonEndOffset": -66,
@@ -221,6 +226,7 @@ def itd_example(**kwargs):
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.4",
+                "transcriptStatus": "mane_select",
                 "strand": -1,
                 "exonEnd": 8,
                 "exonEndOffset": -66,
@@ -268,6 +274,7 @@ def fusion_data_example_categorical():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_004327.4",
+                    "transcriptStatus": "mane_select",
                     "strand": 1,
                     "exonEnd": 14,
                     "exonEndOffset": 0,
@@ -296,6 +303,7 @@ def fusion_data_example_categorical():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_005157.6",
+                    "transcriptStatus": "mane_select",
                     "strand": 1,
                     "exonStart": 2,
                     "exonStartOffset": 0,
@@ -344,6 +352,7 @@ def fusion_data_example_categorical_mpge():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_002529.4",
+                    "transcriptStatus": "mane_select",
                     "strand": 1,
                     "exonStart": 9,
                     "exonStartOffset": 0,
@@ -389,6 +398,7 @@ def fusion_data_example_categorical_nonzerooffset():
                 {
                     "type": "TranscriptSegmentElement",
                     "transcript": "refseq:NM_005252.4",
+                    "transcriptStatus": "mane_select",
                     "strand": 1,
                     "exonEnd": 4,
                     "exonEndOffset": -1122,
