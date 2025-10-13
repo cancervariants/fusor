@@ -255,6 +255,7 @@ def transcript_segment_element():
             "conceptType": "Gene",
         },
         "transcript": "refseq:NM_152263.3",
+        "transcriptStatus": "longest_compatible_remaining",
         "elementGenomicStart": {
             "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -303,6 +304,7 @@ def mane_transcript_segment_element():
             "conceptType": "Gene",
         },
         "transcript": "refseq:NM_003390.4",
+        "transcriptStatus": "mane_select",
         "elementGenomicEnd": None,
         "elementGenomicStart": {
             "id": "ga4gh:SL.Dm_Rri77OtV3-FmEmGXBjWZ2PhEzdhFT",
