@@ -878,47 +878,51 @@ class GenieTranslator(Translator):
             else InternalTandemDuplication
         )
 
-        tr_5prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(genie.site1_chrom, rb),
-            seg_end_genomic=genie.site1_pos,
-            gene=fusion_partners.gene_5prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
-        tr_5prime = tr_5prime[0]
+        tr_5prime = None
+        if genie.site1_pos:
+            tr_5prime = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                genomic_ac=self._get_genomic_ac(genie.site1_chrom, rb),
+                seg_end_genomic=int(genie.site1_pos),
+                gene=fusion_partners.gene_5prime,
+                coordinate_type=coordinate_type,
+                starting_assembly=rb,
+            )
+            tr_5prime = tr_5prime[0]
 
-        tr_3prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(genie.site2_chrom, rb),
-            seg_start_genomic=genie.site2_pos
-            if variant_type != InternalTandemDuplication
-            else None,
-            seg_end_genomic=genie.site2_pos
-            if variant_type == InternalTandemDuplication
-            else None,
-            gene=fusion_partners.gene_3prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
-        tr_3prime = tr_3prime[0]
+        tr_3prime = None
+        if genie.site2_pos:
+            tr_3prime = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                genomic_ac=self._get_genomic_ac(genie.site2_chrom, rb),
+                seg_start_genomic=int(genie.site2_pos)
+                if variant_type != InternalTandemDuplication
+                else None,
+                seg_end_genomic=int(genie.site2_pos)
+                if variant_type == InternalTandemDuplication
+                else None,
+                gene=fusion_partners.gene_3prime,
+                coordinate_type=coordinate_type,
+                starting_assembly=rb,
+            )
+            tr_3prime = tr_3prime[0]
 
         ce = self._get_causative_event(
             genie.site1_chrom,
             genie.site2_chrom,
             genie.annot,
         )
-        rf = bool(genie.reading_frame == "in frame")
+        rf = None
+        if genie.reading_frame:
+            rf = bool(
+                genie.reading_frame == "in-frame" or genie.reading_frame == "in frame"
+            )
         return self._format_fusion_itd(
             variant_type,
             fusion_partners.gene_5prime_element,
             fusion_partners.gene_3prime_element,
-            tr_5prime
-            if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else None,
-            tr_3prime
-            if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else None,
+            tr_5prime if tr_5prime else None,
+            tr_3prime if tr_3prime else None,
             ce,
             rf,
         )

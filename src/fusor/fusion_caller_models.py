@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Literal
 
 from civicpy.civic import ExonCoordinate, MolecularProfile
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Caller(str, Enum):
@@ -27,14 +27,14 @@ class KnowledgebaseList(str, Enum):
     MOA = "MOA"
 
 
-class FusionCaller(ABC, BaseModel):
+class FusionCaller(BaseModel, ABC):
     """ABC for fusion callers"""
 
     type: Caller
     model_config = ConfigDict(extra="allow")
 
 
-class FusionKnowledgebase(ABC, BaseModel):
+class FusionKnowledgebase(BaseModel, ABC):
     """ABC for Fusion Knowledgebases"""
 
     type: KnowledgebaseList
@@ -256,14 +256,36 @@ class Genie(FusionCaller):
     type: Literal[Caller.GENIE] = Caller.GENIE
     site1_hugo: str = Field(..., description="The HUGO symbol reported at site 1")
     site2_hugo: str = Field(..., description="The HUGO symbol reported at site 2")
-    site1_chrom: int = Field(..., description="The chromosome reported at site 1")
-    site2_chrom: int = Field(..., description="The chromosome reported at site 2")
-    site1_pos: int = Field(..., description="The breakpoint reported at site 1")
-    site2_pos: int = Field(..., description="The breakpoint reported at site 2")
+    site1_chrom: int | str | None = Field(
+        ..., description="The chromosome reported at site 1"
+    )
+    site2_chrom: int | str | None = Field(
+        ..., description="The chromosome reported at site 2"
+    )
+    site1_pos: int | str | None = Field(
+        ..., description="The breakpoint reported at site 1"
+    )
+    site2_pos: int | str | None = Field(
+        ..., description="The breakpoint reported at site 2"
+    )
     annot: str = Field(..., description="The annotation for the fusion event")
     reading_frame: str = Field(
         ..., description="The reading frame status of the fusion"
     )
+
+    @classmethod
+    @field_validator("site1_pos", "site2_pos", mode="before")
+    def empty_string_to_none(cls, value: int | str | None) -> int | None:
+        """Convert missing coordinate data to None
+
+        :param value: The value for the genomic position
+        :return: The value or None
+        """
+        if value == "":  # NaN value
+            return None
+        if isinstance(value, str):
+            return int(value)
+        return value
 
 
 class CIVIC(FusionKnowledgebase):
