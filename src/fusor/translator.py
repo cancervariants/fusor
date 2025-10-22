@@ -913,9 +913,9 @@ class GenieTranslator(Translator):
             genie.annot,
         )
         rf = None
-        if genie.reading_frame:
+        if genie.reading_frame and genie.reading_frame.lower() != "unknown":
             rf = bool(
-                genie.reading_frame == "in-frame" or genie.reading_frame == "in frame"
+                "in-frame" in genie.reading_frame or "in frame" in genie.reading_frame
             )
         return self._format_fusion_itd(
             variant_type,
