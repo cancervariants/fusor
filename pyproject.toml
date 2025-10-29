@@ -30,7 +30,7 @@ dependencies = [
     "biocommons.seqrepo",
     "gene-normalizer ~=0.10.0",
     "civicpy ~=5.0",
-    "cool-seq-tool ~=0.15.0"
+    "cool-seq-tool ~=0.15.1"
 ]
 dynamic=["version"]
 
