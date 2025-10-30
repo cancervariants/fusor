@@ -1,2 +1,2 @@
-Site1_Hugo_Symbol	Site2_Hugo_Symbol	Site1_Chromosome	Site2_Chromosome	Site1_Position	Site2_Position	Site2_Effect_On_Frame	Annotation
-TPM3	PDGFRB	1	5	154170465	150126612	In_frame	TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion
+Site1_Hugo_Symbol	Site2_Hugo_Symbol	Site1_Chromosome	Site2_Chromosome	Site1_Position	Site2_Position	Site2_Effect_On_Frame	Annotation	Tumor_Split_Read_Count	Tumor_Paired_End_Read_Count
+TPM3	PDGFRB	1	5	154170465	150126612	In_frame	TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion	4	55

@@ -269,14 +269,22 @@ class Genie(FusionCaller):
         ..., description="The breakpoint reported at site 2"
     )
     annot: str = Field(..., description="The annotation for the fusion event")
+    split_reads: int | str | None = Field(
+        None, description="Number of split reads that support the fusion call"
+    )
+    paired_end_reads: int | str | None = Field(
+        None, description="Number of paired end reads that support the fusion call"
+    )
     reading_frame: str = Field(
         ..., description="The reading frame status of the fusion"
     )
 
     @classmethod
-    @field_validator("site1_pos", "site2_pos", mode="before")
+    @field_validator(
+        "site1_pos", "site2_pos", "split_reads", "paired_end_reads", mode="before"
+    )
     def empty_string_to_none(cls, value: int | str | None) -> int | None:
-        """Convert missing coordinate data to None
+        """Convert missing coordinate data or reads data to None
 
         :param value: The value for the genomic position
         :return: The value or None

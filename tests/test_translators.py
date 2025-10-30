@@ -492,6 +492,8 @@ genie = Genie(
     site2_chrom=5,
     site1_pos=154170465,
     site2_pos=150126612,
+    split_reads=4,
+    paired_end_reads=55,
     annot="TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
     reading_frame="In_frame",
 )
@@ -562,7 +564,16 @@ exonic_test_data = [
         ),
     ),
     (enfusion, EnFusionTranslator, fusion_data_example()),
-    (genie, GenieTranslator, fusion_data_example()),
+    (
+        genie,
+        GenieTranslator,
+        fusion_data_example(
+            readData=ReadData(
+                split=SplitReads(splitReads=4),
+                spanning=SpanningReads(spanningReads=55),
+            ),
+        ),
+    ),
     (
         arriba,
         ArribaTranslator,
@@ -653,7 +664,12 @@ non_exonic_test_data = [
     (
         genie.model_copy(update=({"site1_pos": 154173079, "site2_pos": 150127173})),
         GenieTranslator,
-        fusion_data_example_nonexonic(),
+        fusion_data_example_nonexonic(
+            readData=ReadData(
+                split=SplitReads(splitReads=4),
+                spanning=SpanningReads(spanningReads=55),
+            ),
+        ),
     ),
     (
         arriba.model_copy(
@@ -952,7 +968,12 @@ itd_test_data = [
             )
         ),
         GenieTranslator,
-        itd_example(),
+        itd_example(
+            readData=ReadData(
+                split=SplitReads(splitReads=4),
+                spanning=SpanningReads(spanningReads=55),
+            ),
+        ),
     ),
     (
         arriba.model_copy(

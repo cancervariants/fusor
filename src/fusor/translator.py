@@ -912,10 +912,22 @@ class GenieTranslator(Translator):
             genie.site2_chrom,
             genie.annot,
         )
+
         rf = None
         if genie.reading_frame and genie.reading_frame.lower() != "unknown":
             rf = bool(
                 "in-frame" in genie.reading_frame or "in frame" in genie.reading_frame
+            )
+
+        read_data = None
+        if genie.split_reads or genie.paired_end_reads:
+            read_data = ReadData(
+                split=SplitReads(splitReads=genie.split_reads)
+                if genie.split_reads
+                else None,
+                spanning=SpanningReads(spanningReads=genie.paired_end_reads)
+                if genie.paired_end_reads
+                else None,
             )
         return self._format_fusion_itd(
             variant_type,
@@ -925,6 +937,7 @@ class GenieTranslator(Translator):
             tr_3prime if tr_3prime else None,
             ce,
             rf,
+            reads=read_data,
         )
 
     ######### Knowledgebase -> FUSOR CategoricalFusion object #############
