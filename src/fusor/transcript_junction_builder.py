@@ -21,7 +21,6 @@ class TranscriptJunctionBuilder:
         five_prime_gene: str,
         three_prime_gene: str,
         assayed_fusion: bool = True,
-        cds_start_site: bool = True,
     ) -> None:
         """Initialize TranscriptJunctionBuilder class
 
@@ -34,9 +33,6 @@ class TranscriptJunctionBuilder:
         :param three_prime_gene: The 3' gene partner
         :param assayed_fusion: If an `AssayedFusion` object should be created.
             By default, this is set to True.
-        :param cds_start_site: If the fusion junction locations are described
-            using a c. coordinate that is with respect to the CDS start site.
-            By default, this is set to True
         :raises ValueError: If ``five_prime_junction`` or
             ``three_prime_junction`` are not described using c. coordinates
         """
@@ -50,13 +46,12 @@ class TranscriptJunctionBuilder:
         self.five_prime_gene = five_prime_gene
         self.three_prime_gene = three_prime_gene
         self.assayed_fusion = assayed_fusion
-        self.cds_start_site = cds_start_site
 
     async def _get_cds_start(self, tx: str) -> int:
         """Get CDS start position for transcript
 
         :param tx: A transcript accession
-        :return: An integer
+        :return: The CDS start site for the transcript
         """
         cds_range = await self.fusor.cool_seq_tool.uta_db.get_cds_start_end(tx_ac=tx)
         return int(cds_range[0])
@@ -69,7 +64,8 @@ class TranscriptJunctionBuilder:
         :param tx: A transcript accession
         :param pos: The provided junction location
         :param cds_start: The CDS start site
-        :return: A `GenomicTxMetadata object
+        :return: A `GenomicTxMetadata` object. The returned coordinates will
+            always be described on GRCh38
         """
         return await self.fusor.cool_seq_tool.uta_db.get_genomic_tx_data(
             tx_ac=tx,
@@ -80,8 +76,8 @@ class TranscriptJunctionBuilder:
     async def _extract_junc(self, junc: GenomicTxMetadata) -> int:
         """Extract junction location from GenomicTxMetadata object
 
-        :param junc: A `GenomicTxMetadata object
-        :return: An integer
+        :param junc: A `GenomicTxMetadata` object
+        :return: The residue coordinate where the fusion junction occurs
         """
         pos_range = junc.alt_pos_change_range
         return pos_range[1] if junc.strand == Strand.POSITIVE else pos_range[0]
@@ -100,7 +96,7 @@ class TranscriptJunctionBuilder:
         pos = int(junc.split(":")[1].split(".")[1])
 
         if "c." in junc:
-            cds = await self._get_cds_start(ref_seq) if self.cds_start_site else 0
+            cds = await self._get_cds_start(ref_seq)
             junc_data = await self._get_junc_location(
                 tx=ref_seq, pos=pos, cds_start=cds
             )
