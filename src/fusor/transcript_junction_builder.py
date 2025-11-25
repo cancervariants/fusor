@@ -1,12 +1,16 @@
 """Module for easy generation of FUSOR AssayedFusion/CategoricalFusion objects"""
 
+import re
+
 from cool_seq_tool.schemas import Assembly, CoordinateType, GenomicTxMetadata, Strand
 
 from fusor.fusor import FUSOR
 from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 
+JUNC_HGVS_PATTERN = re.compile(r"^(?:NM_|NC_)\d+\.\d+:(?:c|g)\.\d+$")
 
-class FUSORQuickStart:
+
+class TranscriptJunctionBuilder:
     """Class for quick FUSOR object generation"""
 
     def __init__(
@@ -19,7 +23,7 @@ class FUSORQuickStart:
         assayed_fusion: bool = True,
         cds_start_site: bool = True,
     ) -> None:
-        """Initialize FUSORQuickStart class
+        """Initialize TranscriptJunctionBuilder class
 
         :param fusor: A FUSOR object
         :param five_prime_junction: An HGVS string representation of the
@@ -38,7 +42,7 @@ class FUSORQuickStart:
         """
         self.fusor = fusor
         for junc in [five_prime_junction, three_prime_junction]:
-            if "c." not in junc and "g." not in junc:
+            if not JUNC_HGVS_PATTERN.match(junc):
                 msg = "The fusion junction locations must be described using c. or g. coordinates"
                 raise ValueError(msg)
         self.five_prime_junction = five_prime_junction
@@ -120,7 +124,7 @@ class FUSORQuickStart:
         )
         return seg[0]
 
-    async def quick_start(
+    async def build_fusion(
         self,
     ) -> AssayedFusion | CategoricalFusion:
         """Create `AssayedFusion` or `CategoricalFusion` in user-accessible

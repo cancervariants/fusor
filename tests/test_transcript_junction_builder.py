@@ -1,9 +1,10 @@
-"""Module for testing quick_start method"""
+"""Module for testing build_fusion method"""
 
 import pytest
+from cool_seq_tool.schemas import ManeStatus
 
 from fusor.models import AssayedFusion, CategoricalFusion
-from fusor.quick_start import FUSORQuickStart
+from fusor.transcript_junction_builder import TranscriptJunctionBuilder
 
 
 def fusion_example_bcr_abl1(**kwargs):
@@ -198,7 +199,7 @@ def increment_refseq(refseq: str) -> str:
     ),
     test_data,
 )
-async def test_quick_start(
+async def test_build_fusion(
     fusor_instance,
     five_prime_junction,
     three_prime_junction,
@@ -206,7 +207,7 @@ async def test_quick_start(
     three_prime_gene,
     expected,
 ):
-    fqs = FUSORQuickStart(
+    tbf = TranscriptJunctionBuilder(
         fusor=fusor_instance,
         five_prime_junction=five_prime_junction,
         three_prime_junction=three_prime_junction,
@@ -214,25 +215,32 @@ async def test_quick_start(
         three_prime_gene=three_prime_gene,
     )
 
-    fusion = await fqs.quick_start()
+    fusion = await tbf.build_fusion()
     if five_prime_junction.startswith("NC"):
         expected.structure[0].transcript = increment_refseq(
             expected.structure[0].transcript
         )
-        expected.structure[0].transcriptStatus = "mane_select"
+        expected.structure[0].transcriptStatus = ManeStatus.SELECT
         expected.structure[1].transcript = increment_refseq(
             expected.structure[1].transcript
         )
-        expected.structure[1].transcriptStatus = "mane_select"
+        expected.structure[1].transcriptStatus = ManeStatus.SELECT
     assert fusion.structure == expected.structure
 
 
 test_data_invalid = [
     ("NP_061936.3:p.Ser100", "NC_000002.12:g.29223528", "EML4", "ALK", ValueError),
+    ("NM_004333.6:c.1799T>A", "NC_000002.12:g.29223528", "EML4", "ALK", ValueError),
+    (
+        "NC_000007.13:g.140453136A>T",
+        "NC_000002.12:g.29223528",
+        "EML4",
+        "ALK",
+        ValueError,
+    ),
 ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     (
         "five_prime_junction",
@@ -243,7 +251,7 @@ test_data_invalid = [
     ),
     test_data_invalid,
 )
-def test_quick_start_invalid(
+def test_build_fusion_invalid(
     fusor_instance,
     five_prime_junction,
     three_prime_junction,
@@ -255,7 +263,7 @@ def test_quick_start_invalid(
         expected,
         match="The fusion junction locations must be described using c. or g. coordinates",
     ):
-        FUSORQuickStart(
+        TranscriptJunctionBuilder(
             fusor=fusor_instance,
             five_prime_junction=five_prime_junction,
             three_prime_junction=three_prime_junction,
