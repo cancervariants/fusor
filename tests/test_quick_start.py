@@ -153,13 +153,38 @@ test_data = [
         fusion_example_bcr_abl1(),
     ),
     (
+        "NC_000022.11:g.23295143",
+        "NC_000009.12:g.130884290",
+        "BCR",
+        "ABL1",
+        fusion_example_bcr_abl1(),
+    ),
+    (
         "NM_019063.4:c.2242",
         "NM_004304.4:c.3173",
         "EML4",
         "ALK",
         fusion_example_eml4_alk(),
     ),
+    (
+        "NC_000002.12:g.42325554",
+        "NC_000002.12:g.29223528",
+        "EML4",
+        "ALK",
+        fusion_example_eml4_alk(),
+    ),
 ]
+
+
+def increment_refseq(refseq: str) -> str:
+    """Increment RefSeq transcript version for genomic tests
+
+    :param refseq: A RefSeq accession
+    :return: An incremented RefSeq accession
+    """
+    base, version = refseq.split(".")
+    version = int(version) + 1
+    return base + "." + str(version)
 
 
 @pytest.mark.asyncio
@@ -189,19 +214,21 @@ async def test_quick_start(
         three_prime_gene=three_prime_gene,
     )
 
-    if isinstance(expected, ValueError):
-        with pytest.raises(
-            expected,
-            match="The fusion junction locations must be described using c. coordinates",
-        ):
-            await fqs.quick_start()
-
     fusion = await fqs.quick_start()
+    if five_prime_junction.startswith("NC"):
+        expected.structure[0].transcript = increment_refseq(
+            expected.structure[0].transcript
+        )
+        expected.structure[0].transcriptStatus = "mane_select"
+        expected.structure[1].transcript = increment_refseq(
+            expected.structure[1].transcript
+        )
+        expected.structure[1].transcriptStatus = "mane_select"
     assert fusion.structure == expected.structure
 
 
 test_data_invalid = [
-    ("NM_019063.4:c.2242", "NC_000002.12:g.29223528", "EML4", "ALK", ValueError),
+    ("NP_061936.3:p.Ser100", "NC_000002.12:g.29223528", "EML4", "ALK", ValueError),
 ]
 
 
@@ -216,7 +243,7 @@ test_data_invalid = [
     ),
     test_data_invalid,
 )
-def test_quick_start_invali(
+def test_quick_start_invalid(
     fusor_instance,
     five_prime_junction,
     three_prime_junction,
@@ -226,7 +253,7 @@ def test_quick_start_invali(
 ):
     with pytest.raises(
         expected,
-        match="The fusion junction locations must be described using c. coordinates",
+        match="The fusion junction locations must be described using c. or g. coordinates",
     ):
         FUSORQuickStart(
             fusor=fusor_instance,

@@ -23,9 +23,9 @@ class FUSORQuickStart:
 
         :param fusor: A FUSOR object
         :param five_prime_junction: An HGVS string representation of the
-            five prime junction location. This must use a c. coordinate
+            five prime junction location. This must use a c. or g. coordinate
         :param three_prime_junction: An HGVS string representation of the
-            three prime junction location. This must use a c. coordinate
+            three prime junction location. This must use a c. or g. coordinate
         :param five_prime_gene: The 5' gene partner
         :param three_prime_gene: The 3' gene partner
         :param assayed_fusion: If an `AssayedFusion` object should be created.
@@ -38,8 +38,8 @@ class FUSORQuickStart:
         """
         self.fusor = fusor
         for junc in [five_prime_junction, three_prime_junction]:
-            if "c." not in junc:
-                msg = "The fusion junction locations must be described using c. coordinates"
+            if "c." not in junc and "g." not in junc:
+                msg = "The fusion junction locations must be described using c. or g. coordinates"
                 raise ValueError(msg)
         self.five_prime_junction = five_prime_junction
         self.three_prime_junction = three_prime_junction
@@ -95,13 +95,25 @@ class FUSORQuickStart:
         ref_seq = junc.split(":")[0]
         pos = int(junc.split(":")[1].split(".")[1])
 
-        cds = await self._get_cds_start(ref_seq) if self.cds_start_site else 0
-        junc_data = await self._get_junc_location(tx=ref_seq, pos=pos, cds_start=cds)
-        pos = await self._extract_junc(junc=junc_data)
+        if "c." in junc:
+            cds = await self._get_cds_start(ref_seq) if self.cds_start_site else 0
+            junc_data = await self._get_junc_location(
+                tx=ref_seq, pos=pos, cds_start=cds
+            )
+            pos = await self._extract_junc(junc=junc_data)
+            seg = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                transcript=ref_seq,
+                genomic_ac=junc_data.alt_ac,
+                seg_start_genomic=pos if not five_prime else None,
+                seg_end_genomic=pos if five_prime else None,
+                coordinate_type=CoordinateType.RESIDUE,
+            )
+            return seg[0]
         seg = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            transcript=ref_seq,
-            genomic_ac=junc_data.alt_ac,
+            genomic_ac=ref_seq,
+            gene=self.five_prime_gene if five_prime else self.three_prime_gene,
             seg_start_genomic=pos if not five_prime else None,
             seg_end_genomic=pos if five_prime else None,
             coordinate_type=CoordinateType.RESIDUE,
