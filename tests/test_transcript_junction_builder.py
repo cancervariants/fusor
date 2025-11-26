@@ -1,7 +1,7 @@
 """Module for testing build_fusion method"""
 
 import pytest
-from cool_seq_tool.schemas import ManeStatus
+from cool_seq_tool.schemas import AnnotationLayer, ManeStatus
 
 from fusor.models import AssayedFusion, CategoricalFusion
 from fusor.transcript_junction_builder import TranscriptJunctionBuilder
@@ -68,6 +68,41 @@ def fusion_example_bcr_abl1(**kwargs):
                     },
                     "start": 130884289,
                     "extensions": [{"name": "is_exonic", "value": True}],
+                },
+            },
+        ],
+    }
+    assayed_fusion = AssayedFusion(**params)
+    return assayed_fusion.model_copy(update=kwargs)
+
+
+def fusion_example_bcr_abl1_gene_elements(**kwargs):
+    """Create example `AssayedFusion` object for BCR::ABL1 using only GeneElements"""
+    params = {
+        "type": "AssayedFusion",
+        "structure": [
+            {
+                "type": "GeneElement",
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:1014",
+                        "code": "HGNC:1014",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "BCR",
+                },
+            },
+            {
+                "type": "GeneElement",
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:76",
+                        "code": "HGNC:76",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "ABL1",
                 },
             },
         ],
@@ -147,31 +182,58 @@ def fusion_example_eml4_alk(**kwargs):
 
 test_data = [
     (
-        "NM_004327.3:c.3000",
-        "NM_005157.5:c.2000",
         "BCR",
         "ABL1",
+        AnnotationLayer.CDNA,
+        "NM_004327.3",
+        "NM_005157.5",
+        3000,
+        2000,
+        True,
         fusion_example_bcr_abl1(),
     ),
     (
-        "NC_000022.11:g.23295143",
-        "NC_000009.12:g.130884290",
         "BCR",
         "ABL1",
+        AnnotationLayer.GENOMIC,
+        "NC_000022.11",
+        "NC_000009.12",
+        23295143,
+        130884290,
+        True,
         fusion_example_bcr_abl1(),
     ),
     (
-        "NM_019063.4:c.2242",
-        "NM_004304.4:c.3173",
+        "BCR",
+        "ABL1",
+        None,
+        None,
+        None,
+        None,
+        None,
+        True,
+        fusion_example_bcr_abl1_gene_elements(),
+    ),
+    (
         "EML4",
         "ALK",
+        AnnotationLayer.CDNA,
+        "NM_019063.4",
+        "NM_004304.4",
+        2242,
+        3173,
+        False,
         fusion_example_eml4_alk(),
     ),
     (
-        "NC_000002.12:g.42325554",
-        "NC_000002.12:g.29223528",
         "EML4",
         "ALK",
+        AnnotationLayer.GENOMIC,
+        "NC_000002.12",
+        "NC_000002.12",
+        42325554,
+        29223528,
+        False,
         fusion_example_eml4_alk(),
     ),
 ]
@@ -191,32 +253,44 @@ def increment_refseq(refseq: str) -> str:
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     (
-        "five_prime_junction",
-        "three_prime_junction",
         "five_prime_gene",
         "three_prime_gene",
+        "annotation_layer",
+        "five_prime_reference_sequence",
+        "three_prime_reference_sequence",
+        "five_prime_junction",
+        "three_prime_junction",
+        "assayed_fusion",
         "expected",
     ),
     test_data,
 )
 async def test_build_fusion(
     fusor_instance,
-    five_prime_junction,
-    three_prime_junction,
     five_prime_gene,
     three_prime_gene,
+    annotation_layer,
+    five_prime_reference_sequence,
+    three_prime_reference_sequence,
+    five_prime_junction,
+    three_prime_junction,
+    assayed_fusion,
     expected,
 ):
     tbf = TranscriptJunctionBuilder(
         fusor=fusor_instance,
-        five_prime_junction=five_prime_junction,
-        three_prime_junction=three_prime_junction,
         five_prime_gene=five_prime_gene,
         three_prime_gene=three_prime_gene,
+        five_prime_reference_sequence=five_prime_reference_sequence,
+        three_prime_reference_sequence=three_prime_reference_sequence,
+        annotation_type=annotation_layer,
+        five_prime_junction=five_prime_junction,
+        three_prime_junction=three_prime_junction,
+        assayed_fusion=assayed_fusion,
     )
 
     fusion = await tbf.build_fusion()
-    if five_prime_junction.startswith("NC"):
+    if annotation_layer == AnnotationLayer.GENOMIC:
         expected.structure[0].transcript = increment_refseq(
             expected.structure[0].transcript
         )
@@ -225,17 +299,45 @@ async def test_build_fusion(
             expected.structure[1].transcript
         )
         expected.structure[1].transcriptStatus = ManeStatus.SELECT
+    assert fusion.type == expected.type
     assert fusion.structure == expected.structure
 
 
 test_data_invalid = [
-    ("NP_061936.3:p.Ser100", "NC_000002.12:g.29223528", "EML4", "ALK", ValueError),
-    ("NM_004333.6:c.1799T>A", "NC_000002.12:g.29223528", "EML4", "ALK", ValueError),
     (
-        "NC_000007.13:g.140453136A>T",
-        "NC_000002.12:g.29223528",
-        "EML4",
-        "ALK",
+        "BCR",
+        "ABL1",
+        AnnotationLayer.PROTEIN,
+        "NM_004327.3",
+        "NM_005157.5",
+        3000,
+        2000,
+        True,
+        "Only c. or g. RefSeq accessions are supported",
+        ValueError,
+    ),
+    (
+        "BCR",
+        "ABL1",
+        AnnotationLayer.CDNA,
+        "NM_004327.3",
+        "NM_005157.5",
+        None,
+        2000,
+        True,
+        "Please provide 5' junction location",
+        ValueError,
+    ),
+    (
+        "BCR",
+        "ABL1",
+        AnnotationLayer.CDNA,
+        "NM_004327.3",
+        "NM_005157.5",
+        3000,
+        None,
+        True,
+        "Please provide 3' junction location",
         ValueError,
     ),
 ]
@@ -243,30 +345,45 @@ test_data_invalid = [
 
 @pytest.mark.parametrize(
     (
-        "five_prime_junction",
-        "three_prime_junction",
         "five_prime_gene",
         "three_prime_gene",
+        "annotation_layer",
+        "five_prime_reference_sequence",
+        "three_prime_reference_sequence",
+        "five_prime_junction",
+        "three_prime_junction",
+        "assayed_fusion",
+        "error_statement",
         "expected",
     ),
     test_data_invalid,
 )
 def test_build_fusion_invalid(
     fusor_instance,
-    five_prime_junction,
-    three_prime_junction,
     five_prime_gene,
     three_prime_gene,
+    annotation_layer,
+    five_prime_reference_sequence,
+    three_prime_reference_sequence,
+    five_prime_junction,
+    three_prime_junction,
+    assayed_fusion,
+    error_statement,
     expected,
 ):
+    """Test invalid cases"""
     with pytest.raises(
         expected,
-        match="The fusion junction locations must be described using c. or g. coordinates",
+        match=error_statement,
     ):
         TranscriptJunctionBuilder(
             fusor=fusor_instance,
-            five_prime_junction=five_prime_junction,
-            three_prime_junction=three_prime_junction,
             five_prime_gene=five_prime_gene,
             three_prime_gene=three_prime_gene,
+            five_prime_reference_sequence=five_prime_reference_sequence,
+            three_prime_reference_sequence=three_prime_reference_sequence,
+            annotation_type=annotation_layer,
+            five_prime_junction=five_prime_junction,
+            three_prime_junction=three_prime_junction,
+            assayed_fusion=assayed_fusion,
         )

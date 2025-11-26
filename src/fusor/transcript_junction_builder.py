@@ -1,13 +1,21 @@
 """Module for easy generation of FUSOR AssayedFusion/CategoricalFusion objects"""
 
-import re
-
-from cool_seq_tool.schemas import Assembly, CoordinateType, GenomicTxMetadata, Strand
+from cool_seq_tool.schemas import (
+    AnnotationLayer,
+    Assembly,
+    CoordinateType,
+    GenomicTxMetadata,
+    Strand,
+)
+from ga4gh.core.models import MappableConcept
 
 from fusor.fusor import FUSOR
-from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
-
-JUNC_HGVS_PATTERN = re.compile(r"^(?:NM_|NC_)\d+\.\d+:(?:c|g)\.\d+$")
+from fusor.models import (
+    AssayedFusion,
+    CategoricalFusion,
+    GeneElement,
+    TranscriptSegmentElement,
+)
 
 
 class TranscriptJunctionBuilder:
@@ -16,35 +24,58 @@ class TranscriptJunctionBuilder:
     def __init__(
         self,
         fusor: FUSOR,
-        five_prime_junction: str,
-        three_prime_junction: str,
         five_prime_gene: str,
         three_prime_gene: str,
+        five_prime_reference_sequence: str | None = None,
+        three_prime_reference_sequence: str | None = None,
+        annotation_type: AnnotationLayer | None = None,
+        five_prime_junction: int | None = None,
+        three_prime_junction: int | None = None,
         assayed_fusion: bool = True,
     ) -> None:
         """Initialize TranscriptJunctionBuilder class
 
         :param fusor: A FUSOR object
-        :param five_prime_junction: An HGVS string representation of the
-            five prime junction location. This must use a c. or g. coordinate
-        :param three_prime_junction: An HGVS string representation of the
-            three prime junction location. This must use a c. or g. coordinate
         :param five_prime_gene: The 5' gene partner
         :param three_prime_gene: The 3' gene partner
+        :param five_prime_reference_sequence: The 5' prime reference sequence,
+            either transcript or genomic. By default, this is set to None
+        :param three_prime_reference_sequence: The 5' prime reference sequence,
+            either transcript or genomic. By default, this is set to None
+        :param annotation_type: The annotation type describing the 5' and 3'
+            reference sequences. By default, this is set to None
+        :param five_prime_junction: The 5' junction location, described using
+            a residue coordinate. By default, this is set to None.
+        :param three_prime_junction: The 3' junction location, described using
+            a residue coordinate. By default, this is set to None.
         :param assayed_fusion: If an `AssayedFusion` object should be created.
             By default, this is set to True.
         :raises ValueError: If ``five_prime_junction`` or
             ``three_prime_junction`` are not described using c. coordinates
         """
         self.fusor = fusor
-        for junc in [five_prime_junction, three_prime_junction]:
-            if not JUNC_HGVS_PATTERN.match(junc):
-                msg = "The fusion junction locations must be described using c. or g. coordinates"
-                raise ValueError(msg)
-        self.five_prime_junction = five_prime_junction
-        self.three_prime_junction = three_prime_junction
+
+        # Validate only c. or g. annotation type is provided
+        if annotation_type == AnnotationLayer.PROTEIN:
+            msg = "Only c. or g. RefSeq accessions are supported"
+            raise ValueError(msg)
+
+        # Validate that five_prime_junction and three_prime_junction are
+        # provided if their accessions are provided
+        if five_prime_reference_sequence and not five_prime_junction:
+            msg = "Please provide 5' junction location"
+            raise ValueError(msg)
+        if three_prime_reference_sequence and not three_prime_junction:
+            msg = "Please provide 3' junction location"
+            raise ValueError(msg)
+
         self.five_prime_gene = five_prime_gene
         self.three_prime_gene = three_prime_gene
+        self.five_prime_reference_sequence = five_prime_reference_sequence
+        self.three_prime_reference_sequence = three_prime_reference_sequence
+        self.annotation_type = annotation_type
+        self.five_prime_junction = five_prime_junction
+        self.three_prime_junction = three_prime_junction
         self.assayed_fusion = assayed_fusion
 
     async def _get_cds_start(self, tx: str) -> int:
@@ -83,19 +114,17 @@ class TranscriptJunctionBuilder:
         return pos_range[1] if junc.strand == Strand.POSITIVE else pos_range[0]
 
     async def _create_tx_segment(
-        self, junc: str, five_prime: bool = True
+        self, ref_seq: str, pos: int, five_prime: bool = True
     ) -> TranscriptSegmentElement:
         """Create TranscriptSegmentElement from junction string
 
-        :param junc: An HGVS string describing the junction location
+        :param ref_seq: The reference sequence for the fusion partner
+        :param pos: The fusion junction location
         :param five_prime: If the 5' prime segment is being created. This is
             set by default to ``True``.
         :return: A `TranscriptSegmentElement` object
         """
-        ref_seq = junc.split(":")[0]
-        pos = int(junc.split(":")[1].split(".")[1])
-
-        if "c." in junc:
+        if self.annotation_type == AnnotationLayer.CDNA:
             cds = await self._get_cds_start(ref_seq)
             junc_data = await self._get_junc_location(
                 tx=ref_seq, pos=pos, cds_start=cds
@@ -120,6 +149,33 @@ class TranscriptJunctionBuilder:
         )
         return seg[0]
 
+    async def _process_partner(
+        self,
+        gene: str,
+        ref_seq: str | None = None,
+        pos: int | None = None,
+        five_prime: bool = True,
+    ) -> GeneElement | TranscriptSegmentElement:
+        """Process fusion partner input
+
+        :param gene: The gene symbol for the fusion partner
+        :param ref_seq: The chromosomal or transcript reference sequence.
+            By default, this is set to None
+        :param pos: The fusion junction location. By default, this is set to
+            None
+        :param five_prime: If the 5' prime partner is being examined. By
+            default, this is set to True
+        """
+        if not ref_seq:
+            gene_obj = self.fusor.gene_element(gene=gene)[0]
+            if gene_obj:
+                return gene_obj
+            if not gene_obj:
+                return GeneElement(gene=MappableConcept(name=gene, conceptType="Gene"))
+        return await self._create_tx_segment(
+            ref_seq=ref_seq, pos=pos, five_prime=five_prime
+        )
+
     async def build_fusion(
         self,
     ) -> AssayedFusion | CategoricalFusion:
@@ -128,9 +184,17 @@ class TranscriptJunctionBuilder:
 
         :return: An `AssayedFusion` or `CategoricalFusion` object
         """
-        five_prime_seg = await self._create_tx_segment(junc=self.five_prime_junction)
-        three_prime_seg = await self._create_tx_segment(
-            junc=self.three_prime_junction, five_prime=False
+        five_prime_seg = await self._process_partner(
+            gene=self.five_prime_gene,
+            ref_seq=self.five_prime_reference_sequence,
+            pos=self.five_prime_junction,
+            five_prime=True,
+        )
+        three_prime_seg = await self._process_partner(
+            gene=self.three_prime_gene,
+            ref_seq=self.three_prime_reference_sequence,
+            pos=self.three_prime_junction,
+            five_prime=False,
         )
         return (
             self.fusor.assayed_fusion(structure=[five_prime_seg, three_prime_seg])
