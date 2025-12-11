@@ -2,8 +2,9 @@
 
 import pytest
 from cool_seq_tool.schemas import AnnotationLayer, ManeStatus
+from ga4gh.vrs.models import LiteralSequenceExpression
 
-from fusor.models import AssayedFusion, CategoricalFusion
+from fusor.models import AssayedFusion, CategoricalFusion, LinkerElement
 from fusor.transcript_junction_builder import TranscriptJunctionBuilder
 
 
@@ -180,6 +181,79 @@ def fusion_example_eml4_alk(**kwargs):
     return categorical_fusion.model_copy(update=kwargs)
 
 
+def fusion_example_bcr_abl1_intronic(**kwargs):
+    """Create example `AssayedFusion` object for BCR::ABL1 where the user
+    provides intronic locations.
+        For BCR, the position is described as: NM_004327.3:c.3012+188
+        For ABL1, the position is described as: NM_005157.5:c.80-20
+    """
+    params = {
+        "type": "AssayedFusion",
+        "structure": [
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_004327.3",
+                "transcriptStatus": "longest_compatible_remaining",
+                "strand": 1,
+                "exonEnd": 16,
+                "exonEndOffset": 188,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:1014",
+                        "code": "HGNC:1014",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "BCR",
+                },
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.p2su-SVrYWzdHhz9dzWU_GmjcKMgg_Ag",
+                    "type": "SequenceLocation",
+                    "digest": "p2su-SVrYWzdHhz9dzWU_GmjcKMgg_Ag",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000022.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+                    },
+                    "end": 23295343,
+                    "extensions": [{"name": "is_exonic", "value": False}],
+                },
+            },
+            {
+                "type": "TranscriptSegmentElement",
+                "transcript": "refseq:NM_005157.5",
+                "transcriptStatus": "longest_compatible_remaining",
+                "strand": 1,
+                "exonStart": 2,
+                "exonStartOffset": -20,
+                "gene": {
+                    "primaryCoding": {
+                        "id": "hgnc:76",
+                        "code": "HGNC:76",
+                        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                    },
+                    "conceptType": "Gene",
+                    "name": "ABL1",
+                },
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.EEQLSrFTkgU0z5Qm8XkYFH2hIFAdW6z8",
+                    "type": "SequenceLocation",
+                    "digest": "EEQLSrFTkgU0z5Qm8XkYFH2hIFAdW6z8",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000009.12",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
+                    },
+                    "start": 130854043,
+                    "extensions": [{"name": "is_exonic", "value": False}],
+                },
+            },
+        ],
+    }
+    assayed_fusion = AssayedFusion(**params)
+    return assayed_fusion.model_copy(update=kwargs)
+
+
 test_data = [
     (
         "BCR",
@@ -189,8 +263,25 @@ test_data = [
         "NM_005157.5",
         3000,
         2000,
+        None,
+        None,
+        None,
         True,
         fusion_example_bcr_abl1(),
+    ),
+    (
+        "BCR",
+        "ABL1",
+        AnnotationLayer.CDNA,
+        "NM_004327.3",
+        "NM_005157.5",
+        3012,
+        80,
+        188,
+        -20,
+        None,
+        True,
+        fusion_example_bcr_abl1_intronic(),
     ),
     (
         "BCR",
@@ -200,6 +291,9 @@ test_data = [
         "NC_000009.12",
         23295143,
         130884290,
+        None,
+        None,
+        None,
         True,
         fusion_example_bcr_abl1(),
     ),
@@ -211,6 +305,23 @@ test_data = [
         None,
         None,
         None,
+        None,
+        None,
+        None,
+        True,
+        fusion_example_bcr_abl1_gene_elements(),
+    ),
+    (
+        "BCR",
+        "ABL1",
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        "ATATATGT",
         True,
         fusion_example_bcr_abl1_gene_elements(),
     ),
@@ -222,6 +333,9 @@ test_data = [
         "NM_004304.4",
         2242,
         3173,
+        None,
+        None,
+        None,
         False,
         fusion_example_eml4_alk(),
     ),
@@ -233,6 +347,9 @@ test_data = [
         "NC_000002.12",
         42325554,
         29223528,
+        None,
+        None,
+        None,
         False,
         fusion_example_eml4_alk(),
     ),
@@ -260,6 +377,9 @@ def increment_refseq(refseq: str) -> str:
         "three_prime_reference_sequence",
         "five_prime_junction",
         "three_prime_junction",
+        "five_prime_intronic_offset",
+        "three_prime_intronic_offset",
+        "linker_sequence",
         "assayed_fusion",
         "expected",
     ),
@@ -274,6 +394,9 @@ async def test_build_fusion(
     three_prime_reference_sequence,
     five_prime_junction,
     three_prime_junction,
+    five_prime_intronic_offset,
+    three_prime_intronic_offset,
+    linker_sequence,
     assayed_fusion,
     expected,
 ):
@@ -286,6 +409,9 @@ async def test_build_fusion(
         annotation_type=annotation_layer,
         five_prime_junction=five_prime_junction,
         three_prime_junction=three_prime_junction,
+        five_prime_intronic_offset=five_prime_intronic_offset,
+        three_prime_intronic_offset=three_prime_intronic_offset,
+        linker_sequence=linker_sequence,
         assayed_fusion=assayed_fusion,
     )
 
@@ -299,6 +425,13 @@ async def test_build_fusion(
             expected.structure[1].transcript
         )
         expected.structure[1].transcriptStatus = ManeStatus.SELECT
+    if linker_sequence:
+        expected.structure.insert(
+            1,
+            LinkerElement(
+                linkerSequence=LiteralSequenceExpression(sequence="ATATATGT")
+            ),
+        )
     assert fusion.type == expected.type
     assert fusion.structure == expected.structure
 
@@ -313,6 +446,9 @@ test_data_invalid = [
         3000,
         2000,
         True,
+        None,
+        None,
+        None,
         "Only c. or g. RefSeq accessions are supported",
         ValueError,
     ),
@@ -324,6 +460,9 @@ test_data_invalid = [
         "NM_005157.5",
         None,
         2000,
+        None,
+        None,
+        None,
         True,
         "Please provide 5' junction location",
         ValueError,
@@ -335,6 +474,9 @@ test_data_invalid = [
         "NM_004327.3",
         "NM_005157.5",
         3000,
+        None,
+        None,
+        None,
         None,
         True,
         "Please provide 3' junction location",
@@ -352,6 +494,9 @@ test_data_invalid = [
         "three_prime_reference_sequence",
         "five_prime_junction",
         "three_prime_junction",
+        "five_prime_intronic_offset",
+        "three_prime_intronic_offset",
+        "linker_sequence",
         "assayed_fusion",
         "error_statement",
         "expected",
@@ -367,6 +512,9 @@ def test_build_fusion_invalid(
     three_prime_reference_sequence,
     five_prime_junction,
     three_prime_junction,
+    five_prime_intronic_offset,
+    three_prime_intronic_offset,
+    linker_sequence,
     assayed_fusion,
     error_statement,
     expected,
@@ -385,5 +533,8 @@ def test_build_fusion_invalid(
             annotation_type=annotation_layer,
             five_prime_junction=five_prime_junction,
             three_prime_junction=three_prime_junction,
+            five_prime_intronic_offset=five_prime_intronic_offset,
+            three_prime_intronic_offset=three_prime_intronic_offset,
+            linker_sequence=linker_sequence,
             assayed_fusion=assayed_fusion,
         )

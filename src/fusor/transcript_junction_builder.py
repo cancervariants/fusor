@@ -8,12 +8,14 @@ from cool_seq_tool.schemas import (
     Strand,
 )
 from ga4gh.core.models import MappableConcept
+from ga4gh.vrs.models import LiteralSequenceExpression
 
 from fusor.fusor import FUSOR
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
     GeneElement,
+    LinkerElement,
     TranscriptSegmentElement,
 )
 
@@ -31,6 +33,9 @@ class TranscriptJunctionBuilder:
         annotation_type: AnnotationLayer | None = None,
         five_prime_junction: int | None = None,
         three_prime_junction: int | None = None,
+        five_prime_intronic_offset: int | None = None,
+        three_prime_intronic_offset: int | None = None,
+        linker_sequence: str | None = None,
         assayed_fusion: bool = True,
     ) -> None:
         """Initialize TranscriptJunctionBuilder class
@@ -45,9 +50,19 @@ class TranscriptJunctionBuilder:
         :param annotation_type: The annotation type describing the 5' and 3'
             reference sequences. By default, this is set to None
         :param five_prime_junction: The 5' junction location, described using
-            a residue coordinate. By default, this is set to None.
+            a residue coordinate (1-based) on a transcript or genomic sequence.
+            By default, this is set to None.
         :param three_prime_junction: The 3' junction location, described using
-            a residue coordinate. By default, this is set to None.
+            a residue coordinate (1-based) on a transcript or genomic sequence.
+            By default, this is set to None.
+        :param five_prime_intronic_offset: The intronic offset for the 5'
+            junction, described using a residue coordinate (1-based) on a
+            transcript sequence. By default, this is set to None.
+        :param three_prime_intronic_offset: The intronic offset for the 5'
+            junction, described using a residue coordinate (1-based) on a
+            transcript sequence. By default, this is set to None.
+        :param linker_sequence: The linker sequence. By default, this is set
+            to None
         :param assayed_fusion: If an `AssayedFusion` object should be created.
             By default, this is set to True.
         :raises ValueError: If ``five_prime_junction`` or
@@ -76,6 +91,9 @@ class TranscriptJunctionBuilder:
         self.annotation_type = annotation_type
         self.five_prime_junction = five_prime_junction
         self.three_prime_junction = three_prime_junction
+        self.five_prime_intronic_offset = five_prime_intronic_offset
+        self.three_prime_intronic_offset = three_prime_intronic_offset
+        self.linker_sequence = linker_sequence
         self.assayed_fusion = assayed_fusion
 
     async def _get_cds_start(self, tx: str) -> int:
@@ -114,7 +132,11 @@ class TranscriptJunctionBuilder:
         return pos_range[1] if junc.strand == Strand.POSITIVE else pos_range[0]
 
     async def _create_tx_segment(
-        self, ref_seq: str, pos: int, five_prime: bool = True
+        self,
+        ref_seq: str,
+        pos: int,
+        five_prime: bool = True,
+        intronic_offset: int | None = None,
     ) -> TranscriptSegmentElement:
         """Create TranscriptSegmentElement from junction string
 
@@ -122,6 +144,7 @@ class TranscriptJunctionBuilder:
         :param pos: The fusion junction location
         :param five_prime: If the 5' prime segment is being created. This is
             set by default to ``True``.
+        :param intronic_offset: The intronic offset, by default set to None
         :return: A `TranscriptSegmentElement` object
         """
         if self.annotation_type == AnnotationLayer.CDNA:
@@ -130,12 +153,13 @@ class TranscriptJunctionBuilder:
                 tx=ref_seq, pos=pos, cds_start=cds
             )
             pos = await self._extract_junc(junc=junc_data)
+            intronic_offset = intronic_offset if intronic_offset else 0
             seg = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 transcript=ref_seq,
                 genomic_ac=junc_data.alt_ac,
-                seg_start_genomic=pos if not five_prime else None,
-                seg_end_genomic=pos if five_prime else None,
+                seg_start_genomic=pos + intronic_offset if not five_prime else None,
+                seg_end_genomic=pos + intronic_offset if five_prime else None,
                 coordinate_type=CoordinateType.RESIDUE,
             )
             return seg[0]
@@ -154,6 +178,7 @@ class TranscriptJunctionBuilder:
         gene: str,
         ref_seq: str | None = None,
         pos: int | None = None,
+        intronic_offset: int | None = None,
         five_prime: bool = True,
     ) -> GeneElement | TranscriptSegmentElement:
         """Process fusion partner input
@@ -163,6 +188,7 @@ class TranscriptJunctionBuilder:
             By default, this is set to None
         :param pos: The fusion junction location. By default, this is set to
             None
+        :param intronic_offset: The intronic offset, by default set to None
         :param five_prime: If the 5' prime partner is being examined. By
             default, this is set to True
         """
@@ -173,7 +199,10 @@ class TranscriptJunctionBuilder:
             if not gene_obj:
                 return GeneElement(gene=MappableConcept(name=gene, conceptType="Gene"))
         return await self._create_tx_segment(
-            ref_seq=ref_seq, pos=pos, five_prime=five_prime
+            ref_seq=ref_seq,
+            pos=pos,
+            intronic_offset=intronic_offset,
+            five_prime=five_prime,
         )
 
     async def build_fusion(
@@ -188,18 +217,30 @@ class TranscriptJunctionBuilder:
             gene=self.five_prime_gene,
             ref_seq=self.five_prime_reference_sequence,
             pos=self.five_prime_junction,
+            intronic_offset=self.five_prime_intronic_offset,
             five_prime=True,
+        )
+        linker = (
+            LinkerElement(
+                linkerSequence=LiteralSequenceExpression(sequence=self.linker_sequence)
+            )
+            if self.linker_sequence
+            else None
         )
         three_prime_seg = await self._process_partner(
             gene=self.three_prime_gene,
             ref_seq=self.three_prime_reference_sequence,
             pos=self.three_prime_junction,
+            intronic_offset=self.three_prime_intronic_offset,
             five_prime=False,
         )
+        structure = (
+            [five_prime_seg, linker, three_prime_seg]
+            if linker
+            else [five_prime_seg, three_prime_seg]
+        )
         return (
-            self.fusor.assayed_fusion(structure=[five_prime_seg, three_prime_seg])
+            self.fusor.assayed_fusion(structure=structure)
             if self.assayed_fusion
-            else self.fusor.categorical_fusion(
-                structure=[five_prime_seg, three_prime_seg]
-            )
+            else self.fusor.categorical_fusion(structure=structure)
         )
