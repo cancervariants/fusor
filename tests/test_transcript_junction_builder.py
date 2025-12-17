@@ -9,7 +9,11 @@ from fusor.transcript_junction_builder import TranscriptJunctionBuilder
 
 
 def fusion_example_bcr_abl1(**kwargs):
-    """Create example `AssayedFusion` object for BCR::ABL1"""
+    """Create example `AssayedFusion` object for BCR::ABL1
+
+    BCR: https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/allele?hgvsOrDescriptor=NC_000022.11%3Ag.23295143G%3ET
+    ABL1: https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/allele?hgvsOrDescriptor=NC_000009.12%3Ag.130884290G%3ET
+    """
     params = {
         "type": "AssayedFusion",
         "structure": [
@@ -113,7 +117,11 @@ def fusion_example_bcr_abl1_gene_elements(**kwargs):
 
 
 def fusion_example_eml4_alk(**kwargs):
-    """Create example `CategoricalFusion` object for EML4::ALK"""
+    """Create example `CategoricalFusion` object for EML4::ALK
+
+    EML: https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/allele?hgvsOrDescriptor=NC_000002.12%3Ag.42325554T%3EC
+    ALK: https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/allele?hgvsOrDescriptor=NC_000002.12%3Ag.29223528A%3ET
+    """
     params = {
         "type": "CategoricalFusion",
         "structure": [
@@ -184,8 +192,9 @@ def fusion_example_eml4_alk(**kwargs):
 def fusion_example_bcr_abl1_intronic(**kwargs):
     """Create example `AssayedFusion` object for BCR::ABL1 where the user
     provides intronic locations.
-        For BCR, the position is described as: NM_004327.3:c.3012+188
-        For ABL1, the position is described as: NM_005157.5:c.80-20
+
+    For BCR, the position is described as: NM_004327.3:c.3012+188: https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/allele?hgvsOrDescriptor=NC_000022.11%3Ag.23295343C%3ET
+    For ABL1, the position is described as: NM_005157.5:c.80-20: https://reg.clinicalgenome.org/redmine/projects/registry/genboree_registry/allele?hgvsOrDescriptor=NC_000009.12%3Ag.130854044T%3EG
     """
     params = {
         "type": "AssayedFusion",
@@ -263,8 +272,8 @@ test_data = [
         "NM_005157.5",
         3000,
         2000,
-        None,
-        None,
+        0,
+        0,
         None,
         True,
         fusion_example_bcr_abl1(),
@@ -333,8 +342,8 @@ test_data = [
         "NM_004304.4",
         2242,
         3173,
-        None,
-        None,
+        0,
+        0,
         None,
         False,
         fusion_example_eml4_alk(),

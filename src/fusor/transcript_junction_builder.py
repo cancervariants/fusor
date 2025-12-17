@@ -31,10 +31,10 @@ class TranscriptJunctionBuilder:
         five_prime_reference_sequence: str | None = None,
         three_prime_reference_sequence: str | None = None,
         annotation_type: AnnotationLayer | None = None,
-        five_prime_junction: int | None = None,
-        three_prime_junction: int | None = None,
-        five_prime_intronic_offset: int | None = None,
-        three_prime_intronic_offset: int | None = None,
+        five_prime_junction: int = 0,
+        three_prime_junction: int = 0,
+        five_prime_intronic_offset: int = 0,
+        three_prime_intronic_offset: int = 0,
         linker_sequence: str | None = None,
         assayed_fusion: bool = True,
     ) -> None:
@@ -48,25 +48,27 @@ class TranscriptJunctionBuilder:
         :param three_prime_reference_sequence: The 5' prime reference sequence,
             either transcript or genomic. By default, this is set to None
         :param annotation_type: The annotation type describing the 5' and 3'
-            reference sequences. By default, this is set to None
+            reference sequences. This should be set to either c. or g. By
+            default, this is set to None
         :param five_prime_junction: The 5' junction location, described using
             a residue coordinate (1-based) on a transcript or genomic sequence.
-            By default, this is set to None.
+            By default, this is set to 0.
         :param three_prime_junction: The 3' junction location, described using
             a residue coordinate (1-based) on a transcript or genomic sequence.
-            By default, this is set to None.
+            By default, this is set to 0.
         :param five_prime_intronic_offset: The intronic offset for the 5'
             junction, described using a residue coordinate (1-based) on a
-            transcript sequence. By default, this is set to None.
+            transcript sequence. By default, this is set to 0.
         :param three_prime_intronic_offset: The intronic offset for the 5'
             junction, described using a residue coordinate (1-based) on a
-            transcript sequence. By default, this is set to None.
+            transcript sequence. By default, this is set to 0.
         :param linker_sequence: The linker sequence. By default, this is set
             to None
         :param assayed_fusion: If an `AssayedFusion` object should be created.
             By default, this is set to True.
         :raises ValueError: If ``five_prime_junction`` or
-            ``three_prime_junction`` are not described using c. coordinates
+            ``three_prime_junction`` are not described using c. or g.
+            coordinates
         """
         self.fusor = fusor
 
@@ -135,16 +137,17 @@ class TranscriptJunctionBuilder:
         self,
         ref_seq: str,
         pos: int,
-        five_prime: bool = True,
-        intronic_offset: int | None = None,
+        is_five_prime: bool = True,
+        intronic_offset: int = 0,
     ) -> TranscriptSegmentElement:
         """Create TranscriptSegmentElement from junction string
 
-        :param ref_seq: The reference sequence for the fusion partner
-        :param pos: The fusion junction location
-        :param five_prime: If the 5' prime segment is being created. This is
-            set by default to ``True``.
-        :param intronic_offset: The intronic offset, by default set to None
+        :param ref_seq: The reference sequence for the fusion partner. This
+            currently only supports RefSeq.
+        :param pos: The fusion junction location (1-based)
+        :param is_five_prime: If the 5' prime segment is being created. This
+            is set by default to ``True``.
+        :param intronic_offset: The intronic offset, by default set to 0
         :return: A `TranscriptSegmentElement` object
         """
         if self.annotation_type == AnnotationLayer.CDNA:
@@ -153,22 +156,21 @@ class TranscriptJunctionBuilder:
                 tx=ref_seq, pos=pos, cds_start=cds
             )
             pos = await self._extract_junc(junc=junc_data)
-            intronic_offset = intronic_offset if intronic_offset else 0
             seg = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
                 transcript=ref_seq,
                 genomic_ac=junc_data.alt_ac,
-                seg_start_genomic=pos + intronic_offset if not five_prime else None,
-                seg_end_genomic=pos + intronic_offset if five_prime else None,
+                seg_start_genomic=pos + intronic_offset if not is_five_prime else None,
+                seg_end_genomic=pos + intronic_offset if is_five_prime else None,
                 coordinate_type=CoordinateType.RESIDUE,
             )
             return seg[0]
         seg = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=ref_seq,
-            gene=self.five_prime_gene if five_prime else self.three_prime_gene,
-            seg_start_genomic=pos if not five_prime else None,
-            seg_end_genomic=pos if five_prime else None,
+            gene=self.five_prime_gene if is_five_prime else self.three_prime_gene,
+            seg_start_genomic=pos if not is_five_prime else None,
+            seg_end_genomic=pos if is_five_prime else None,
             coordinate_type=CoordinateType.RESIDUE,
         )
         return seg[0]
@@ -177,32 +179,32 @@ class TranscriptJunctionBuilder:
         self,
         gene: str,
         ref_seq: str | None = None,
-        pos: int | None = None,
-        intronic_offset: int | None = None,
-        five_prime: bool = True,
+        pos: int = 0,
+        intronic_offset: int = 0,
+        is_five_prime: bool = True,
     ) -> GeneElement | TranscriptSegmentElement:
         """Process fusion partner input
 
         :param gene: The gene symbol for the fusion partner
-        :param ref_seq: The chromosomal or transcript reference sequence.
-            By default, this is set to None
-        :param pos: The fusion junction location. By default, this is set to
-            None
-        :param intronic_offset: The intronic offset, by default set to None
-        :param five_prime: If the 5' prime partner is being examined. By
+        :param ref_seq: The chromosomal or transcript reference sequence. This
+            currently only supports RefSeq transcripts. By default, this is set
+            to None
+        :param pos: The fusion junction location (1-based). By default, this is
+            set to 0
+        :param intronic_offset: The intronic offset, by default set to 0
+        :param is_five_prime: If the 5' prime partner is being examined. By
             default, this is set to True
         """
         if not ref_seq:
             gene_obj = self.fusor.gene_element(gene=gene)[0]
             if gene_obj:
                 return gene_obj
-            if not gene_obj:
-                return GeneElement(gene=MappableConcept(name=gene, conceptType="Gene"))
+            return GeneElement(gene=MappableConcept(name=gene, conceptType="Gene"))
         return await self._create_tx_segment(
             ref_seq=ref_seq,
             pos=pos,
             intronic_offset=intronic_offset,
-            five_prime=five_prime,
+            is_five_prime=is_five_prime,
         )
 
     async def build_fusion(
@@ -218,7 +220,7 @@ class TranscriptJunctionBuilder:
             ref_seq=self.five_prime_reference_sequence,
             pos=self.five_prime_junction,
             intronic_offset=self.five_prime_intronic_offset,
-            five_prime=True,
+            is_five_prime=True,
         )
         linker = (
             LinkerElement(
@@ -232,7 +234,7 @@ class TranscriptJunctionBuilder:
             ref_seq=self.three_prime_reference_sequence,
             pos=self.three_prime_junction,
             intronic_offset=self.three_prime_intronic_offset,
-            five_prime=False,
+            is_five_prime=False,
         )
         structure = (
             [five_prime_seg, linker, three_prime_seg]
