@@ -342,7 +342,7 @@ class FusionMatcher:
         )
 
         # Check for linker elements first
-        if len(assayed_fusion_structure) == len(comparator_fusion_structure) == 3:
+        if len(assayed_fusion_structure) == len(comparator_fusion_structure) == 3:  # noqa: PLR2004
             match_info.linker = (
                 assayed_fusion_structure[1] == comparator_fusion_structure[1]
             )

@@ -83,6 +83,7 @@ src = ["src"]
 exclude = ["docs/source/conf.py", "notebooks/"]
 
 [tool.ruff.lint]
+select = ["ALL"]
 ignore = [
     # unused
     "AIR",
@@ -146,6 +147,7 @@ ignore = [
 # N815 - mixed-case-variable-in-class-scope
 # INP001 - implicit-namespace-package
 # SLF001 - private-member-access
+# PLR2004 - magic-value-comparison
 "tests/*" = [
     "ANN001",
     "ANN2",
@@ -154,6 +156,7 @@ ignore = [
     "B011",
     "INP001",
     "SLF001",
+    "PLR2004",
 ]
 "src/fusor/models.py" = ["ANN201", "N803", "N805", "N815", "ANN001", "ANN2", "ANN102"]
 "scripts/*" = ["INP001"]
