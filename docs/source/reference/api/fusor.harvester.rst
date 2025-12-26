@@ -1,4 +1,4 @@
-﻿fusor.harvester
+fusor.harvester
 ===============
 
 .. automodule:: fusor.harvester

@@ -36,8 +36,8 @@ async def test_fusion_matching(
     """Test fusion matching worklow using example output from STAR-Fusion"""
     with Path.open(
         Path(__file__).parent / "fusion_matching_test_cases.yaml"
-    ) as test_cases:
-        test_cases = yaml.safe_load(test_cases)["tests"]
+    ) as test_cases_handler:
+        test_cases = yaml.safe_load(test_cases_handler)["tests"]
 
     # Load STAR-Fusion records
     path = Path(fixture_data_dir / "star_fusion_test.tsv")

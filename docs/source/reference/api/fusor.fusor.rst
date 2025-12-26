@@ -1,4 +1,4 @@
-﻿fusor.fusor
+fusor.fusor
 ===========
 
 .. automodule:: fusor.fusor

@@ -707,7 +707,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
         reg_element = self.regulatoryElement
-        if (num_structure + bool(reg_element)) < 2:
+        if (num_structure + bool(reg_element)) < 2:  # noqa: PLR2004
             raise ValueError(qt_error_msg)
 
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
@@ -746,7 +746,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             msg = "First structural element cannot be LinkerSequence"
             error_messages.append(msg)
 
-        if len(elements) > 2:
+        if len(elements) > 2:  # noqa: PLR2004
             for element in elements[1:-1]:
                 if isinstance(element, TranscriptSegmentElement) and (
                     element.exonStart is None or element.exonEnd is None
@@ -1070,7 +1070,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
         reg_element = self.regulatoryElement
-        if (num_structure + bool(reg_element)) < 2:
+        if (num_structure + bool(reg_element)) < 2:  # noqa: PLR2004
             raise ValueError(qt_error_msg)
 
         uq_gene_msg = "ITDs must be formed from only one unique gene."
