@@ -1,4 +1,4 @@
-﻿fusor.exceptions
+fusor.exceptions
 ================
 
 .. automodule:: fusor.exceptions
