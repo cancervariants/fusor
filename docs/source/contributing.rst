@@ -22,7 +22,7 @@ Then initialize a virtual environment: ::
     source venv/bin/activate
     python3 -m pip install -e '.[dev,tests,docs]'
 
-We use `pre-commit <https://pre-commit.com/#usage>`_ to run conformance tests before commits. This provides checks for:
+We use `prek <https://prek.j178.dev/>`_ to run conformance tests before commits. This provides checks for:
 
 * Code format and style
 * Added large files
@@ -33,7 +33,7 @@ We use `pre-commit <https://pre-commit.com/#usage>`_ to run conformance tests be
 
 Before your first commit, run: ::
 
-    pre-commit install
+    prek install
 
 Style
 -----
