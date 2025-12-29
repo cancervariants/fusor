@@ -252,7 +252,7 @@ class Translator(ABC):
         """
         if not gene:
             return None
-        if gene == "NA" or gene == "INTERGENIC":
+        if gene in {"NA", "INTERGENIC"}:
             return UnknownGeneElement(), "NA"
         if gene == "v":
             return MultiplePossibleGenesElement(), "v"
