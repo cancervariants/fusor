@@ -32,7 +32,7 @@ python3 -m pip install fusor
 See the [installation instructions](https://fusor.readthedocs.io/stable/install.html) in the documentation for a description of dependency setup requirements.
 
 ### Docker
-FUSOR's dependencies can be installed using a Docker image.
+FUSOR's dependencies can be installed using a Docker container.
 
 > [!IMPORTANT]
 > This section assumes you have a local [SeqRepo](https://github.com/biocommons/biocommons.seqrepo)
