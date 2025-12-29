@@ -47,7 +47,7 @@ you will get the following error:
 To build, (re)create, and start containers
 
 ```shell
-docker volume create --name=uta_vol
+docker volume create uta_vol
 docker compose up
 ```
 

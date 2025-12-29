@@ -53,7 +53,7 @@ The UTA and Gene Normalizer dependencies can also be installed using `Docker <ht
 Run:
 .. code-block:: shell
 
-    docker volume create --name=uta_vol
+    docker volume create uta_vol
     docker compose up
 
 Check data availability
