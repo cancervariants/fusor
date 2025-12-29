@@ -46,11 +46,10 @@ async def check_data_resources(
             gene_database = create_db()
         if not gene_database.check_schema_initialized():
             _logger.error("Health check failed: gene DB schema uninitialized")
+        elif not gene_database.check_tables_populated():
+            _logger.error("Health check failed: gene DB is incompletely populated")
         else:
-            if not gene_database.check_tables_populated():
-                _logger.error("Health check failed: gene DB is incompletely populated")
-            else:
-                gene_status = True
+            gene_status = True
     except Exception:
         _logger.exception(
             "Encountered error while creating gene DB during resource check"
