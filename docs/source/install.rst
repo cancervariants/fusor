@@ -45,6 +45,17 @@ Finally, ``FUSOR`` uses the `Gene Normalizer <https://github.com/cancervariants/
 Connection information for the normalizer database can be set using the environment variable ``GENE_NORM_DB_URL``. See the `Gene Normalizer docs <https://gene-normalizer.readthedocs.io/stable/reference/api/database/gene.database.database.html#gene.database.database.create_db>`_ for more information on connection configuration.
 As a default, this connects to port 8000: ``http://localhost:8000``.
 
+Docker
+++++++
+
+The UTA and Gene Normalizer dependencies can also be installed using `Docker <https://docs.docker.com/get-started/get-docker/>`_
+
+Run:
+.. code-block:: shell
+
+    docker volume create --name=uta_vol
+    docker compose up
+
 Check data availability
 +++++++++++++++++++++++
 
