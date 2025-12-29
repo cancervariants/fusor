@@ -1,4 +1,4 @@
-﻿fusor.nomenclature
+fusor.nomenclature
 ==================
 
 .. automodule:: fusor.nomenclature

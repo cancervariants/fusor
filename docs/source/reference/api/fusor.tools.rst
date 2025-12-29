@@ -1,4 +1,4 @@
-﻿fusor.tools
+fusor.tools
 ===========
 
 .. automodule:: fusor.tools
