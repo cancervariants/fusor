@@ -31,8 +31,6 @@ dependencies = [
     "gene-normalizer ~=0.10.0",
     "civicpy ~=5.0",
     "cool-seq-tool ~=0.15.1",
-    "ipykernel",
-    "jupyter",
 ]
 dynamic=["version"]
 
@@ -50,6 +48,10 @@ docs = [
     "sphinxext-opengraph==0.8.2",
     "furo>=2023.9.10",
     "sphinx-github-changelog==1.2.1"
+]
+notebooks = [
+    "ipykernel",
+    "jupyter",
 ]
 
 [project.urls]

@@ -10,7 +10,7 @@ services:
       - uta_vol:/var/lib/postgresql/data
       - ./uta-setup.sql:/docker-entrypoint-initdb.d/uta-setup.sql
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
 
   gene-dynamodb-local:
     image: cancervariants/gene-normalizer-ddb:2025-12-29
