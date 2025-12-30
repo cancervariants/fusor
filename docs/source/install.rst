@@ -32,10 +32,34 @@ At runtime, UTA connection information can be relayed to FUSOR (by way of Cool-S
 
 SeqRepo
 +++++++
+FUSOR relies on [seqrepo](https://github.com/biocommons/biocommons.seqrepo), which you must download yourself.
 
-`SeqRepo <https://github.com/biocommons/biocommons.seqrepo>`_ is a controlled dataset of biological sequences. As with UTA, access in FUSOR is given via `Cool-Seq-Tool`, which provides `documentation <https://coolseqtool.readthedocs.io/stable/install.html#set-up-seqrepo>`_ on getting it set up.
+FUSOR uses seqrepo to retrieve sequences at given positions on a transcript.
 
-At runtime, the file location of the SeqRepo instance directory can be defined (by way of Cool-Seq-Tool) either as an initialization argument or via the environment variable ``SEQREPO_ROOT_DIR``. By default, it's expected to be ``/usr/local/share/seqrepo/latest``. See the `Cool-Seq-Tool configuration docs <https://coolseqtool.readthedocs.io/stable/usage.html#environment-configuration>`_ for more info.
+From the _root_ directory:
+
+```shell
+pip install seqrepo
+sudo mkdir /usr/local/share/seqrepo
+sudo chown $USER /usr/local/share/seqrepo
+seqrepo pull -i 2024-12-20/  # Replace with latest version using `seqrepo list-remote-instances` if outdated
+```
+
+If you get an error similar to the one below:
+
+```shell
+PermissionError: [Error 13] Permission denied: '/usr/local/share/seqrepo/2024-12-20/._fkuefgd' -> '/usr/local/share/seqrepo/2024-12-20/'
+```
+
+You will want to do the following:\
+(_Might not be .\_fkuefgd, so replace with your error message path_)
+
+```shell
+sudo mv /usr/local/share/seqrepo/2024-12-20._fkuefgd /usr/local/share/seqrepo/2024-12-20
+exit
+```
+
+Use the `SEQREPO_ROOT_DIR` environment variable to set the path of an already existing SeqRepo directory. The default is `/usr/local/share/seqrepo/latest`.
 
 Gene Normalizer
 +++++++++++++++
