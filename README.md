@@ -91,7 +91,7 @@ In Docker Desktop, you should see the following for a successful setup:
 ![Docker Desktop Container](./docker-desktop-container.png)
 
 > [!NOTE]
-> [python-dotenv](https://pypi.org/project/python-dotenv/) to load environment
+> [python-dotenv](https://pypi.org/project/python-dotenv/) can be used to load environment
 > variables needed for analysis notebooks in the `notebooks` directory.
 > Environment variables can be located at [.env.shared](./.env.shared).
 ---
