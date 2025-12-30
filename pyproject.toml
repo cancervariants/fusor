@@ -49,6 +49,11 @@ docs = [
     "furo>=2023.9.10",
     "sphinx-github-changelog==1.2.1"
 ]
+notebooks = [
+    "ipykernel",
+    "jupyter",
+    "seaborn >=0.12.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/cancervariants/fusor"
