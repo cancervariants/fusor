@@ -31,38 +31,6 @@ python3 -m pip install fusor
 
 See the [installation instructions](https://fusor.readthedocs.io/stable/install.html) in the documentation for a description of dependency setup requirements.
 
-### Docker
-FUSOR's dependencies can be installed using a Docker container.
-
-> [!IMPORTANT]
-> This section assumes you have a local [SeqRepo](https://github.com/biocommons/biocommons.seqrepo)
-installed at `/usr/local/share/seqrepo/2024-12-20`. If you have it installed elsewhere,
-please update add a `SEQREPO_ROOT_DIR` environment variable in
-[compose.yaml](./compose.yaml) and [.env.shared](./.env.shared).\
-> If you're using Docker Desktop, you must go to Settings -> Resources -> File sharing
-and add `/usr/local/share/seqrepo` under the `Virtual file shares` section. Otherwise,
-you will get the following error:
-`OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-12-20`.
-
-To build, (re)create, and start containers
-
-```shell
-docker volume create uta_vol
-docker compose up
-```
-
-> [!TIP]
-> If you want a clean slate, run `docker compose down -v` to remove containers and
-> volumes, then `docker compose up --build` to rebuild and start fresh containers.
-
-In Docker Desktop, you should see the following for a successful setup:
-
-![Docker Desktop Container](./docker-desktop-container.png)
-
-> [!NOTE]
-> [python-dotenv](https://pypi.org/project/python-dotenv/) can be used to load environment
-> variables needed for analysis notebooks in the `notebooks` directory.
-> Environment variables can be located at [.env.shared](./.env.shared).
 ---
 
 ## Usage

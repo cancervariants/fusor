@@ -32,9 +32,9 @@ At runtime, UTA connection information can be relayed to FUSOR (by way of Cool-S
 
 SeqRepo
 +++++++
-FUSOR relies on `seqrepo <https://github.com/biocommons/biocommons.seqrepo>`_, which you must download yourself.
+FUSOR relies on `Seqrepo <https://github.com/biocommons/biocommons.seqrepo>`_, which you must download yourself.
 
-FUSOR uses seqrepo to retrieve sequences at given positions on a transcript.
+FUSOR uses Seqrepo to retrieve sequences at given positions on a transcript.
 
 From the *root* directory:
 
@@ -72,14 +72,49 @@ As a default, this connects to port 8000: ``http://localhost:8000``.
 Docker
 ++++++
 
-The UTA and Gene Normalizer dependencies can also be installed using `Docker <https://docs.docker.com/get-started/get-docker/>`_
+FUSOR's dependencies can be installed using a Docker container.
 
-Run:
+.. important::
+
+   This section assumes you have a local
+   `SeqRepo <https://github.com/biocommons/biocommons.seqrepo>`_
+   installed at ``/usr/local/share/seqrepo/2024-12-20``.
+   If you have it installed elsewhere, please add a
+   ``SEQREPO_ROOT_DIR`` environment variable in
+   ``compose.yaml`` and ``.env.shared``.
+
+   If you're using Docker Desktop, you must go to
+   **Settings → Resources → File sharing** and add
+   ``/usr/local/share/seqrepo`` under the *Virtual file shares*
+   section. Otherwise, you will get the following error::
+
+      OSError: Unable to open SeqRepo directory /usr/local/share/seqrepo/2024-12-20
+
+To build, (re)create, and start containers:
 
 .. code-block:: shell
 
-    docker volume create uta_vol
-    docker compose up
+   docker volume create uta_vol
+   docker compose up
+
+.. tip::
+
+   If you want a clean slate, run ``docker compose down -v`` to remove
+   containers and volumes, then run
+   ``docker compose up --build`` to rebuild and start fresh containers.
+
+In Docker Desktop, you should see the following for a successful setup:
+
+.. figure:: ../../docker-desktop-container.png
+   :alt: Docker Desktop Container
+   :align: center
+
+.. note::
+
+   `python-dotenv <https://pypi.org/project/python-dotenv/>`_ can be used
+   to load environment variables needed for analysis notebooks in the
+   ``notebooks`` directory. Environment variables can be found in
+   ``.env.shared``.
 
 Check data availability
 +++++++++++++++++++++++

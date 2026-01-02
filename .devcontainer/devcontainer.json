@@ -1,6 +1,6 @@
 {
   "name": "FUSOR Analysis Notebooks",
-  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.12",
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.13",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -8,5 +8,5 @@
       ]
     }
   },
-  "postCreateCommand": "pip install --upgrade setuptools && pip install -e '.[dev,tests,docs]'"
+  "postCreateCommand": "pip install --upgrade setuptools && pip install -e '.[dev,tests,docs,notebooks]'"
 }
