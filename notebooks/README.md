@@ -8,7 +8,7 @@ Next, run the following:
 
 ```shell
 make nbready
-source venv/3.12/bin/activate
+source venv/3.13/bin/activate
 ```
 
 ### Virtual Environment: Selecting the Kernel
