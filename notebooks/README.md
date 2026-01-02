@@ -83,7 +83,7 @@ Type and select the following inside the Command Palette: `> Dev Containers: Reb
 
 The Dev Container will be created and install the dependencies needed.
 
-You should see `Dev Container: VRS-Python Notebooks @ desktop-linux` on the bottom left hand corner of VS Code.
+You should see `Dev Container: FUSOR Analysis Notebooks @ desktop-linux` on the bottom left hand corner of VS Code.
 
 ### Dev Containers: Selecting the Kernel
 
