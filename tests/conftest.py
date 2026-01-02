@@ -94,15 +94,15 @@ def braf_gene():
                 "name": "ensembl_locations",
                 "value": [
                     {
-                        "id": "ga4gh:SL.fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
+                        "id": "ga4gh:SL.RP5AA2xw_g5TqFJ8ytz8hKef7jUbzJYX",
                         "type": "SequenceLocation",
-                        "digest": "fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
+                        "digest": "RP5AA2xw_g5TqFJ8ytz8hKef7jUbzJYX",
                         "sequenceReference": {
                             "type": "SequenceReference",
                             "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                         },
                         "start": 140719326,
-                        "end": 140924929,
+                        "end": 140924976,
                     }
                 ],
                 "description": None,
