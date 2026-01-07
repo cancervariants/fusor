@@ -35,7 +35,7 @@ dependencies = [
 dynamic=["version"]
 
 [project.optional-dependencies]
-tests = ["pytest", "pytest-cov", "pytest-asyncio"]
+tests = ["pytest", "pytest-cov", "pytest-asyncio", "pyyaml"]
 dev = [
     "prek>=0.2.23",
     "ruff==0.14.10",
