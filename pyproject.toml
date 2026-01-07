@@ -29,8 +29,8 @@ dependencies = [
     "ga4gh.vrs >=2.2.0,<3.0",
     "biocommons.seqrepo",
     "gene-normalizer ~=0.11.1",
-    "civicpy ~=5.1.0",
-    "cool-seq-tool ~=0.15.2",
+    "civicpy ~=5.1.1",
+    "cool-seq-tool ~=0.15.2"
 ]
 dynamic=["version"]
 
