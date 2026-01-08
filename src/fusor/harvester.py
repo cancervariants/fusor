@@ -50,6 +50,8 @@ _logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Translator)
 
+csv.field_size_limit(new_limit=500000)
+
 
 @dataclass
 class FusionCallerRecord:
