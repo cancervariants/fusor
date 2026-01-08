@@ -75,6 +75,15 @@ For your convenience, this section is copied from the
 
   [Marketplace Link](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) (if viewing from browser)
 
+* Run the FUSOR docker compose commands:
+
+  In your terminal, run the following lines:
+  ```shell
+  docker volume create uta_vol
+  docker compose up
+  ```
+  More detailed information about the docker compose commands can be found in the [FUSOR ReadtheDocs](https://fusor.readthedocs.io/stable/install.html)
+
 ### Creating the Dev Container
 
 Open the VS Code Command Palette: Shift + Command + P (Mac) / Ctrl + Shift + P (Windows/Linux)
