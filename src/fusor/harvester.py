@@ -6,6 +6,7 @@ import logging
 from abc import ABC
 from collections.abc import AsyncGenerator
 from itertools import dropwhile
+from os import environ
 from pathlib import Path
 from typing import Any, ClassVar, Generic, Literal, TextIO, TypeVar
 
@@ -52,7 +53,8 @@ T = TypeVar("T", bound=Translator)
 
 # Increasing the field size limit to support cases where an output column exceeds
 # the default 131,072 byte limit for the csv.DictReader function
-csv.field_size_limit(new_limit=500000)
+FIELD_SIZE_LIMIT = int(environ.get("FIELD_SIZE_LIMIT", "500000"))
+csv.field_size_limit(new_limit=FIELD_SIZE_LIMIT)
 
 
 @dataclass
