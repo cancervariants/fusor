@@ -6,7 +6,7 @@ FUSOR
 [![image](https://img.shields.io/pypi/l/fusor.svg)](https://pypi.python.org/pypi/fusor)
 [![image](https://img.shields.io/pypi/pyversions/fusor.svg)](https://pypi.python.org/pypi/fusor)
 [![Actions status](https://github.com/cancervariants/fusor/actions/workflows/checks.yaml/badge.svg)](https://github.com/cancervariants/fusor/actions/checks.yaml)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.12708137-blue))](https://doi.org/10.5281/zenodo.12708137)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.12708137-blue)](https://doi.org/10.5281/zenodo.12708137)
 
 
 ---
