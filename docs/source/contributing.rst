@@ -20,7 +20,7 @@ Then initialize a virtual environment: ::
 
     python3 -m virtualenv venv
     source venv/bin/activate
-    python3 -m pip install -e '.[dev,tests,docs]'
+    python3 -m pip install -e '.[dev,tests,docs,notebooks]'
 
 We use `prek <https://prek.j178.dev/>`_ to run conformance tests before commits. This provides checks for:
 

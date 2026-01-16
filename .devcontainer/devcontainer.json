@@ -1,0 +1,16 @@
+{
+  "name": "FUSOR Analysis Notebooks",
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:3.13",
+  "runArgs": ["--network=host"],
+  "mounts": [
+    "source=/usr/local/share/seqrepo,target=/usr/local/share/seqrepo,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-toolsai.jupyter"
+      ]
+    }
+  },
+  "postCreateCommand": "pip install --upgrade setuptools && pip install -e '.[dev,tests,docs,notebooks]'"
+}
