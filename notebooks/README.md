@@ -1,5 +1,37 @@
 # Notebooks
 
+We provide you two options for setting up your development environment: using a Python
+[virtual environment](#virtual-environment) or leveraging
+[VS Code Dev Containers](#dev-containers) (useful for non-macOS users).
+
+### Fork the Repo
+
+Fork the repo at <https://github.com/cancervariants/fusor/> and initialize a development
+environment.
+
+```shell
+git clone git@github.com:YOUR_GITHUB_ID/fusor.git
+cd fusor
+```
+
+### Virtual Environment
+
+We recommend to install python 3.13, if not already installed. If using uv, run:
+
+```shell
+uv python install 3.13
+uv venv
+uv sync --all-extras
+```
+
+#### Virtual Environment: Selecting the Kernel
+
+When opening a notebook with this option, click `Select Kernel`,
+`Python Environments...`, and select the first option:
+`3.13 (Python 3.13.z) venv/3.13/bin/python`
+
+_Note: Patch version may vary._
+
 ## Getting Started: Devcontainer
 
 ### Prerequisites
