@@ -1,24 +1,5 @@
 # Notebooks
 
-## Virtual Environment
-
-You must first install python@3.13, if not already installed.
-
-Next, run the following:
-
-```shell
-make nbready
-source venv/3.13/bin/activate
-```
-
-### Virtual Environment: Selecting the Kernel
-
-When opening a notebook with this option, click `Select Kernel`,
-`Python Environments...`, and select the first option:
-`3.13 (Python 3.13.z) venv/3.13/bin/python`
-
-_Note: Patch version may vary._
-
 ## Getting Started: Devcontainer
 
 ### Prerequisites
@@ -77,7 +58,7 @@ For your convenience, this section is copied from the
 
 * Run the FUSOR docker compose commands:
 
-  In your terminal, run the following lines:
+  In your terminal, run the following lines (if not already running):
   ```shell
   docker volume create uta_vol
   docker compose up

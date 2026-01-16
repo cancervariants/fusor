@@ -79,9 +79,6 @@ FUSOR's dependencies can be installed using a Docker container.
    This section assumes you have a local
    `SeqRepo <https://github.com/biocommons/biocommons.seqrepo>`_
    installed at ``/usr/local/share/seqrepo/2024-12-20``.
-   If you have it installed elsewhere, please add a
-   ``SEQREPO_ROOT_DIR`` environment variable in
-   ``compose.yaml`` and ``.env.shared``.
 
    If you're using Docker Desktop, you must go to
    **Settings → Resources → File sharing** and add
