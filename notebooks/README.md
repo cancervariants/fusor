@@ -2,12 +2,12 @@
 
 We provide you two options for setting up your development environment: using a Python
 [virtual environment](#virtual-environment) or leveraging
-[VS Code Dev Containers](#dev-containers) (useful for non-macOS users).
+[VS Code Dev Containers](#getting-started-devcontainer) (useful for non-macOS users).
 
 ### Fork the Repo
 
 Fork the repo at <https://github.com/cancervariants/fusor/> and initialize a development
-environment.
+environment. Please replace `YOUR_GITHUB_ID` with the name of your fork.
 
 ```shell
 git clone git@github.com:YOUR_GITHUB_ID/fusor.git
@@ -16,12 +16,12 @@ cd fusor
 
 ### Virtual Environment
 
-We recommend to install python 3.13, if not already installed. If using uv, run:
+We recommend to install python 3.13, if not already installed. Once installed, run:
 
 ```shell
-uv python install 3.13
-uv venv
-uv sync --all-extras
+python3 -m virtualenv venv
+source venv/bin/activate
+python3 -m pip install -e '.[notebooks]'
 ```
 
 #### Virtual Environment: Selecting the Kernel
@@ -91,6 +91,7 @@ For your convenience, this section is copied from the
 * Run the FUSOR docker compose commands:
 
   In your terminal, run the following lines (if not already running):
+
   ```shell
   docker volume create uta_vol
   docker compose up
