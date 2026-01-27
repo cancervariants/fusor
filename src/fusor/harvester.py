@@ -342,6 +342,8 @@ class GenieHarvester(FusionCallerHarvester):
         "Site2_Chromosome": "site2_chrom",
         "Site1_Position": "site1_pos",
         "Site2_Position": "site2_pos",
+        "Tumor_Split_Read_Count": "split_reads",
+        "Tumor_Paired_End_Read_Count": "paired_end_reads",
         "Site2_Effect_On_Frame": "reading_frame",
         "Annotation": "annot",
     }
