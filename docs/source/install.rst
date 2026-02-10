@@ -26,9 +26,9 @@ Data setup
 Universal Transcript Archive (UTA)
 ++++++++++++++++++++++++++++++++++
 
-The `UTA <https://github.com/biocommons/uta>`_ is a dataset of genome-transcript aligned data supplied as a PostgreSQL database. Access in FUSOR is supplied by way of ``Cool-Seq-Tool``; see the `Cool-Seq-Tool UTA docs <https://coolseqtool.readthedocs.io/stable/install.html#set-up-uta>`_ for some opinionated setup instructions.
+The `UTA <https://github.com/biocommons/uta>`_ is a dataset of genome-transcript aligned data supplied as a PostgreSQL database. Access in FUSOR is supplied by way of ``Cool-Seq-Tool``; see the `Cool-Seq-Tool UTA docs <https://coolseqtool.readthedocs.io/stable/install.html#set-up-uta>`_ for some opinionated setup instructions, or you can use `Docker` to setup (see :ref:`Docker <docker>` for more information).
 
-At runtime, UTA connection information can be relayed to FUSOR (by way of Cool-Seq-Tool) either as an initialization argument or via the environment variable ``UTA_DB_URL``. By default, it is set to ``postgresql://uta_admin:uta@localhost:5432/uta/uta_20210129b``. See the `Cool-Seq-Tool configuration docs <https://coolseqtool.readthedocs.io/stable/usage.html#environment-configuration>`_ for more info.
+At runtime, UTA connection information can be relayed to FUSOR (by way of Cool-Seq-Tool) either as an initialization argument or via the environment variable ``UTA_DB_URL``. By default, it is set to ``postgresql://uta_admin:uta@localhost:5432/uta/uta_20241220`` (``postgresql://<user>:<password>@<host>:<port>/<database>/<schema>``.
 
 SeqRepo
 +++++++
@@ -69,6 +69,8 @@ Finally, ``FUSOR`` uses the `Gene Normalizer <https://github.com/cancervariants/
 Connection information for the normalizer database can be set using the environment variable ``GENE_NORM_DB_URL``. See the `Gene Normalizer docs <https://gene-normalizer.readthedocs.io/stable/reference/api/database/gene.database.database.html#gene.database.database.create_db>`_ for more information on connection configuration.
 As a default, this connects to port 8000: ``http://localhost:8000``.
 
+.. _docker:
+
 Docker
 ++++++
 
@@ -81,6 +83,10 @@ FUSOR's dependencies can be installed using a Docker container.
    installed at ``/usr/local/share/seqrepo/2024-12-20``.
    If you have it installed elsewhere, please add a
    ``SEQREPO_ROOT_DIR`` environment variable in ``.env.shared``.
+
+   You must download `uta_20241220.pgd.gz` from
+   <https://dl.biocommons.org/uta/> using a web browser and
+   move it to the root of the repository.
 
    If you're using Docker Desktop, you must go to
    **Settings → Resources → File sharing** and add
