@@ -161,6 +161,7 @@ dynamodb_local_latest/*
 
 # Build files
 Pipfile.lock
+uv.lock
 
 # Test data
 fusor/*.txt
@@ -168,4 +169,8 @@ fusor/*.csv
 fusor/*.tsv
 test_data/
 
+# civicpy cache
 *.pkl
+
+# biocommons UTA
+uta_*pgd.gz
