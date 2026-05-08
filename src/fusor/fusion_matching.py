@@ -247,7 +247,7 @@ class FusionMatcher:
         # for examination in the donwnstream match_fusion_structure function
         # where the actual matching is done for the 5' and 3' partners
         return bool(
-            set(assayed_fusion_gene_symbols) and set(comparator_fusion_gene_symbols)
+            set(assayed_fusion_gene_symbols) & set(comparator_fusion_gene_symbols)
         )
 
     def _filter_comparator_fusions(
