@@ -205,8 +205,10 @@ class FusionCallerHarvester(ABC, Generic[T]):
             raw_row = {}
             filtered_row = {}
             for key, value in row.items():
-                renamed_key = self.column_rename.get(key, key)
-                raw_row[renamed_key] = value
+                renamed_key = self.column_rename.get(
+                    key, key
+                )  # Rename column based on column mapping for each caller
+                raw_row[renamed_key] = value  # Update data to match renamed column
                 if renamed_key in fields_to_keep:
                     filtered_row[renamed_key] = value
 
@@ -424,7 +426,9 @@ class CIVICHarvester(FusionCallerHarvester):
                 continue
             if cat_fusion:
                 translated_fusions.append(cat_fusion)
-        self._count_dropped_fusions(processed_fusions, translated_fusions)
+        self._count_dropped_fusions(
+            processed_fusions, translated_fusions
+        )  # Update count of fusions that failed translation
 
         return translated_fusions
 
@@ -457,6 +461,8 @@ class MOAHarvester(FusionCallerHarvester):
             cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
+
+        # Download latest MOA cache is use_local is set to ``False``
         moa_file = moa_downloader.get_latest(
             force_refresh=force_refresh, from_local=use_local
         )[0]
@@ -473,6 +479,7 @@ class MOAHarvester(FusionCallerHarvester):
         moa_fusions = [
             assertion
             for assertion in self.assertions
+            # Add assertion to moa_fusions list if it is determined that it is for a gene fusion
             if any(
                 ext.get("name") == "rearrangement_type" and ext.get("value") == "Fusion"
                 for biomarker in assertion.get("proposition", {}).get("biomarkers", [])
@@ -485,6 +492,8 @@ class MOAHarvester(FusionCallerHarvester):
             moa_fusion = self.translator.translate(fusion)
             if moa_fusion:
                 translated_fusions.append(moa_fusion)
-        self._count_dropped_fusions(moa_fusions, translated_fusions)
+        self._count_dropped_fusions(
+            moa_fusions, translated_fusions
+        )  # Update count of fusions that failed translation
 
         return translated_fusions

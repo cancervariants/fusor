@@ -165,6 +165,8 @@ class FusionMatcher:
         if not cache_dir:
             cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
+
+        # Set cache_dir, assayed_fusions, and cache_files variables
         self.cache_dir = cache_dir
         self.assayed_fusions = assayed_fusions
         self.cache_files = cache_files
@@ -187,6 +189,9 @@ class FusionMatcher:
             msg = "`cache_dir` and `cache_files` parameters must be provided"
             raise ValueError(msg)
         comparator_fusions = []
+
+        # Iterate through all cached files and add fusions to comparator_fusions
+        # list
         for file in self.cache_files:
             cached_file = self.cache_dir / file
             if cached_file.is_file():
@@ -214,9 +219,9 @@ class FusionMatcher:
             if isinstance(element, GeneElement | TranscriptSegmentElement):
                 gene_symbols.append(element.gene.name)
             elif isinstance(element, UnknownGeneElement):
-                gene_symbols.append("?")
+                gene_symbols.append("?")  # ? follows VICC syntax
             elif isinstance(element, MultiplePossibleGenesElement):
-                gene_symbols.append("v")
+                gene_symbols.append("v")  # v follows VICC syntax
         return gene_symbols
 
     def _match_fusion_partners(
@@ -236,8 +241,13 @@ class FusionMatcher:
         comparator_fusion_gene_symbols = self._extract_fusion_partners(
             comparator_fusion.structure
         )
+
+        # Determine if the assayed fusion and comparator fusion share at least
+        # one common gene symbol. This helps to filter out comparator fusions
+        # for examination in the donwnstream match_fusion_structure function
+        # where the actual matching is done for the 5' and 3' partners
         return bool(
-            set(assayed_fusion_gene_symbols) and set(comparator_fusion_gene_symbols)
+            set(assayed_fusion_gene_symbols) & set(comparator_fusion_gene_symbols)
         )
 
     def _filter_comparator_fusions(
@@ -393,9 +403,13 @@ class FusionMatcher:
 
         for assayed_fusion in self.assayed_fusions:
             matching_output = []
+
+            # Extract relevant comparator fusions to examine
             filtered_comparator_fusions = self._filter_comparator_fusions(
                 assayed_fusion,
             )
+
+            # Add None to list if there are no relevant comparator fusions
             if not filtered_comparator_fusions:  # Add None to matched_fusions
                 matched_fusions.append(None)
                 continue

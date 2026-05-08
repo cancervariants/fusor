@@ -653,6 +653,7 @@ class AbstractTranscriptStructuralVariant(BaseModel, ABC):
         gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
             gene_id = cls._access_object_attr(gene_info, "primaryCoding")
+            # Fetch gene id if primaryCoding field is provided
             if gene_id:
                 if isinstance(gene_id, str):
                     return gene_id
