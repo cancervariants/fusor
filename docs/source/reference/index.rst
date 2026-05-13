@@ -10,6 +10,7 @@ API Reference
 
    fusor.exceptions
    fusor.fusion_caller_models
+   fusor.fusion_matching
    fusor.fusor
    fusor.harvester
    fusor.models

@@ -101,6 +101,6 @@ In this example, both fusions have the same gene partners, there is an exact mat
 for the 3' partner, but the 5' exon and 5' junction location are unequal, resulting
 in a ``SHARED_GENES_THREE_PRIME_EXACT`` match being returned.
 
-.. figure:: ../../fusion_match_classes.png
+.. figure:: images/fusion_match_classes.png
    :alt: Fusion Match Classes
    :align: center
