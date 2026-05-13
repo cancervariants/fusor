@@ -110,7 +110,7 @@ To build, (re)create, and start containers:
 
 In Docker Desktop, you should see the following for a successful setup:
 
-.. figure:: ../../docker-desktop-container.png
+.. figure:: images/docker-desktop-container.png
    :alt: Docker Desktop Container
    :align: center
 
