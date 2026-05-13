@@ -95,10 +95,10 @@ comparator fusion or is not available.
 Fusion Matching Criteria and Example
 ------------------------------------
 
-A visualization describing the match criteria is shown below. An example assayed to
+A visualization describing the match criteria is shown below (A). An example assayed to
 categorical fusion match is also shown, where the assayed fusion describes joining
 of exon 13 of ``EML4`` with exon 20 of ``ALK``, and the categorical fusion describes
-the joining of exon 20 of ``EML4`` with exon 20 of ``ALK``.
+the joining of exon 20 of ``EML4`` with exon 20 of ``ALK`` (B).
 
 In this example, both fusions have the same gene partners, there is an exact match
 for the 3' partner, but the 5' exon and 5' junction location are unequal, resulting
