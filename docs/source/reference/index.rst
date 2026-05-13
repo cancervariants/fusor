@@ -16,4 +16,5 @@ API Reference
    fusor.models
    fusor.nomenclature
    fusor.tools
+   fusor.transcript_junction_builder
    fusor.translator
