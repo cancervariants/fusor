@@ -30,6 +30,7 @@ FUSOR is developed primarily by the `Wagner Lab <https://www.nationwidechildrens
     Installation<install>
     Usage<usage>
     Data Model<data_model>
+    Fusion Match Classes<fusion_match_classes>
     API Reference<reference/index>
     Changelog<changelog>
     Contributing<contributing>
