@@ -8,6 +8,9 @@ fusions against genomic knowledgebases to extract relevant clinical evidence. FU
 ``FusionMatcher`` class performs this operation, returning and classifying different
 kinds of matches along with their associated clinical evidence statements.
 
+For more information on how to run the ``FusionMatcher``, please visit
+:doc:`Fusion Matching API <reference/api/fusor.fusion_matching>`
+
 The list of potential match types is described below.
 
 Exact Match
