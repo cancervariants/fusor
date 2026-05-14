@@ -29,12 +29,16 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
         gene
     """
     element_class = element.regulatoryClass.value
+
+    # Format element class in nomenclature string
     if element_class == RegulatoryClass.ENHANCER:
         type_string = "e"
     elif element_class == RegulatoryClass.PROMOTER:
         type_string = "p"
     else:
         type_string = f"{element.regulatoryClass.value}"
+
+    # Format regulatory feature
     feature_string = ""
     if element.featureId:
         feature_string += f"_{element.featureId}"
@@ -75,6 +79,7 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
 
     prefix = f"{transcript}({element.gene.name})"
     start = element.exonStart if element.exonStart else ""
+    # Format exon offset in TranscriptSegmentElement object
     if element.exonStartOffset:
         if element.exonStartOffset > 0:
             start_offset = f"+{element.exonStartOffset}"
@@ -104,6 +109,9 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     """
     region = element.region
     strand_value = "+" if element.strand == Strand.POSITIVE else "-"
+
+    # Create nomenclature representation for region in TemplatedSequenceElement
+    # object
     if region:
         sequence_reference = element.region.sequenceReference
         if isinstance(sequence_reference, SequenceReference):
@@ -152,8 +160,14 @@ def generate_nomenclature(fusion: Fusion, sr: SeqRepo) -> str:
     """
     parts = []
     element_genes = []
+
+    # Append regulatory element to nomenclature string
     if fusion.regulatoryElement:
         parts.append(reg_element_nomenclature(fusion.regulatoryElement, sr))
+
+    # Create nomenclature strings for objects that constitute the fusion event
+    # We iterate through each object in the fusion.structure list and append
+    # the object-specific nomenclature string to the parts list
     for element in fusion.structure:
         if isinstance(element, MultiplePossibleGenesElement):
             parts.append("v")

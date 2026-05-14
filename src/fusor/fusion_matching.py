@@ -166,7 +166,6 @@ class FusionMatcher:
             cache_dir = config.data_root
         cache_dir.mkdir(parents=True, exist_ok=True)
 
-        # Set cache_dir, assayed_fusions, and cache_files variables
         self.cache_dir = cache_dir
         self.assayed_fusions = assayed_fusions
         self.cache_files = cache_files

@@ -306,6 +306,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         if (exon_start is None) and (exon_end is None):
             raise ValueError(msg)
 
+        # Validate that either exon start or exon end information is provided
         if exon_start:
             if not self.elementGenomicStart:
                 msg = "Must give `elementGenomicStart` if `exonStart` is given"
@@ -739,6 +740,8 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
         """
         elements = self.structure
         error_messages = []
+
+        # Validate first element of object
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exonEnd is None and not self.regulatoryElement:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
@@ -747,6 +750,7 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
             msg = "First structural element cannot be LinkerSequence"
             error_messages.append(msg)
 
+        # Validate formatting for connective TranscriptSegmentElement objects
         if len(elements) > 2:  # noqa: PLR2004
             for element in elements[1:-1]:
                 if isinstance(element, TranscriptSegmentElement) and (
@@ -754,6 +758,8 @@ class AbstractFusion(AbstractTranscriptStructuralVariant):
                 ):
                     msg = "Connective TranscriptSegmentElement must include both start and end positions"
                     error_messages.append(msg)
+
+        # Validate formatting for 3' TranscriptSegmentElement object
         if isinstance(elements[-1], TranscriptSegmentElement) and (
             elements[-1].exonStart is None
         ):
@@ -1077,6 +1083,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
         uq_gene_msg = "ITDs must be formed from only one unique gene."
         gene_ids = []
 
+        # Fetch all gene IDs across object
         for element in structure:
             gene_id = self._fetch_gene_id_or_name(obj=element)
             if gene_id:
