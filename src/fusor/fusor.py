@@ -319,12 +319,14 @@ class FUSOR:
 
         data.tx_ac = coerce_namespace(data.tx_ac)
 
+        # Attempt to create normalized gene response from Gene Normalizer
         normalized_gene_response = self._normalized_gene(
             data.gene, use_minimal_gene=use_minimal_gene
         )
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
 
+        # Format beginning of transcript segment using output from Cool-Seq-Tool
         seg_start = data.seg_start
         genomic_start_location = seg_start.genomic_location if seg_start else None
         if genomic_start_location:
@@ -332,6 +334,7 @@ class FUSOR:
                 genomic_start_location, data.genomic_ac, seq_id_target_namespace
             )
 
+        # Format end of transcript segment using output from Cool-Seq-Tool
         seg_end = data.seg_end
         genomic_end_location = seg_end.genomic_location if seg_end else None
         if genomic_end_location:
@@ -399,6 +402,7 @@ class FUSOR:
         if coordinate_type == CoordinateType.RESIDUE:
             start -= 1
 
+        # Create VRS SequenceLocation object for region
         region = self._sequence_location(
             start,
             end,
@@ -486,6 +490,7 @@ class FUSOR:
             _logger.warning(msg)
             return None, msg
 
+        # Attempt to get reference sequence from provided sequence ID
         seq, warning = self.cool_seq_tool.seqrepo_access.get_reference_sequence(
             sequence_id, start, end, coordinate_type=coordinate_type
         )
@@ -493,12 +498,14 @@ class FUSOR:
         if not seq:
             return None, warning
 
+        # Attempt to get normalized gene object from Gene Normalizer
         gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene=use_minimal_gene
         )
         if not gene_descr:
             return None, warning
 
+        # Create VRS SequenceLocation object
         loc_descr = self._sequence_location(
             start - 1 if coordinate_type == CoordinateType.RESIDUE else start,
             end,
@@ -559,6 +566,7 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
+        # Validate coordinates based on selection of residue coordinates
         if coordinate_type == CoordinateType.RESIDUE:
             if start == 0:
                 return (
@@ -571,6 +579,8 @@ class FUSOR:
                     "end must exceed 0 if using residue coordinates to construct the feature_location",
                 )
 
+        # Determine if the featureLocation field will be used to report the
+        # RegulatoryElement object
         use_feat_location = any(loc_var for loc_var in (sequence_id, start, end))
         if use_feat_location:
             if not sequence_id or not start or not end:

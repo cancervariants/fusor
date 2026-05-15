@@ -161,10 +161,13 @@ class Translator(ABC):
         :param descr: An annotation describing the fusion event. This input is supplied to the eventDescription CausativeEvent attribute.
         :return: A CausativeEvent object if construction is successful
         """
+        # Return rearrangement if the word "rearrangment" is in the descr string
         if descr and "rearrangement" in descr:
             return CausativeEvent(
                 eventType=EventType("rearrangement"), eventDescription=descr
             )
+
+        # Return rearrangement if chrom1 and chrom2 are different, indicating a translocation event
         if chrom1 != chrom2:
             return CausativeEvent(eventType=EventType("rearrangement"))
         return None
@@ -187,12 +190,15 @@ class Translator(ABC):
         :param caller: The examined fusion detection algorithm of fusion knowledgebase
         :return A GeneElement object
         """
+        # Determine if genes is a list of length one
         if "," not in genes or caller != caller.ARRIBA:
             ge = self.fusor.gene_element(gene=genes)
             return ge[0] if ge[0] else self._get_gene_element_unnormalized(genes)
 
         genes = genes.split(",")
         dists = []
+
+        # Arriba-specific gene processing. Select the gene closest to the provided breakpoint
         for gene in genes:
             start, end = gene.rfind("("), gene.rfind(")")
             dists.append(int(gene[start + 1 : end]))
@@ -285,6 +291,8 @@ class Translator(ABC):
         :param gene_symbol: The unprocessed gene symbol
         :return The processed gene symbol
         """
+        # CIViC-specific processing, as they use entrez IDs when reporting gene
+        # fusions, not HGNC
         if "entrez" in gene_symbol:
             return gene_symbol.split("(")[0]
         start = gene_symbol.find("(")
@@ -325,6 +333,7 @@ class JAFFATranslator(Translator):
         genes = jaffa.fusion_genes.split(":")
         fusion_partners = self._process_gene_symbols(genes[0], genes[1], Caller.JAFFA)
 
+        # Determine if the event is a fusion or internal tandem duplication
         variant_type = (
             AssayedFusion
             if self._are_fusion_partners_different(
@@ -333,6 +342,7 @@ class JAFFATranslator(Translator):
             else InternalTandemDuplication
         )
 
+        # Create TranscriptSegmentElement for 5' partner
         if not isinstance(fusion_partners.gene_5prime_element, UnknownGeneElement):
             tr_5prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
@@ -344,6 +354,7 @@ class JAFFATranslator(Translator):
             )
             tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         if not isinstance(fusion_partners.gene_3prime_element, UnknownGeneElement):
             tr_3prime = await self.fusor.transcript_segment_element(
                 tx_to_genomic_coords=False,
@@ -360,6 +371,7 @@ class JAFFATranslator(Translator):
             )
             tr_3prime = tr_3prime[0]
 
+        # Determine rearrangement type
         if jaffa.rearrangement:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
@@ -368,6 +380,7 @@ class JAFFATranslator(Translator):
         else:
             ce = None
 
+        # Extract read data information
         read_data = ReadData(
             split=SplitReads(splitReads=jaffa.spanning_reads),
             spanning=SpanningReads(spanningReads=jaffa.spanning_pairs),
@@ -409,6 +422,8 @@ class STARFusionTranslator(Translator):
         gene2 = star_fusion.right_gene.split("^")[0]
 
         fusion_partners = self._process_gene_symbols(gene1, gene2, Caller.STAR_FUSION)
+
+        # Determine if the event is a fusion or internal tandem duplication
         variant_type = (
             AssayedFusion
             if self._are_fusion_partners_different(
@@ -420,6 +435,7 @@ class STARFusionTranslator(Translator):
         five_prime = star_fusion.left_breakpoint.split(":")
         three_prime = star_fusion.right_breakpoint.split(":")
 
+        # Create TranscriptSegmentElement for 5' partner
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
@@ -430,6 +446,7 @@ class STARFusionTranslator(Translator):
         )
         tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
@@ -445,9 +462,12 @@ class STARFusionTranslator(Translator):
         )
         tr_3prime = tr_3prime[0]
 
+        # Extract causative event
         ce = self._get_causative_event(
             five_prime[0], three_prime[0], ",".join(star_fusion.annots)
         )
+
+        # Extract read data
         read_data = ReadData(
             split=SplitReads(splitReads=star_fusion.junction_read_count),
             spanning=SpanningReads(spanningReads=star_fusion.spanning_frag_count),
@@ -489,6 +509,8 @@ class FusionCatcherTranslator(Translator):
             fusion_catcher.three_prime_partner,
             Caller.FUSION_CATCHER,
         )
+
+        # Determine if the event is a fusion or internal tandem duplication
         variant_type = (
             AssayedFusion
             if self._are_fusion_partners_different(
@@ -500,6 +522,7 @@ class FusionCatcherTranslator(Translator):
         five_prime = fusion_catcher.five_prime_fusion_point.split(":")
         three_prime = fusion_catcher.three_prime_fusion_point.split(":")
 
+        # Create TranscriptSegmentElement for 5' partner
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
@@ -510,6 +533,7 @@ class FusionCatcherTranslator(Translator):
         )
         tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
@@ -525,13 +549,18 @@ class FusionCatcherTranslator(Translator):
         )
         tr_3prime = tr_3prime[0]
 
+        # Get causative event
         ce = self._get_causative_event(
             five_prime[0], three_prime[0], fusion_catcher.predicted_effect
         )
+
+        # Get read data
         read_data = ReadData(
             split=SplitReads(splitReads=fusion_catcher.spanning_unique_reads),
             spanning=SpanningReads(spanningReads=fusion_catcher.spanning_reads),
         )
+
+        # Get contig sequence
         contig = ContigSequence(contig=fusion_catcher.fusion_sequence)
 
         return self._format_fusion_itd(
@@ -573,6 +602,7 @@ class ArribaTranslator(Translator):
             arriba.gene1, arriba.gene2, Caller.ARRIBA
         )
 
+        # Determine if the event is a fusion or internal tandem duplication
         variant_type = (
             AssayedFusion
             if self._are_fusion_partners_different(
@@ -604,6 +634,7 @@ class ArribaTranslator(Translator):
         breakpoint1 = arriba.breakpoint1.split(":")
         breakpoint2 = arriba.breakpoint2.split(":")
 
+        # Create TranscriptSegmentElement for 5' partner
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(breakpoint1[0], rb),
@@ -617,6 +648,7 @@ class ArribaTranslator(Translator):
         )
         tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(breakpoint2[0], rb),
@@ -630,6 +662,7 @@ class ArribaTranslator(Translator):
         )
         tr_3prime = tr_3prime[0]
 
+        # Get causative event
         ce = (
             CausativeEvent(
                 eventType=EventType("read-through"),
@@ -723,6 +756,7 @@ class CiceroTranslator(Translator):
             else InternalTandemDuplication
         )
 
+        # Create TranscriptSegmentElement object for 5' partner
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(cicero.chr_5prime, rb),
@@ -735,6 +769,7 @@ class CiceroTranslator(Translator):
         )
         tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement object for 3' partner
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(cicero.chr_3prime, rb),
@@ -752,6 +787,7 @@ class CiceroTranslator(Translator):
         )
         tr_3prime = tr_3prime[0]
 
+        # Determine causative event
         if cicero.event_type == "read_through":
             ce = CausativeEvent(
                 eventType=EventType("read-through"),
@@ -762,6 +798,8 @@ class CiceroTranslator(Translator):
                 eventType=EventType("rearrangement"),
                 eventDescription=cicero.event_type,
             )
+
+        # Extract contig sequence
         contig = ContigSequence(contig=cicero.contig)
 
         return self._format_fusion_itd(
@@ -799,6 +837,7 @@ class EnFusionTranslator(Translator):
             enfusion.gene_5prime, enfusion.gene_3prime, Caller.ENFUSION
         )
 
+        # Determine if the event is a fusion or internal tandem duplication
         variant_type = (
             AssayedFusion
             if self._are_fusion_partners_different(
@@ -807,6 +846,7 @@ class EnFusionTranslator(Translator):
             else InternalTandemDuplication
         )
 
+        # Create TranscriptSegmentElement for 5' partner
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(enfusion.chr_5prime, rb),
@@ -817,6 +857,7 @@ class EnFusionTranslator(Translator):
         )
         tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(enfusion.chr_3prime, rb),
@@ -832,10 +873,12 @@ class EnFusionTranslator(Translator):
         )
         tr_3prime = tr_3prime[0]
 
+        # Extract causative event
         ce = self._get_causative_event(
             enfusion.chr_5prime,
             enfusion.chr_3prime,
         )
+
         return self._format_fusion_itd(
             variant_type,
             fusion_partners.gene_5prime_element,
@@ -870,6 +913,7 @@ class GenieTranslator(Translator):
             genie.site1_hugo, genie.site2_hugo, Caller.GENIE
         )
 
+        # Determine if the event is a fusion or internal tandem duplication
         variant_type = (
             AssayedFusion
             if self._are_fusion_partners_different(
@@ -878,6 +922,7 @@ class GenieTranslator(Translator):
             else InternalTandemDuplication
         )
 
+        # Create TranscriptSegmentElement for 5' partner
         tr_5prime = None
         if genie.site1_pos:
             tr_5prime = await self.fusor.transcript_segment_element(
@@ -890,6 +935,7 @@ class GenieTranslator(Translator):
             )
             tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         tr_3prime = None
         if genie.site2_pos:
             tr_3prime = await self.fusor.transcript_segment_element(
@@ -907,18 +953,21 @@ class GenieTranslator(Translator):
             )
             tr_3prime = tr_3prime[0]
 
+        # Determine causative event
         ce = self._get_causative_event(
             genie.site1_chrom,
             genie.site2_chrom,
             genie.annot,
         )
 
+        # Determine reading frame for the fusion event
         rf = None
         if genie.reading_frame and genie.reading_frame.lower() != "unknown":
             rf = bool(
                 "in-frame" in genie.reading_frame or "in frame" in genie.reading_frame
             )
 
+        # Extract read data
         read_data = None
         if genie.split_reads or genie.paired_end_reads:
             read_data = ReadData(
@@ -962,6 +1011,7 @@ class CIVICTranslator(Translator):
         :return: The modified genomic breakpoint, taking strand, offset, and
             offset direction into account
         """
+        # Determine if "start" or "stop" data should be used from CIViC output
         if is_5prime:
             coord_to_use = (
                 coordinate_data.stop
@@ -974,6 +1024,8 @@ class CIVICTranslator(Translator):
                 if coordinate_data.strand == self.Direction.POSITIVE.value
                 else coordinate_data.stop
             )
+
+        # Modify coordinate value based on the direction of the offset
         if coordinate_data.exon_offset_direction == self.Direction.POSITIVE.value:
             return coord_to_use + coordinate_data.exon_offset
         if coordinate_data.exon_offset_direction == self.Direction.NEGATIVE.value:
@@ -1009,6 +1061,8 @@ class CIVICTranslator(Translator):
             msg = "Translation cannot proceed as GRCh37 transcripts and exons lacks genomic breakpoints"
             raise ValueError(msg)
         fusion_partners = civic.vicc_compliant_name
+
+        # Process fusion partners to align with VICC nomenclature system
         if fusion_partners.startswith("v::"):
             gene_5prime = "v"
             gene_3prime = self._process_vicc_nomenclature(
@@ -1030,6 +1084,8 @@ class CIVICTranslator(Translator):
         fusion_partners = self._process_gene_symbols(
             gene_5prime, gene_3prime, KnowledgebaseList.CIVIC
         )
+
+        # Create TranscriptSegmentElement for 5' partner
         tr_5prime = None
         if (
             isinstance(civic.five_prime_end_exon_coords, ExonCoordinate)
@@ -1054,6 +1110,7 @@ class CIVICTranslator(Translator):
             )
             tr_5prime = tr_5prime[0]
 
+        # Create TranscriptSegmentElement for 3' partner
         tr_3prime = None
         if (
             isinstance(civic.three_prime_start_exon_coords, ExonCoordinate)
@@ -1101,6 +1158,7 @@ class MOATranslator(Translator):
             partner.
         :return: A CategoricalFusion object
         """
+        # Extract gene symbols involved in fusion from biomarkers field
         bm = None
         for biomarker in moa_assertion["proposition"]["biomarkers"]:
             if (

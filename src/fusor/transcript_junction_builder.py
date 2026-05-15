@@ -118,6 +118,7 @@ class TranscriptJunctionBuilder:
         :return: A `GenomicTxMetadata` object. The returned coordinates will
             always be described on GRCh38
         """
+        # Return updated position when accounting for the cds start site
         return await self.fusor.cool_seq_tool.uta_db.get_genomic_tx_data(
             tx_ac=tx,
             pos=((cds_start + pos - 1, cds_start + pos)),
@@ -150,6 +151,7 @@ class TranscriptJunctionBuilder:
         :param intronic_offset: The intronic offset, by default set to 0
         :return: A `TranscriptSegmentElement` object
         """
+        # Process data separately if described using transcript coordinates
         if self.annotation_type == AnnotationLayer.CDNA:
             cds = await self._get_cds_start(ref_seq)
             junc_data = await self._get_junc_location(
