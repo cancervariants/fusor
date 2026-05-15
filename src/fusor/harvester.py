@@ -462,7 +462,7 @@ class MOAHarvester(FusionCallerHarvester):
         cache_dir.mkdir(parents=True, exist_ok=True)
         moa_downloader = MoaData(data_dir=cache_dir)
 
-        # Download latest MOA cache is use_local is set to ``False``
+        # Download latest MOA cache if use_local is set to ``False``
         moa_file = moa_downloader.get_latest(
             force_refresh=force_refresh, from_local=use_local
         )[0]
