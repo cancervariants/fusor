@@ -57,7 +57,7 @@ _logger = logging.getLogger(__name__)
 
 
 class FUSOR:
-    """Class for modifying fusion objects."""
+    """Class for creating and modifying fusion objects."""
 
     def __init__(
         self,
@@ -66,8 +66,8 @@ class FUSOR:
     ) -> None:
         """Initialize FUSOR class.
 
-        :param cool_seq_tool: Cool-Seq-Tool instance
         :param gene_database: gene normalizer database instance
+        :param cool_seq_tool: Cool-Seq-Tool instance
         """
         if not gene_database:
             gene_database = create_db()
@@ -235,9 +235,9 @@ class FUSOR:
         :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
         :param regulatory_element: affected regulatory elements
-        :param critical_functional_domains: lost or preserved functional domains
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
+        :param critical_functional_domains: lost or preserved functional domains
         :return: InternalTandemDuplication if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
@@ -298,6 +298,8 @@ class FUSOR:
 
         :return: Transcript Segment Element, warning
         """
+        # Determine if we are doing a transcript to genomic coversion or genomic
+        # to transcript conversion
         if tx_to_genomic_coords:
             data = await self.cool_seq_tool.ex_g_coords_mapper.tx_segment_to_genomic(
                 **kwargs
@@ -326,7 +328,7 @@ class FUSOR:
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
 
-        # Format beginning of transcript segment using output from Cool-Seq-Tool
+        # Generate beginning of transcript segment using output from Cool-Seq-Tool
         seg_start = data.seg_start
         genomic_start_location = seg_start.genomic_location if seg_start else None
         if genomic_start_location:
@@ -334,7 +336,7 @@ class FUSOR:
                 genomic_start_location, data.genomic_ac, seq_id_target_namespace
             )
 
-        # Format end of transcript segment using output from Cool-Seq-Tool
+        # Generate end of transcript segment using output from Cool-Seq-Tool
         seg_end = data.seg_end
         genomic_end_location = seg_end.genomic_location if seg_end else None
         if genomic_end_location:
@@ -425,6 +427,10 @@ class FUSOR:
         try:
             upper_seq = sequence.upper()
             seq = sequenceString(upper_seq)
+
+            # Represent LinkerSequence using VRS LiteralSequenceExpression object
+            # as this aligns most closely with what is provided in the VICC
+            # Gene Fusion Specification
             linker_sequence = LiteralSequenceExpression(
                 sequence=seq, id=f"fusor.sequence:{sequence}"
             )
@@ -652,10 +658,10 @@ class FUSOR:
     def _location_id(
         location: dict,
     ) -> Annotated[str, StringConstraints(pattern=CURIE_REGEX)]:
-        """Return GA4GH digest for location
+        """Return GA4GH identifier for location
 
         :param location: VRS Location represented as a dict
-        :return: GA4GH digest
+        :return: GA4GH identifier
         """
         return ga4gh_identify(models.Location(**location))
 
@@ -690,6 +696,7 @@ class FUSOR:
         """Modify the sequence_location to have ga4gh_identified id and its sequenceReference with id from target namespace (refseq default)
 
         :param sequence_location: the SequenceLocation to add/modify id's of
+        :param genomic_ac: The genomic accession
         :param seq_id_target_namespace: the target namespace for the SequenceLocation's sequenceReference id, which is the genomic_ac
         (defaults to refseq if none given)
         """

@@ -1,4 +1,6 @@
-"""Model for FUSOR classes"""
+"""Model for FUSOR classes that follow the VICC minimum information guidelines
+defined here: https://fusions.cancervariants.org/en/latest/information_model.html
+"""
 
 import logging
 import pickle
@@ -1064,7 +1066,7 @@ class InternalTandemDuplication(AbstractTranscriptStructuralVariant):
         """Ensure minimum # of elements for InternalTandemDuplications (ITDs)
 
         To validate the unique genes rule, we extract gene IDs from the elements that
-        designate genes, and take the number of total elements. If there is only one
+        designate genes, and take the number of total elements. If there is more than one
         unique gene ID, and there are no non-gene-defining elements (such as
         an unknown partner), then we raise an error.
         """

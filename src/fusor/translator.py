@@ -1,5 +1,5 @@
 """Module for translating output from fusion detection methods to fusion
-objects (AssayedFusion/CategoricalFusion)
+objects (AssayedFusion/CategoricalFusion) or InternalTandemDuplication objects
 """
 
 import logging
@@ -62,7 +62,7 @@ class GeneFusionPartners(BaseModel):
 
 class Translator(ABC):
     """Class for translating outputs from different fusion detection algorithms
-    to FUSOR AssayedFusion and CategoricalFusion objects
+    to FUSOR AssayedFusion, CategoricalFusion, and InternalTandemDuplication objects
     """
 
     def __init__(self, fusor: FUSOR) -> None:
@@ -154,7 +154,9 @@ class Translator(ABC):
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
     ) -> CausativeEvent | None:
-        """Infer Causative Event. Currently restricted to rearrangements
+        """Infer Causative Event. Currently restricted to rearrangements as we
+        cannot definitely say that the underlying event was caused by a read-
+        through or trans-splicing event
 
         :param chrom1: The chromosome for the 5' partner
         :param chrom2: The chromosome for the 3' partner
@@ -1038,12 +1040,16 @@ class CIVICTranslator(Translator):
         :param coord: A ExonCoordinate object or None
         :return ``True`` If a start or stop coordinate is associated with the 5'
             end exon or 3` start exon, or ``False``. We cannot peform accurate
-            translation with only an Ensembl transcript accession and exon number
+            translation with only an Ensembl transcript accession and exon number.
+            We require the fusion object from CIViC to contain fusion junction
+            genomic coordinates so we can create the TranscriptSegmentElement object.
         """
         return not (
             isinstance(coord, ExonCoordinate)
             and coord.exon
-            and not (coord.start and coord.stop)
+            and not (
+                coord.start and coord.stop
+            )  # Start and stop describe genomic breakpoints
         )
 
     async def translate(self, civic: CIVIC) -> CategoricalFusion:
