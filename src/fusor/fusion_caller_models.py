@@ -1,4 +1,7 @@
-"""Schemas for outputs provided by different fusion callers"""
+"""Schemas for outputs provided by different fusion callers. This also contains
+a KnowledgebaseList class which describes the two knowledgebases that have
+standardization supported (CIVIC and Molecular Oncology Almanac, or MOA)
+"""
 
 from abc import ABC
 from enum import Enum
@@ -42,7 +45,10 @@ class FusionKnowledgebase(BaseModel, ABC):
 
 
 class JAFFA(FusionCaller):
-    """Define parameters for JAFFA model"""
+    """Define parameters for JAFFA model
+
+    https://github.com/Oshlack/JAFFA/wiki/OutputDescription
+    """
 
     type: Literal[Caller.JAFFA] = Caller.JAFFA
     fusion_genes: str = Field(
@@ -81,7 +87,10 @@ class JAFFA(FusionCaller):
 
 
 class STARFusion(FusionCaller):
-    """Define parameters for STAR-Fusion model"""
+    """Define parameters for STAR-Fusion model
+
+    https://github.com/STAR-Fusion/STAR-Fusion/wiki#output-from-star-fusion
+    """
 
     type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
     left_gene: str = Field(..., description="The gene indicated in the LeftGene column")
@@ -106,7 +115,10 @@ class STARFusion(FusionCaller):
 
 
 class FusionCatcher(FusionCaller):
-    """Define parameters for FusionCatcher model"""
+    """Define parameters for FusionCatcher model
+
+    https://github.com/ndaniel/fusioncatcher/blob/master/doc/manual.md#62---output-data-output-data
+    """
 
     type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
     five_prime_partner: str = Field(
@@ -139,7 +151,10 @@ class FusionCatcher(FusionCaller):
 
 
 class Arriba(FusionCaller):
-    """Define parameters for Arriba model"""
+    """Define parameters for Arriba model
+
+    https://github.com/suhrig/arriba/wiki/05-Output-files
+    """
 
     type: Literal[Caller.ARRIBA] = Caller.ARRIBA
     gene1: str = Field(..., description="The 5' gene fusion partner")
@@ -189,7 +204,10 @@ class Arriba(FusionCaller):
 
 
 class Cicero(FusionCaller):
-    """Define parameters for CICERO model"""
+    """Define parameters for CICERO model
+
+    https://stjude.github.io/CICERO/#output-fields
+    """
 
     type: Literal[Caller.CICERO] = Caller.CICERO
     gene_5prime: str = Field(..., description="The gene symbol for the 5' partner")
@@ -228,7 +246,11 @@ class Cicero(FusionCaller):
 
 
 class EnFusion(FusionCaller):
-    """Define parameters for EnFusion model"""
+    """Define parameters for EnFusion model
+
+    EnFusion does not have reported documentation, so I inferred this by
+    looking at the fusion caller output files
+    """
 
     type: Literal[Caller.ENFUSION] = Caller.ENFUSION
     gene_5prime: str = Field(..., description="The 5' gene fusion partner")
@@ -251,7 +273,10 @@ class EnFusion(FusionCaller):
 
 
 class Genie(FusionCaller):
-    """Define parameters for Genie model"""
+    """Define parameters for Genie model
+
+    https://docs.cbioportal.org/file-formats/#structural-variant-data
+    """
 
     type: Literal[Caller.GENIE] = Caller.GENIE
     site1_hugo: str = Field(..., description="The HUGO symbol reported at site 1")
@@ -297,7 +322,10 @@ class Genie(FusionCaller):
 
 
 class CIVIC(FusionKnowledgebase):
-    """Define parameters for CIVIC model"""
+    """Define parameters for CIVIC model
+
+    https://civic.readthedocs.io/en/latest/model/fusions/types.html
+    """
 
     type: Literal[KnowledgebaseList.CIVIC] = KnowledgebaseList.CIVIC
     model_config = ConfigDict(arbitrary_types_allowed=True)

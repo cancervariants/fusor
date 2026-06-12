@@ -75,7 +75,9 @@ class FusionCallerHarvester(ABC, Generic[T]):
     """ABC for fusion caller harvesters"""
 
     fusion_caller: type[FusionCaller]
-    column_rename: ClassVar[dict[str, str]]
+    column_rename: ClassVar[
+        dict[str, str]
+    ]  # Original column, Column that we want to rename to
     delimiter: str
     translator_class: type[T]
     coordinate_type: CoordinateType
@@ -116,7 +118,8 @@ class FusionCallerHarvester(ABC, Generic[T]):
         self,
         fusion_path: Path,
     ) -> list[AssayedFusion | InternalTandemDuplication]:
-        """Convert rows of fusion caller output to AssayedFusion and InternalTandemDuplication objects
+        """Convert rows of fusion caller output to AssayedFusion and InternalTandemDuplication objects,
+        These are the only data types that are supported when reading in from fusion caller output.
 
         :param fusion_path: The path to the fusions file
         :raise ValueError: if the file does not exist at the specified path
@@ -185,7 +188,7 @@ class FusionCallerHarvester(ABC, Generic[T]):
         self,
         fusion_path: Path,
     ) -> AsyncGenerator[tuple[dict, FusionCaller], None]:
-        """Convert rows of fusion caller output to FusionCallerRecord objects.
+        """Convert rows of fusion caller output to FusionCaller objects.
 
         Each entry in the returned list includes the raw fusion caller output row, as well as the
         annotated fusion model. Any errors encountered when annotating fusions are captured and returned per fusion.
@@ -416,7 +419,8 @@ class CIVICHarvester(FusionCallerHarvester):
         for fusion in processed_fusions:
             if (
                 "?" in fusion.vicc_compliant_name
-            ):  # Making suggestion to CIViC to fix syntax (MP: 5474)
+            ):  # The "?" is technically only supposed to be used for AssayedFusions, so we remove here
+                # as this is a harvester for a CategoricalFusion knowledge source
                 continue
             try:
                 cat_fusion = await self.translator.translate(civic=fusion)

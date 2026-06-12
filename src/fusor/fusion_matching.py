@@ -35,6 +35,9 @@ class MatchType(str, Enum):
     def priority(self) -> int:
         """Return numeric priority for sorting, where the lower the score
         indicates the higher quality match
+
+        Note: The actual values are chosen arbitrarily, but matches of similar
+        quality are scored in close proximity to each other
         """
         return {
             MatchType.EXACT: 10,
@@ -143,7 +146,7 @@ class FusionMatcher:
         cache_dir: Path | None = None,
         assayed_fusions: list[AssayedFusion] | None = None,
         comparator_fusions: list[AssayedFusion | CategoricalFusion] | None = None,
-        cache_files: list[str] | None = None,
+        cache_files: list[Path] | None = None,
     ) -> None:
         """Initialize FusionMatcher class and comparator categorical fusion objects
 
@@ -182,7 +185,7 @@ class FusionMatcher:
         """Load in cache of AssayedFusion or CategoricalFusion objects
 
         :raises ValueError: If the cache_dir or cache_files variables are None
-        :return: A list of AssayedFusions or CategoricalFusions
+        :return: A list of cached AssayedFusions or CategoricalFusions
         """
         if not self.cache_dir or not self.cache_files:
             msg = "`cache_dir` and `cache_files` parameters must be provided"

@@ -113,7 +113,7 @@ class TranscriptJunctionBuilder:
         """Get junction data from transcript
 
         :param tx: A transcript accession
-        :param pos: The provided junction location
+        :param pos: The provided junction location (residue coordinate)
         :param cds_start: The CDS start site
         :return: A `GenomicTxMetadata` object. The returned coordinates will
             always be described on GRCh38
@@ -167,6 +167,8 @@ class TranscriptJunctionBuilder:
                 coordinate_type=CoordinateType.RESIDUE,
             )
             return seg[0]
+
+        # Process data separately if described using genomic coordinates
         seg = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=ref_seq,
@@ -238,6 +240,8 @@ class TranscriptJunctionBuilder:
             intronic_offset=self.three_prime_intronic_offset,
             is_five_prime=False,
         )
+        # Create structured list with five prime transcript segment, linker
+        # sequence if present, and three prime transcript segment
         structure = (
             [five_prime_seg, linker, three_prime_seg]
             if linker

@@ -30,7 +30,7 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     """
     element_class = element.regulatoryClass.value
 
-    # Format element class in nomenclature string
+    # Generate element class in nomenclature string
     if element_class == RegulatoryClass.ENHANCER:
         type_string = "e"
     elif element_class == RegulatoryClass.PROMOTER:
@@ -38,7 +38,7 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     else:
         type_string = f"{element.regulatoryClass.value}"
 
-    # Format regulatory feature
+    # Generate regulatory feature
     feature_string = ""
     if element.featureId:
         feature_string += f"_{element.featureId}"
@@ -79,7 +79,8 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
 
     prefix = f"{transcript}({element.gene.name})"
     start = element.exonStart if element.exonStart else ""
-    # Format exon offset in TranscriptSegmentElement object
+
+    # Generate exon offset in TranscriptSegmentElement object
     if element.exonStartOffset:
         if element.exonStartOffset > 0:
             start_offset = f"+{element.exonStartOffset}"
