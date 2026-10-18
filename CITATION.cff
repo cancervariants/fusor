@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "FUSOR"
+abstract: "Computable object representation and validation for gene fusions, implementing the VICC Gene Fusion Specification."
+authors:
+  - given-names: "Jeremy A."
+    family-names: "Arbesfeld"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Kori"
+    family-names: "Kuzma"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "James S."
+    family-names: "Stevenson"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Kathryn"
+    family-names: "Perry"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Zeal"
+    family-names: "Wierslee"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Anastasia"
+    family-names: "Bratulin"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Matthew"
+    family-names: "Cannon"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Daniel"
+    family-names: "Puthawala"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Wesley A."
+    family-names: "Goar"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Benjamin"
+    family-names: "Kelly"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital"
+  - given-names: "Alex H."
+    family-names: "Wagner"
+    affiliation: "The Steve and Cindy Rasmussen Institute for Genomic Medicine, Nationwide Children's Hospital; Departments of Pediatrics and Biomedical Informatics, The Ohio State University"
+doi: "10.5281/zenodo.12708137"
+repository-code: "https://github.com/cancervariants/fusor"
+url: "https://fusor.readthedocs.io/stable/"
+license: MIT
+keywords:
+  - gene fusions
+  - VICC Gene Fusion Specification
+  - variant representation
+  - clinical genomics
