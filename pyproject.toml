@@ -1,11 +1,17 @@
 [project]
 name = "fusor"
 authors = [
-    {name = "Alex Wagner", email = "alex.wagner@nationwidechildrens.org"},
+    {name = "Jeremy A. Arbesfeld", email = "jarbesfe@broadinstitute.org"},
     {name = "Kori Kuzma", email = "kori.kuzma@nationwidechildrens.org"},
-    {name = "James Stevenson", email = "james.stevenson@nationwidechildrens.org"},
-    {name = "Katie Stahl", email = "kathryn.stahl@nationwidechildrens.org"},
-    {name = "Jeremy Arbesfeld", email = "jeremy.arbesfeld@nationwidechildrens.org"}
+    {name = "James S. Stevenson", email = "james.stevenson@nationwidechildrens.org"},
+    {name = "Kathryn Perry", email = "kathryn.stahl@nationwidechildrens.org"},
+    {name = "Zeal Wierslee"},
+    {name = "Anastasia Bratulin"},
+    {name = "Matthew Cannon"},
+    {name = "Daniel Puthawala"},
+    {name = "Wesley A. Goar"},
+    {name = "Benjamin Kelly"},
+    {name = "Alex H. Wagner", email = "alex.wagner@nationwidechildrens.org"}
 ]
 readme = "README.md"
 classifiers = [
